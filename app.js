@@ -6,8 +6,11 @@
 var express = require('express');
 var routes = require('./routes');
 var user = require('./routes/user');
+var chat = require('./routes/chat');
+var config = require('./config');
 var http = require('http');
 var path = require('path');
+var socketio = require('socket.io');
 
 var app = express();
 
@@ -31,8 +34,17 @@ if ('development' == app.get('env')) {
 }
 
 app.get('/', routes.index);
-app.get('/users', user.list);
+app.post('/login', user.login);
+app.post('/register', user.register);
+app.get('/login', user.login);
+app.get('/register', user.register);
+app.get('/chat', chat.main);
 
-http.createServer(app).listen(app.get('port'), function(){
+var server = http.createServer(app);
+
+server.listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
 });
+
+var io = socketio.listen(server);
+io.on('connection', chat.newClient);

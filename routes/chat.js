@@ -1,4 +1,5 @@
 var irc = require('irc');
+var config = require('../config');
 
 var clients = new Array();
 
@@ -9,7 +10,7 @@ Array.prototype.remove = function (start, end) {
   return this.push.apply(this, tail);
 };
 
-exports.addClient = function (socket) {
+exports.newClient = function (socket) {
   clients.push(socket);
   console.log('New connection.');
 
@@ -23,5 +24,5 @@ exports.addClient = function (socket) {
 };
 
 exports.main = function (req, res) {
-  res.render('chat', {title: 'aIRChat'});
+  res.render('chat', {title: 'aIRChat', host: config.host});
 };

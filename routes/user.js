@@ -1,8 +1,11 @@
+/** For now, just have the login and register functions redirect
+  * to the chat page to test all the important stuff.
+  */
 
-/*
- * GET users listing.
- */
+exports.login = function (req, res) {
+  res.redirect('/chat');
+};
 
-exports.list = function(req, res){
-  res.send("respond with a resource");
+exports.register = function (req, res) {
+  res.redirect('/chat');
 };

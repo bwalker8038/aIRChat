@@ -9,10 +9,11 @@
     <a href="#" class="button" id="send">Send</a>
   </div>
 </div>
-<script src="socket.io"></script>
+<script src="/socket.io/socket.io.js"></script>
 <script type="text/javascript">
-  var socket = io.connect(config.host);
-  
+  var hostname = '<%= host %>';
+  var socket = io.connect(hostname); // UNDEFINED
+
   $('a#send').click(function (evt) {
     var $ta = $('textarea#input');
     socket.send($ta.val());
