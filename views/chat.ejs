@@ -1,0 +1,23 @@
+<% include head %>
+<div class="row">
+  <div class="small-12 columns">
+    <textarea id="input" placeholder="Message to the server"></textarea>
+  </div>
+</div>
+<div class="row">
+  <div class="small-12 columns">
+    <a href="#" class="button" id="send">Send</a>
+  </div>
+</div>
+<script src="socket.io"></script>
+<script type="text/javascript">
+  var socket = io.connect(config.host);
+  
+  $('a#send').click(function (evt) {
+    var $ta = $('textarea#input');
+    socket.send($ta.val());
+    console.log('sent "' + $ta.val() + '"');
+    $ta.val('');
+  });
+</script>
+<% include foot %>
