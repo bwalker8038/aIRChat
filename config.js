@@ -10,4 +10,4 @@ exports.location = 'localhost/postgres';
   * Used to configure information the client needs to create a socket.io
   * connection to the server
   */
-exports.host = "http://localhost";
+exports.host = 'http://192.168.0.10';

@@ -26,6 +26,24 @@ var createIRCClient = function (socket, params) {
     socket.emit('notifyLow', {channel: to, from: from, message: msg});
   });
 
+  newClient.addListener('registered', function (msg) {
+    socket.emit('notifyLow', {channel: 'Server Messages', from: 'Server', messge: msg});
+  });
+
+  newClient.addListener('names', function (channel, nicks) {
+    socket.emit('nickList', {channel: channel, nicks: nicks});
+  });
+
+  newClient.addListener('join', function (channel, nick, msg) {
+    socket.emit('joined', channel);
+  });
+
+  newClient.addListener('kick', function (channel, nick, by, reason, msg) {
+    socket.emit('kicked', {channel: channel, by: by, reason: reason});
+  });
+
+  newClient
+
   newClient.addListener('error', function (message) {
     console.log('IRC Client error: ' + message);
   });

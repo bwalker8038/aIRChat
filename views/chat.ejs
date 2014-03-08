@@ -1,5 +1,10 @@
 <% include head %>
 <div class="row">
+  <div class="small-12 columns" id="messages">
+  </div>
+</div>
+</div>
+<div class="row">
   <div class="small-12 columns">
     <textarea id="input" placeholder="Message to the server"></textarea>
   </div>
@@ -13,6 +18,7 @@
 <script type="text/javascript">
   var hostname = '<%= host %>';
   var socket = io.connect(hostname);
+  var connected = false;
 
   socket.emit('serverJoin', {
     server: 'irc.freenode.net', 
@@ -35,8 +41,16 @@
 
   socket.on('notifyLow', addMessage);
   socket.on('notifyHigh', addMessage);
+  socket.on('joined', function (channel) {
+    alert('Joined ' + channel);
+    connected = true;
+  });
 
   $('a#send').click(function (evt) {
+    if (connected === false) {
+      alert('Please wait until you have finished connecting.');
+      return;
+    }
     var $ta = $('textarea#input');
     socket.send($ta.val());
     console.log('sent "' + $ta.val() + '"');
