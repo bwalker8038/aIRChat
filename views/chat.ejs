@@ -12,12 +12,36 @@
 <script src="/socket.io/socket.io.js"></script>
 <script type="text/javascript">
   var hostname = '<%= host %>';
-  var socket = io.connect(hostname); // UNDEFINED
+  var socket = io.connect(hostname);
+
+  socket.emit('serverJoin', {
+    server: 'irc.freenode.net', 
+    nick: 'aIRChatBOT',
+    firstchannel: '#ctf-portside'
+  });
+
+  var addMessage = function (data) {
+    $('div#messages').append($(
+      '<div class="message">' +
+      '  <div class="titlebar">' +
+      '    <span>' + data.from + ' in ' + data.channel + '</span>' +
+      '  </div>' +
+      '  <div class="messageContent">' +
+      '    <span>' + data.message + '</span>' +
+      '  </div>' +
+      '</div>'
+    ));
+  };
+
+  socket.on('notifyLow', addMessage);
+  socket.on('notifyHigh', addMessage);
 
   $('a#send').click(function (evt) {
     var $ta = $('textarea#input');
     socket.send($ta.val());
     console.log('sent "' + $ta.val() + '"');
+    addMessage({channel: '#ctf-portside', from: 'you', message: $ta.val()});
+    socket.emit('writeChat', {destination: '#ctf-portside', message: $ta.val()});
     $ta.val('');
   });
 </script>
