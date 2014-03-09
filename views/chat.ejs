@@ -1,4 +1,8 @@
 <% include head %>
+<ul class="left side-nav" id="chatList">
+</ul>
+<ul class="right side-nav" id="nickList">
+</ul>
 <div class="row">
   <div class="small-12 columns" id="messages">
   </div>
@@ -19,12 +23,31 @@
   var hostname = '<%= host %>';
   var socket = io.connect(hostname);
   var connected = false;
+  
+  // Parallel arrays
+  // nickLists[i] contains an array of nicks of users in chats[i].
+  var chats = new Array();
+  var nickLists = new Array();
 
   socket.emit('serverJoin', {
     server: 'irc.freenode.net', 
     nick: 'aIRChatBOT',
     firstchannel: '#ctf-portside'
   });
+
+  var addNick = function (nick) {
+    $('ul#nickList').append($(
+      '<li class="nickListItem" id="nickListItem_' + nick + '>' +
+      '  <div>' +
+      '    <span>' + nick + '</span>' +
+      '  </div>' +
+      '</li>'
+    ));
+  };
+
+  var removeNick = function (nick) {
+    $('li#nickListItem_' + nick).remove();
+  };
 
   var addMessage = function (data) {
     $('div#messages').append($(
@@ -41,9 +64,50 @@
 
   socket.on('notifyLow', addMessage);
   socket.on('notifyHigh', addMessage);
-  socket.on('joined', function (channel) {
-    alert('Joined ' + channel);
+  
+  socket.on('connected', function (channel) {
     connected = true;
+  });
+  
+  // Create a listing of nicks for the appropriate channel.
+  // The list will not be rendered until the channel is the active one.
+  socket.on('nickList', function (data) {
+    var index = chats.indexOf(data.channel);
+    nickLists[index] = data.nicks;
+  });
+
+  // Add a new nick to the list of nicks for the provided channel. 
+  socket.on('joined', function (data) {
+    var index = chats.indexOf(data.channel);
+    nickLists[index].push(data.nick);
+  });
+
+  // Display a message telling the user they were kicked from the channel.
+  // Also deactivate the send mechanism for this channel.
+  socket.on('kicked', function (data) {
+    addMessage({
+      from: 'Kicked by ' + data.by,
+      channel: data.channel,
+      message: 'Reason provided: ' + data.reason
+    });
+    // TODO
+    // Block the user from trying to send messages to the channel
+    // that they were kicked from.
+  });
+
+  // Change the nick of a user in the nicklist
+  socket.on('newNick', function (data) {
+    var $li = $('li#nickListItem_' + data.old);
+    $('li#nickListItem_' + data.old + ' div span').text(data.new);
+    $li.attr('id', 'nickListItem_' + data.new);
+  });
+  socket.on('invite', function (data) {
+    // Ask the user if they want to join the channel they were invited to
+    // data.to, data.by
+  });
+  socket.on('userLeft', function (data) {
+    // Remove a user's nick from the list of nicks
+    // data.from, data.nick, data.reason
   });
 
   $('a#send').click(function (evt) {

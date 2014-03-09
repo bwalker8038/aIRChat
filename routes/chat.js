@@ -27,7 +27,7 @@ var createIRCClient = function (socket, params) {
   });
 
   newClient.addListener('registered', function (msg) {
-    socket.emit('notifyLow', {channel: 'Server Messages', from: 'Server', messge: msg});
+    socket.emit('connected');
   });
 
   newClient.addListener('names', function (channel, nicks) {
