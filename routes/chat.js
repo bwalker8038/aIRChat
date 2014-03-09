@@ -35,14 +35,32 @@ var createIRCClient = function (socket, params) {
   });
 
   newClient.addListener('join', function (channel, nick, msg) {
-    socket.emit('joined', channel);
+    socket.emit('joined', {channel: channel, nick: nick});
   });
 
   newClient.addListener('kick', function (channel, nick, by, reason, msg) {
     socket.emit('kicked', {channel: channel, by: by, reason: reason});
   });
 
-  newClient
+  newClient.addListener('nick', function (oldnick, newnick, channels, msg) {
+    for (var i = channels.length - 1; i >= 0; i--) {
+      socket.emit('newNick', {old: oldnick, new: newnick, channel: channels[i]});
+    }
+  });
+
+  newClient.addListener('invite', function (channel, from) {
+    socket.emit('invited', {to: channel, by: from});
+  });
+
+  newClient.addListener('part', function (channel, nick, reason, msg) {
+    socket.emit('userLeft', {from: channel, nick: nick, reason: reason});
+  });
+
+  newClient.addListener('quit', function (nick, reason, channels, msg) {
+    for (var i = channels.length - 1; i >= 0; i--) {
+      socket.emit('userLeft', {from: channels[i], nick: nick, reason: reason});
+    }
+  });
 
   newClient.addListener('error', function (message) {
     console.log('IRC Client error: ' + message);
@@ -61,7 +79,9 @@ exports.newClient = function (socket) {
   });
   
   socket.on('disconnect', function () {
-    clients.remove(clients.indexOf(socket));
+    var index = clients.indexof(socket);
+    clients.remove(index);
+    ircClients.remove(index);
   });
 
   socket.on('serverJoin', function (data) {
