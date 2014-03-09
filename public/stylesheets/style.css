@@ -1,13 +1,24 @@
 h1,h2,h3,h4,h5,h6 {
   font-family: Lato, sans-serif;
 }
-
 body {
-  padding: 50px;
   font-size: 14px;
   font-family: Lato, sans-serif;
+  height: 100%;
 }
-
 a {
   color: #00B7FF;
+}
+
+dl.tabs dd > a {
+  background-color: #222;
+  color: #eee;
+}
+
+dl.tabs dd.active > a {
+  color: #222;
+}
+
+dl.tabs dd > a:hover {
+  color: #222;
 }

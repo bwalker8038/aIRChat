@@ -1,22 +1,7 @@
 <% include head %>
-<ul class="left side-nav" id="chatList">
-</ul>
-<ul class="right side-nav" id="nickList">
-</ul>
-<div class="row">
-  <div class="small-12 columns" id="messages">
-  </div>
-</div>
-</div>
-<div class="row">
-  <div class="small-12 columns">
-    <textarea id="input" placeholder="Message to the server"></textarea>
-  </div>
-</div>
-<div class="row">
-  <div class="small-12 columns">
-    <a href="#" class="button" id="send">Send</a>
-  </div>
+<dl class="tabs vertical" id="chatList" data-tab>
+</dl>
+<div class="tabs-content vertical" id="chatContent">
 </div>
 <script src="/socket.io/socket.io.js"></script>
 <script type="text/javascript">
@@ -62,6 +47,25 @@
     ));
   };
 
+  // Add a new tab to the list of chat tabs and a content div to contain
+  // the nick list and messages.
+  // addChatSection assumes the new chat has already been pushed to the chats array.
+  var addChatSection = function (chanOrNick) {
+    $('dl#chatList').append($(
+      '<dd><a href="#panel' + chats.length + '">' +
+      chanOrNick
+      '</a></dd>'
+    ));
+    $('div#chatContent').append($(
+      '<div class="content" id="panel' + chats.length + '">' +
+      '  <ul class="right side-nav">' +
+      '  </ul>' +
+      '  <div id="messageList_' + chanOrNick + '">' +
+      '  </div>' +
+      '</div>'
+    ));
+  };
+
   socket.on('notifyLow', addMessage);
   socket.on('notifyHigh', addMessage);
   
@@ -78,6 +82,9 @@
 
   // Add a new nick to the list of nicks for the provided channel. 
   socket.on('joined', function (data) {
+    // TODO
+    // Check to see if it is the aIRChat user who has successfully joined,
+    // then add a new tab in the chat list for the new channel.
     var index = chats.indexOf(data.channel);
     nickLists[index].push(data.nick);
   });
@@ -97,9 +104,11 @@
 
   // Change the nick of a user in the nicklist
   socket.on('newNick', function (data) {
+    if ( 
     var $li = $('li#nickListItem_' + data.old);
     $('li#nickListItem_' + data.old + ' div span').text(data.new);
     $li.attr('id', 'nickListItem_' + data.new);
+
   });
   socket.on('invite', function (data) {
     // Ask the user if they want to join the channel they were invited to
