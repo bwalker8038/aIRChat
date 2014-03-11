@@ -1,7 +1,152 @@
 <% include head %>
+<!-- Dialog for connecting to a new server -->
+<div class="reveal-modal" id="newServer" data-reveal>
+  <h1>Connect to a server</h1>
+  <div class="row">
+    <div class="small-8 columns">
+      <input type="text" placeholder="server address" id="newServerAddr" />
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-8 columns">
+      <input type="text" placeholder="channel name" id="newServerChannel" />
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-8 columns">
+      <a href="#" class="success button" id="connectToNewServer">Connect</a>
+    </div>
+  </div>
+  <a class="close-reveal-modal">&#215;</a>
+</div>
+<!-- Dialog for joining a new channel -->
+<div class="reveal-modal" id="newChannel" data-reveal>
+  <h1>Join a channel</h1>
+  <div class="row">
+    <div class="small-8 columns">
+      <input type="text" placeholder="channel name" id="newChannelName" />
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-8 columns">
+      <a href="#" class="success button" id="joinNewChannel">Join</a>
+    </div>
+  </div>
+  <a class="close-reveal-modal">&#215;</a>
+</div>
+<!-- Dialog for sending a new private message -->
+<div class="reveal-modal" id="privMsg" data-reveal>
+  <h1>Send a private message</h1>
+  <div class="row">
+    <div class="small-8 columns">
+      <input type="text" placeholder="nickname" id="privMsgNick" />
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-8 columns">
+      <textarea id="privMsgContents" placeholder="message to user"></textarea>
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-8 columns">
+      <a href="#" class="success button" id="sendPrivMsg">Send</a>
+    </div>
+  </div>
+  <a class="close-reveal-modal">&#215;</a>
+</div>
+<nav class="top-bar" data-topbar>
+  <ul class="title-area">
+    <li class="name">
+      <h1><a href="#">aIRChat</a></h1>
+    </li>
+  </ul>
+  <section class="top-bar-section">
+    <ul class="right">
+      <li class="divider"></li>
+      <li class="has-dropdown">
+        <a href="#">Chat</a>
+        <ul class="dropdown">
+          <li><a href="#" data-reveal-id="newServer">Connect to server</a></li>
+          <li><a href="#" data-reveal-id="newChannel">Join a channel</a></li>
+          <li><a href="#" data-reveal-id="privMsg">Send a private message</a></li>
+        </ul>
+      </li>
+      <li class="divider"></li>
+      <li><a href="/profile">Profile</a></li>
+      <li class="divider"></li>
+      <li><a href="/logout">Log out</a></li>
+    </ul>
+  </section>
+</nav>
 <dl class="tabs vertical" id="chatList" data-tab>
+  <dd><a href="#panel1">Panel 1</a></dd>
+  <dd><a href="#panel1">Panel 1</a></dd>
+  <dd><a href="#panel1">Panel 1</a></dd>
+  <dd><a href="#panel1">Panel 1</a></dd>
+  <dd><a href="#panel1">Panel 1</a></dd>
+  <dd><a href="#panel1">Panel 1</a></dd>
+  <dd><a href="#panel1">Panel 1</a></dd>
+  <dd><a href="#panel1">Panel 1</a></dd>
+  <dd><a href="#panel1">Panel 1</a></dd>
+  <dd><a href="#panel1">Panel 1</a></dd>
+  <dd><a href="#panel1">Panel 1</a></dd>
+  <dd><a href="#panel1">Panel 1</a></dd>
+  <dd><a href="#panel1">Panel 1</a></dd>
+  <dd><a href="#panel1">Panel 1</a></dd>
+  <dd><a href="#panel1">Panel 1</a></dd>
 </dl>
 <div class="tabs-content vertical" id="chatContent">
+  <div class="content" id="panel1">
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+    <p>Message</p>
+  </div>
+</div>
+<div class="row">
+  <div class="small-8 columns">
+    <textarea id="messageInput" placeholder="Message"></textarea>
+  </div>
+  <div class="small-4 medium-3 large-3 columns">
+    <a href="#" id="sendMessage" class="small button">-&gt;</a>
+  </div>
 </div>
 <script src="/socket.io/socket.io.js"></script>
 <script type="text/javascript">

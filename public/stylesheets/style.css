@@ -22,3 +22,9 @@ dl.tabs dd.active > a {
 dl.tabs dd > a:hover {
   color: #222;
 }
+
+div#chatContent div.content {
+  height: 650px;
+  width: 95%;
+  overflow: auto;
+}
