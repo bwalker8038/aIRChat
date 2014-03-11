@@ -54,6 +54,7 @@
   </div>
   <a class="close-reveal-modal">&#215;</a>
 </div>
+<!-- Nav bar for chat management -->
 <nav class="top-bar" data-topbar>
   <ul class="title-area">
     <li class="name">
@@ -78,66 +79,14 @@
     </ul>
   </section>
 </nav>
+<!-- Chat content -->
+<!-- Channel and private message chat listing -->
 <dl class="tabs vertical" id="chatList" data-tab>
-  <dd><a href="#panel1">Panel 1</a></dd>
-  <dd><a href="#panel1">Panel 1</a></dd>
-  <dd><a href="#panel1">Panel 1</a></dd>
-  <dd><a href="#panel1">Panel 1</a></dd>
-  <dd><a href="#panel1">Panel 1</a></dd>
-  <dd><a href="#panel1">Panel 1</a></dd>
-  <dd><a href="#panel1">Panel 1</a></dd>
-  <dd><a href="#panel1">Panel 1</a></dd>
-  <dd><a href="#panel1">Panel 1</a></dd>
-  <dd><a href="#panel1">Panel 1</a></dd>
-  <dd><a href="#panel1">Panel 1</a></dd>
-  <dd><a href="#panel1">Panel 1</a></dd>
-  <dd><a href="#panel1">Panel 1</a></dd>
-  <dd><a href="#panel1">Panel 1</a></dd>
-  <dd><a href="#panel1">Panel 1</a></dd>
+  <dd><a href="#ctf-portside">ctf-portside</a></dd>
 </dl>
+<!-- Content of chat -->
 <div class="tabs-content vertical" id="chatContent">
-  <div class="content" id="panel1">
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
+  <div class="content" id="ctf-portside">
   </div>
 </div>
 <div class="row">
@@ -198,7 +147,7 @@
   var addChatSection = function (chanOrNick) {
     $('dl#chatList').append($(
       '<dd><a href="#panel' + chats.length + '">' +
-      chanOrNick
+      chanOrNick +
       '</a></dd>'
     ));
     $('div#chatContent').append($(
@@ -249,7 +198,6 @@
 
   // Change the nick of a user in the nicklist
   socket.on('newNick', function (data) {
-    if ( 
     var $li = $('li#nickListItem_' + data.old);
     $('li#nickListItem_' + data.old + ' div span').text(data.new);
     $li.attr('id', 'nickListItem_' + data.new);
