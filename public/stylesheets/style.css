@@ -10,13 +10,20 @@ a {
   color: #00B7FF;
 }
 
+dl.tabs {
+  width: 15%;
+  height: calc(100% - 45px);
+  background-color: #222;
+}
+
 dl.tabs dd > a {
   background-color: #222;
   color: #eee;
 }
 
 dl.tabs dd.active > a {
-  color: #222;
+  color: #eee;
+  background-color: #333;
 }
 
 dl.tabs dd > a:hover {
