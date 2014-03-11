@@ -79,17 +79,34 @@ exports.newClient = function (socket) {
   });
   
   socket.on('disconnect', function () {
-    var index = clients.indexof(socket);
+    var index = clients.indexOf(socket);
     clients.remove(index);
+    for (var i = ircClients[index].length - 1; i >= 0; i--) {
+      ircClients[index][i].disconnect('Client closed connection to the server.');
+    }
     ircClients.remove(index);
+
   });
 
+  // TODO
+  // Don't bother trying to connect to a server if there is already a clieent
+  // running for the user that is connected to that server.
   socket.on('serverJoin', function (data) {
     ircClients[clients.indexOf(socket)].push(createIRCClient(socket, data));
   });
 
+  // TODO
+  // Tweak this to make sure the message is being sent to the right channel
+  // on the right server.
   socket.on('writeChat', function (data) {
-    ircClients[clients.indexOf(socket)][0].say(data.destination, data.message);
+    var clientsIndex = clients.indexOf(socket);
+    for (var i = ircClients[clientsIndex].length - 1; i >= 0; i--) {
+      var client = ircClients[clientsIndex][i];
+      if (client.opt.channels.indexOf(data.destination) != -1) {
+        client.say(data.destination, data.message);
+        return;
+      }
+    }
   });
 };
 
