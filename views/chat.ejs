@@ -83,32 +83,10 @@
 <!-- Channel and private message chat listing -->
 <dl class="tabs vertical" id="chatList" data-tab>
   <dd><a href="#ctf-portside">ctf-portside</a></dd>
-  <dd><a href="#ctf-portside">ctf-portside</a></dd>
-  <dd><a href="#ctf-portside">ctf-portside</a></dd>
-  <dd><a href="#ctf-portside">ctf-portside</a></dd>
-  <dd><a href="#ctf-portside">ctf-portside</a></dd>
 </dl>
 <!-- Content of chat -->
 <div class="tabs-content vertical" id="chatContent">
   <div class="content" id="ctf-portside">
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
-    <p>Message</p>
   </div>
 </div>
 <div class="row">
@@ -151,7 +129,7 @@
   };
 
   var addMessage = function (data) {
-    $('div#messages').append($(
+    $($('div.active')[0]).append($(
       '<div class="message">' +
       '  <div class="titlebar">' +
       '    <span>' + data.from + ' in ' + data.channel + '</span>' +
@@ -234,12 +212,12 @@
     // data.from, data.nick, data.reason
   });
 
-  $('a#send').click(function (evt) {
+  $('a#sendMessage').click(function (evt) {
     if (connected === false) {
       alert('Please wait until you have finished connecting.');
       return;
     }
-    var $ta = $('textarea#input');
+    var $ta = $('textarea#messageInput');
     socket.send($ta.val());
     console.log('sent "' + $ta.val() + '"');
     addMessage({channel: '#ctf-portside', from: 'you', message: $ta.val()});

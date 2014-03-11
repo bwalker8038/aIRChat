@@ -35,3 +35,27 @@ div#chatContent div.content {
   width: 95%;
   overflow: auto;
 }
+
+div.message {
+  min-height: 40px;
+  background-color: #FDFDFD;
+  margin-top: 10px;
+}
+
+div.titlebar {
+  background-color: #F9F9F9;
+  padding: 5px;
+}
+
+div.messageContent {
+  padding: 5px;
+}
+
+div.titlebar > span {
+  font-size: 1.1em;
+  font-weight: bold;
+}
+
+div.messageContent > span {
+  font-size: 1.1em;
+}
