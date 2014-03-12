@@ -82,7 +82,6 @@
 <!-- Chat content -->
 <!-- Channel and private message chat listing -->
 <dl class="tabs vertical" id="chatList" data-tab>
-  <dd><a href="#ctf-portside">ctf-portside</a></dd>
 </dl>
 <!-- Content of chat -->
 <div class="tabs-content vertical" id="chatContent">
@@ -100,23 +99,24 @@
 <script src="/socket.io/socket.io.js"></script>
 <script type="text/javascript">
   var hostname = '<%= host %>';
+  var username = '<%= username %>';
   var socket = io.connect(hostname);
   var connected = false;
   
   // Parallel arrays
-  // nickLists[i] contains an array of nicks of users in chats[i].
+  // nickLists[i] contains an array of nicks of users in chats[i]
   var chats = new Array();
   var nickLists = new Array();
 
   socket.emit('serverJoin', {
     server: 'irc.freenode.net', 
-    nick: 'aIRChatBOT',
+    nick: username,
     firstchannel: '#ctf-portside'
   });
 
   var addNick = function (nick) {
     $('ul#nickList').append($(
-      '<li class="nickListItem" id="nickListItem_' + nick + '>' +
+      '<li class="nickListItem" id="nickListItem_' + nick + '">' +
       '  <div>' +
       '    <span>' + nick + '</span>' +
       '  </div>' +
@@ -160,6 +160,12 @@
     ));
   };
 
+  var joinChat = function (channel) {
+    chats.push(channel);
+    nickLists.push(new Array());
+    addChatSection(channel);
+  };
+
   socket.on('notifyLow', addMessage);
   socket.on('notifyHigh', addMessage);
   
@@ -175,12 +181,15 @@
   });
 
   // Add a new nick to the list of nicks for the provided channel. 
+  // Create a new chat tab if the aIRChat user is the one joining.
   socket.on('joined', function (data) {
-    // TODO
-    // Check to see if it is the aIRChat user who has successfully joined,
-    // then add a new tab in the chat list for the new channel.
-    var index = chats.indexOf(data.channel);
-    nickLists[index].push(data.nick);
+    if (data.nick === username) {
+      console.log('Joined ' + data.channel);
+      joinChat(data.channel);
+    } else {
+      var index = chats.indexOf(data.channel);
+      nickLists[index].push(data.nick);
+    }
   });
 
   // Display a message telling the user they were kicked from the channel.
@@ -196,16 +205,27 @@
     // that they were kicked from.
   });
 
+  // TODO
+  // Make sure to only change the nick on the appropriate servers
   // Change the nick of a user in the nicklist
   socket.on('newNick', function (data) {
-    var $li = $('li#nickListItem_' + data.old);
-    $('li#nickListItem_' + data.old + ' div span').text(data.new);
-    $li.attr('id', 'nickListItem_' + data.new);
-
+    for (var i = chats.length - 1; i >= 0; i--) {
+      if (chats[i] === data.channel) {
+        var index = nickLists[i].indexOf(data.old);
+        nickLists[index] = data.new;
+        return;
+      }
+    }
   });
+
   socket.on('invite', function (data) {
     // Ask the user if they want to join the channel they were invited to
     // data.to, data.by
+    var msg = 'You have been invited to the channel ' + data.to + ' by ' + data.from + '\n';
+    msg += 'Would you like to join this channel now?';
+    if (confirm(msg)) {
+      joinChat(data.to);
+    }
   });
   socket.on('userLeft', function (data) {
     // Remove a user's nick from the list of nicks

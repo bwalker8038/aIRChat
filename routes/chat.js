@@ -111,5 +111,5 @@ exports.newClient = function (socket) {
 };
 
 exports.main = function (req, res) {
-  res.render('chat', {title: 'aIRChat', host: config.host});
+  res.render('chat', {title: 'aIRChat', host: config.host, username: req.session.username});
 };

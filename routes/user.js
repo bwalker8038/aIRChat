@@ -23,6 +23,7 @@ exports.login = function (req, res) {
     if (authenticates(req.body.username, req.body.password) === true) {
       req.session.loggedIn = true;
       req.session.username = req.body.username;
+      console.log('Logged in as ' + req.session.username);
       res.redirect('/chat');
     } else {
       res.redirect(401, '/');
@@ -43,7 +44,7 @@ exports.register = function (req, res) {
   } else if (req.route.method === 'post') {
     console.log('Inside POST for register');
     if (register(
-          req.body.username, req.body.password, req.body.passwordrepeat
+          req.body.username, req.body.password, req.body.paswordrepeat
         ) === true) {
       req.session.loggedIn = true;
       req.session.username = req.body.username;

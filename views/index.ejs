@@ -15,17 +15,17 @@
   <form action="/register" method="post">
     <div class="row">
       <div class="small-4 large-8 columns">
-        <input type="text" id="username" placeholder="username" />
+        <input type="text" id="username" name="username"  placeholder="username" />
       </div>
     </div>
     <div class="row">
       <div class="small-4 large-8 columns">
-        <input type="password" id="password" placeholder="password" />
+        <input type="password" id="password" name="password" placeholder="password" />
       </div>
     </div>
     <div class="row">
       <div class="small-4 large-8 columns">
-        <input type="password" id="passwordrepeat" placeholder="confirm password" />
+        <input type="password" id="passwordrepeat" name="passwordrepeat" placeholder="confirm password" />
       </div>
     </div>
     <div class="row">
@@ -43,20 +43,20 @@
       <h2>Log in</h2>
     </div>
   </div>
-  <form action="/register" method="post">
+  <form action="/login" method="post">
     <div class="row">
       <div class="small-4 large-8 columns">
-        <input type="text" id="username" placeholder="username" />
+        <input type="text" id="username" name="username" placeholder="username" />
       </div>
     </div>
     <div class="row">
       <div class="small-4 large-8 columns">
-        <input type="password" id="password" placeholder="password" />
+        <input type="password" id="password" name="password" placeholder="password" />
       </div>
     </div>
     <div class="row">
       <div class="small-12 columns">
-        <input type="submit" class="button success" value="Register" />
+        <input type="submit" class="button success" value="Log in" />
       </div>
     </div>
   </form>
