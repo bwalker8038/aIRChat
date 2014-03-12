@@ -34,6 +34,16 @@
   </div>
   <a class="close-reveal-modal">&#215;</a>
 </div>
+<!-- Dialog for seeing a list of nicks of users in the active channel. -->
+<div class="reveal-modal" id="getNickList" data-reveal>
+  <h1><!-- Filled by JS --></h1>
+  <div style="height: calc(100% - 60px); overflow: auto;">
+    <ul id="listOfNicks">
+      <!-- Filled by JS -->
+    </ul>
+  </div>
+  <a class="close-reveal-modal">&#215;</a>
+</div>
 <!-- Dialog for sending a new private message -->
 <div class="reveal-modal" id="privMsg" data-reveal>
   <h1>Send a private message</h1>
@@ -69,6 +79,7 @@
         <ul class="dropdown">
           <li><a href="#" data-reveal-id="newServer">Connect to server</a></li>
           <li><a href="#" data-reveal-id="newChannel">Join a channel</a></li>
+          <li><a href="#" data-reveal-id="getNickList">List of users</a></li>
           <li><a href="#" data-reveal-id="privMsg">Send a private message</a></li>
         </ul>
       </li>
@@ -114,20 +125,6 @@
     firstchannel: '#ctf-portside'
   });
 
-  var addNick = function (nick) {
-    $('ul#nickList').append($(
-      '<li class="nickListItem" id="nickListItem_' + nick + '">' +
-      '  <div>' +
-      '    <span>' + nick + '</span>' +
-      '  </div>' +
-      '</li>'
-    ));
-  };
-
-  var removeNick = function (nick) {
-    $('li#nickListItem_' + nick).remove();
-  };
-
   var addMessage = function (data) {
     var $msgDiv = $('div#panel_' + data.channel.replace('#', '-'));
     var highlight = '';
@@ -151,7 +148,6 @@
 
   // Add a new tab to the list of chat tabs and a content div to contain
   // the nick list and messages.
-  // addChatSection assumes the new chat has already been pushed to the chats array.
   var addChatSection = function (chanOrNick) {
     $('dl#chatList').append($(
       '<dd><a href="#panel_' + chanOrNick.replace('#', '-') + '">' +
@@ -181,7 +177,7 @@
   // The list will not be rendered until the channel is the active one.
   socket.on('nickList', function (data) {
     var index = chats.indexOf(data.channel);
-    nickLists[index] = data.nicks;
+    nickLists[index] = Object.keys(data.nicks);
   });
 
   // Add a new nick to the list of nicks for the provided channel. 
@@ -228,7 +224,7 @@
     var msg = 'You have been invited to the channel ' + data.to + ' by ' + data.from + '\n';
     msg += 'Would you like to join this channel now?';
     if (confirm(msg)) {
-      joinChat(data.to);
+      socket.emit('joinChannel', {channel: data.to});
     }
   });
   socket.on('userLeft', function (data) {
@@ -255,6 +251,17 @@
   $('a#joinNewChannel').click(function (evt) {
     var chanName = $('#newChannelName').val();
     socket.emit('joinChannel', {channel: chanName});
+  });
+
+  $('a[data-reveal-id=getNickList]').click(function (evt) {
+    var channel = $($('div.active')[0]).attr('id').replace('panel_', '').replace('-', '#');
+    var index = chats.indexOf(channel); 
+    console.log('Building nicklist\n' + nickLists[index].toString());
+    $('div#getNickList > h1').text('Users in ' + channel);
+    $('ul#listOfNicks').html(''); // Empty out the list in case is it populated already.
+    for (var i = nickLists[index].length - 1; i >= 0; i--) {
+      $('ul#listOfNicks').prepend($('<li>' + nickLists[index][i] + '</li>'));
+    }
   });
 </script>
 <% include foot %>
