@@ -1,2 +1,5 @@
 # The user should run npm install locally to get dependancies
 node_modules/*
+
+# Vim temporary files
+*.swp
