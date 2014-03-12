@@ -59,3 +59,10 @@ div.titlebar > span {
 div.messageContent > span {
   font-size: 1.1em;
 }
+
+.button.close-reveal-modal {
+  position: relative;
+  color: #fff;
+  font-size: 1.0em;
+  font-weight: bold;
+}
