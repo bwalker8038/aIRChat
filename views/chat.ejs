@@ -235,10 +235,11 @@
       return;
     }
     var $ta = $('textarea#messageInput');
+    var dest = $('div.active').attr('id').replace('panel_', '').replace('-', '#');
     socket.send($ta.val());
     console.log('sent "' + $ta.val() + '"');
-    addMessage({channel: '#ctf-portside', from: 'you', message: $ta.val()});
-    socket.emit('writeChat', {destination: '#ctf-portside', message: $ta.val()});
+    addMessage({channel: dest, from: 'you', message: $ta.val()});
+    socket.emit('writeChat', {destination: dest, message: $ta.val()});
     $ta.val('');
   });
 
