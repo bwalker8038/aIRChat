@@ -129,7 +129,8 @@
   };
 
   var addMessage = function (data) {
-    $($('div.active')[0]).append($(
+    var $msgDiv = $('div#panel_' + data.channel.replace('#', '-'));
+    $msgDiv.append($(
       '<div class="message">' +
       '  <div class="titlebar">' +
       '    <span>' + data.from + ' in ' + data.channel + '</span>' +
@@ -146,16 +147,12 @@
   // addChatSection assumes the new chat has already been pushed to the chats array.
   var addChatSection = function (chanOrNick) {
     $('dl#chatList').append($(
-      '<dd><a href="#panel' + chats.length + '">' +
+      '<dd><a href="#panel_' + chanOrNick.replace('#', '-') + '">' +
       chanOrNick +
       '</a></dd>'
     ));
     $('div#chatContent').append($(
-      '<div class="content" id="panel' + chats.length + '">' +
-      '  <ul class="right side-nav">' +
-      '  </ul>' +
-      '  <div id="messageList_' + chanOrNick + '">' +
-      '  </div>' +
+      '<div class="content" id="panel_' + chanOrNick.replace('#', '-') + '">' +
       '</div>'
     ));
   };
