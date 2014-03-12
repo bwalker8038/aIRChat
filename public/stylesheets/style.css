@@ -66,3 +66,19 @@ div.messageContent > span {
   font-size: 1.0em;
   font-weight: bold;
 }
+
+div.titlebar.self {
+  background-color: #e6f6df;
+}
+
+div.titlebar.mention {
+  background-color: #faeded;
+}
+
+div.messageContent.self {
+  background-color: #f4fced;
+}
+
+div.messageContent.mention {
+  background-color: #fefef7;
+}

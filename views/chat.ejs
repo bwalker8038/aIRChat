@@ -130,12 +130,19 @@
 
   var addMessage = function (data) {
     var $msgDiv = $('div#panel_' + data.channel.replace('#', '-'));
+    var highlight = '';
+    if (data.from === 'you') {
+      highlight = ' self'; // Space needed to separate class names
+    } else if (data.message.indexOf(username) != -1) {
+      highlight = ' mention';
+    }
+
     $msgDiv.append($(
       '<div class="message">' +
-      '  <div class="titlebar">' +
+      '  <div class="titlebar' + highlight + '">' +
       '    <span>' + data.from + ' in ' + data.channel + '</span>' +
       '  </div>' +
-      '  <div class="messageContent">' +
+      '  <div class="messageContent' + highlight + '">' +
       '    <span>' + data.message + '</span>' +
       '  </div>' +
       '</div>'
