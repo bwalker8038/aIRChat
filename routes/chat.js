@@ -89,10 +89,19 @@ exports.newClient = function (socket) {
   });
 
   // TODO
-  // Don't bother trying to connect to a server if there is already a clieent
+  // Don't bother trying to connect to a server if there is already a client
   // running for the user that is connected to that server.
   socket.on('serverJoin', function (data) {
     ircClients[clients.indexOf(socket)].push(createIRCClient(socket, data));
+  });
+
+  // TODO
+  // Have this function be able to deal with joining the provided channel
+  // on the correct server.
+  socket.on('joinChannel', function (data) {
+    var index = clients.indexOf(socket);
+    // Here, 0 should be replaced with the index of the appropriate server's client.
+    ircClients[index][0].join(data.channel);
   });
 
   // TODO

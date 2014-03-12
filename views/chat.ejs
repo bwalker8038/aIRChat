@@ -249,7 +249,7 @@
   // Make sure the channel name is valid
   $('a#joinNewChannel').click(function (evt) {
     var chanName = $('#newChannelName').val();
-    joinChat(chanName);
+    socket.emit('joinChannel', {channel: chanName});
   });
 </script>
 <% include foot %>
