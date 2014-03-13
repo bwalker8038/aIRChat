@@ -120,5 +120,12 @@ exports.newClient = function (socket) {
 };
 
 exports.main = function (req, res) {
-  res.render('chat', {title: 'aIRChat', host: config.host, username: req.session.username});
+  res.render('chat', {
+    title: 'aIRChat', 
+    host: config.host, 
+    username: req.session.username,
+    profilepic: '/images/defaultusericon.jpg',
+    userbio: 'Your biography',
+    contact: 'How can you be reached?'
+  });
 };
