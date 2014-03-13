@@ -82,3 +82,17 @@ div.messageContent.self {
 div.messageContent.mention {
   background-color: #fefef7;
 }
+
+span.notifyLow {
+  background-color: #b8b8b9;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #222;
+}
+
+span.notifyHigh {
+  background-color: #bb1f29;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #222;
+}

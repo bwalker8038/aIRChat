@@ -100,11 +100,11 @@
   </div>
 </div>
 <div class="row">
-  <div class="small-8 columns">
-    <textarea id="messageInput" placeholder="Message"></textarea>
+  <div class="small-6 large-8 columns">
+    <textarea type="text" id="messageInput" placeholder="Message"></textarea>
   </div>
-  <div class="small-4 medium-3 large-3 columns">
-    <a href="#" id="sendMessage" class="small button">-&gt;</a>
+  <div class="small-4 large-2 columns">
+    <a href="#" id="sendMessage" class="small button">send</a>
   </div>
 </div>
 <script src="/socket.io/socket.io.js"></script>
@@ -118,6 +118,11 @@
   // nickLists[i] contains an array of nicks of users in chats[i]
   var chats = new Array();
   var nickLists = new Array();
+ 
+  // channelName => {low => <int>, high => <int>}
+  // Maps a channel name to an object containing a number of unread messages
+  // of low and high prioriy (regular messages and highlights).
+  var notifications = {};
 
   socket.emit('serverJoin', {
     server: 'irc.freenode.net', 
@@ -127,6 +132,7 @@
 
   var addMessage = function (data) {
     var $msgDiv = $('div#panel_' + data.channel.replace('#', '-'));
+    var $tab = $('a[href=#panel_' + data.channel.replace('#', '-') + ']');
     var highlight = '';
     if (data.from === 'you') {
       highlight = ' self'; // Space needed to separate class names
@@ -144,15 +150,21 @@
       '  </div>' +
       '</div>'
     ));
+    $tab.children('span.notifyLow').text(notifications[data.channel].low);
+    $tab.children('span.notifyHigh').text(notifications[data.channel].high);
   };
 
   // Add a new tab to the list of chat tabs and a content div to contain
   // the nick list and messages.
   var addChatSection = function (chanOrNick) {
     $('dl#chatList').append($(
-      '<dd><a href="#panel_' + chanOrNick.replace('#', '-') + '">' +
-      chanOrNick +
-      '</a></dd>'
+      '<dd>' +
+      '  <a href="#panel_' + chanOrNick.replace('#', '-') + '">' + 
+      '    <span class="notifyLow">0</span>' +
+      '    <span class="notifyHigh">0</span>' +
+      '    ' + chanOrNick +
+      '  </a>' +
+      '</dd>'
     ));
     $('div#chatContent').append($(
       '<div class="content" id="panel_' + chanOrNick.replace('#', '-') + '">' +
@@ -163,11 +175,35 @@
   var joinChat = function (channel) {
     chats.push(channel);
     nickLists.push(new Array());
+    notifications[channel] = {low: 0, high: 0};
     addChatSection(channel);
   };
 
-  socket.on('notifyLow', addMessage);
-  socket.on('notifyHigh', addMessage);
+  socket.on('notifyLow', function (data) {
+    var $activeDiv = $('div.active');
+    if ($activeDiv.length > 0) {
+      var activeChannel = $activeDiv.first().attr('id').replace('panel_', '').replace('-', '#'); 
+      if (data.channel != activeChannel) { 
+        if (data.message.indexOf(username) != -1) {
+          notifications[data.channel].high++;
+        } else {
+          notifications[data.channel].low++; 
+        }
+      }
+    }
+    addMessage(data);
+  });
+  
+  socket.on('notifyHigh', function (data) {
+    var $activeDiv = $('div.active');
+    if ($activeDiv.length > 0) {
+      var activeChannel = $activeDiv.first().attr('id').replace('panel_', '').replace('-', '#');
+      if (data.channel != activeChannel) { 
+        notifications[data.channel].high++; 
+      }
+    }
+    addMessage(data);
+  });
   
   socket.on('connected', function (channel) {
     connected = true;
@@ -238,12 +274,26 @@
       return;
     }
     var $ta = $('textarea#messageInput');
-    var dest = $('div.active').attr('id').replace('panel_', '').replace('-', '#');
+    var dest = $('div.active').first().attr('id').replace('panel_', '').replace('-', '#');
     socket.send($ta.val());
     console.log('sent "' + $ta.val() + '"');
     addMessage({channel: dest, from: 'you', message: $ta.val()});
     socket.emit('writeChat', {destination: dest, message: $ta.val()});
     $ta.val('');
+  });
+
+  $('dd').on('click', function (evt) {
+    alert('boop');
+    console.log('Clicked into a channel');
+    var text = evt.currentTarget.text();
+    console.log(text);
+    var channel = text.slice(text.indexOf('#')).trim();
+    console.log(channel);
+    notifications[channel].low = 0;
+    notifications[channel].high = 0;
+    evt.currentTarget.children('span.notifyLow').text('0');
+    evt.currentTarget.children('span.notifyHigh').text('0');
+    console.log('Cleared notifications for ' + channel);
   });
 
   // TODO
