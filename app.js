@@ -39,6 +39,7 @@ app.post('/login', user.login);
 app.post('/register', user.register);
 app.get('/login', user.login);
 app.get('/register', user.register);
+app.get('/logout', user.logout);
 app.get('/chat', chat.main);
 
 var server = http.createServer(app);

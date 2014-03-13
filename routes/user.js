@@ -50,9 +50,14 @@ exports.register = function (req, res) {
       req.session.username = req.body.username;
       res.redirect('/chat');
     } else {
-      res.redirect(500, '/'); // Use internal server error for reg. failute.
+      res.redirect(500, '/'); // Use internal server error for reg. failure
     }
   } else {
     res.redirect(400, '/'); 
   }
+};
+
+exports.logout = function (req, res) {
+  req.session = null;
+  res.redirect(303, '/');
 };

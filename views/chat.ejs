@@ -311,5 +311,9 @@
       $('ul#listOfNicks').prepend($('<li>' + nickLists[index][i] + '</li>'));
     }
   });
+
+  $('a[href=/logout]').click(function (evt) {
+    socket.emit('disconnect'); 
+  });
 </script>
 <% include foot %>
