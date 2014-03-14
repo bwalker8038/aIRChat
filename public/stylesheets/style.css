@@ -104,3 +104,6 @@ div.message div.left, div.message div.left img {
   height: 50px;
 }
 
+ul#listOfNicks {
+  list-style-type: none;
+}

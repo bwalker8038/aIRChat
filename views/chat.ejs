@@ -37,7 +37,7 @@
 <!-- Dialog for seeing a list of nicks of users in the active channel. -->
 <div class="reveal-modal" id="getNickList" data-reveal>
   <h1><!-- Filled by JS --></h1>
-  <div style="height: calc(100% - 60px); overflow: auto;">
+  <div id="nickListPane">
     <ul id="listOfNicks">
       <!-- Filled by JS -->
     </ul>
@@ -361,6 +361,11 @@
 
   $('a[href=/logout]').click(function (evt) {
     socket.emit('disconnect'); 
+  });
+
+  $(window).on('resize', function (evt) {
+    $('div.content').height(($(window).height() - 140) + 'px');
+    $('div#nickListPane').height(($(window).height() - 250) + 'px');
   });
 </script>
 <% include foot %>
