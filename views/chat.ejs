@@ -59,7 +59,7 @@
   </div>
   <div class="row">
     <div class="small-8 columns">
-      <a href="#" class="success button" id="sendPrivMsg">Send</a>
+      <a href="#" class="success button close-reveal-modal" id="sendPrivMsg">Send</a>
     </div>
   </div>
   <a class="close-reveal-modal">&#215;</a>
@@ -127,7 +127,7 @@
       <li class="divider"></li>
       <li><a href="#" data-reveal-id="profileSettings">Profile</a></li>
       <li class="divider"></li>
-      <li><a href="/logout">Log out</a></li>
+      <li><a href="/logout" id="logout">Log out</a></li>
     </ul>
   </section>
 </nav>
@@ -254,13 +254,21 @@
   
   socket.on('notifyHigh', function (data) {
     var $activeDiv = $('div.active');
+    if (notifications[data.from] === undefined) {
+      joinChat(data.from); 
+    }
     if ($activeDiv.length > 0) {
       var activeChannel = $activeDiv.first().attr('id').replace('panel_', '').replace('-', '#');
-      if (data.channel != activeChannel) { 
-        notifications[data.channel].high++; 
+      if (data.from != activeChannel) { 
+        notifications[data.from].high++; 
       }
     }
-    addMessage(data);
+    addMessage({
+      from: data.from,
+      channel: data.from,
+      message: data.message,
+      pic: data.pic
+    });
   });
   
   socket.on('connected', function (channel) {
@@ -328,16 +336,15 @@
   });
 
   $('a#sendMessage').click(function (evt) {
-    if (connected === false) {
-      alert('Please wait until you have finished connecting.');
+    if ($('div.tabs-content').length === 0) {
+      alert('You cannot send a message until you have joined a chat.');
       return;
     }
     var $ta = $('textarea#messageInput');
     var dest = $('div.active').first().attr('id').replace('panel_', '').replace('-', '#');
-    socket.send($ta.val());
-    console.log('sent "' + $ta.val() + '"');
     addMessage({channel: dest, from: 'you', message: $ta.val(), pic: '<%= profilepic %>'});
     socket.emit('writeChat', {destination: dest, message: $ta.val()});
+    console.log('Sent "' + $ta.val() + '" to ' + dest);
     $ta.val('');
   });
 
@@ -359,8 +366,16 @@
     }
   });
 
-  $('a[href=/logout]').click(function (evt) {
+  $('a#logout').click(function (evt) {
     socket.emit('disconnect'); 
+  });
+
+  $('a#sendPrivMsg').click(function (evt) {
+    var msg = $('#privMsgContents').val();
+    var nick = $('#privMsgNick').val();
+    joinChat(nick);
+    addMessage({channel: nick, from: 'you', message: msg, pic: '<%= profilepic %>'});
+    socket.emit('writeChat', {destination: nick, message: msg});
   });
 
   $(window).on('resize', function (evt) {

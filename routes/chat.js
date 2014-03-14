@@ -18,12 +18,26 @@ var createIRCClient = function (socket, params) {
     channels: [params.firstchannel]
   });
 
-  newClient.addListener('pm', function (from, msg) {
-    socket.emit('notifyHigh', {from: from, message: msg, pic: '/images/defaultusericon.jpg'});
+  newClient.addListener('message', function (from, to, msg) {
+    if (to === params.nick) {
+      return; // Let private messages be handled by the pm handler.
+    }
+    socket.emit('notifyLow', {
+      channel: to, 
+      from: from, 
+      message: msg, 
+      pic: '/images/defaultusericon.jpg'
+    });
   });
 
-  newClient.addListener('message', function (from, to, msg) {
-    socket.emit('notifyLow', {channel: to, from: from, message: msg, pic: '/images/defaultusericon.jpg'});
+  newClient.addListener('pm', function (from, msg) {
+    console.log('Received ' + msg + ' from ' + from);
+    socket.emit('notifyHigh', {
+      channel: from,
+      from: from, 
+      message: msg, 
+      pic: '/images/defaultusericon.jpg'
+    });
   });
 
   newClient.addListener('registered', function (msg) {
