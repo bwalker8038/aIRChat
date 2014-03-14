@@ -19,11 +19,11 @@ var createIRCClient = function (socket, params) {
   });
 
   newClient.addListener('pm', function (from, msg) {
-    socket.emit('notifyHigh', {from: from, message: msg}); 
+    socket.emit('notifyHigh', {from: from, message: msg, pic: '/images/defaultusericon.jpg'});
   });
 
   newClient.addListener('message', function (from, to, msg) {
-    socket.emit('notifyLow', {channel: to, from: from, message: msg});
+    socket.emit('notifyLow', {channel: to, from: from, message: msg, pic: '/images/defaultusericon.jpg'});
   });
 
   newClient.addListener('registered', function (msg) {

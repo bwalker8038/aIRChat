@@ -183,11 +183,16 @@
 
     $msgDiv.append($(
       '<div class="message">' +
-      '  <div class="titlebar' + highlight + '">' +
-      '    <span>' + data.from + ' in ' + data.channel + '</span>' +
+      '  <div class="left">' +
+      '    <img src="' + data.pic + '" />' +
       '  </div>' +
-      '  <div class="messageContent' + highlight + '">' +
-      '    <span>' + data.message + '</span>' +
+      '  <div>' +
+      '    <div class="titlebar' + highlight + '">' +
+      '      <span>' + data.from + ' in ' + data.channel + '</span>' +
+      '    </div>' +
+      '    <div class="messageContent' + highlight + '">' +
+      '      <span>' + data.message + '</span>' +
+      '    </div>' +
       '  </div>' +
       '</div>'
     ));
@@ -287,7 +292,8 @@
     addMessage({
       from: 'Kicked by ' + data.by,
       channel: data.channel,
-      message: 'Reason provided: ' + data.reason
+      message: 'Reason provided: ' + data.reason,
+      pic: '/images/defaultusericon.jpg'
     });
     // TODO
     // Block the user from trying to send messages to the channel
@@ -330,7 +336,7 @@
     var dest = $('div.active').first().attr('id').replace('panel_', '').replace('-', '#');
     socket.send($ta.val());
     console.log('sent "' + $ta.val() + '"');
-    addMessage({channel: dest, from: 'you', message: $ta.val()});
+    addMessage({channel: dest, from: 'you', message: $ta.val(), pic: '<%= profilepic %>'});
     socket.emit('writeChat', {destination: dest, message: $ta.val()});
     $ta.val('');
   });
