@@ -123,10 +123,19 @@ exports.newClient = function (socket) {
   // on the right server.
   socket.on('writeChat', function (data) {
     var clientsIndex = clients.indexOf(socket);
+    console.log('Got message "' + data.message + '" for ' + data.destination);
+    if (data.destination[0] != '#') {
+      // Send private message to user.
+      // Clearly isn't taking into account what server to send it to.
+      ircClients[clientsIndex][0].say(data.destination, data.message);
+      console.log('Sent private message');
+      return;
+    }
     for (var i = ircClients[clientsIndex].length - 1; i >= 0; i--) {
       var client = ircClients[clientsIndex][i];
       if (client.opt.channels.indexOf(data.destination) != -1) {
         client.say(data.destination, data.message);
+        console.log('Sent that message.');
         return;
       }
     }
