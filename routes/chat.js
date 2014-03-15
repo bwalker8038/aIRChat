@@ -91,6 +91,19 @@ exports.newClient = function (socket) {
   socket.on('message', function (message, callback) {
     console.log("received: " + message);
   });
+
+  // TODO
+  // Modify to make sure the right channel on the right server has been aprted from.
+  socket.on('part', function (data) {
+    var index = clients.indexOf(socket);
+    for (var i = ircClients[index].length - 1; i >= 0; i--) {
+      var client = ircClients[index][i];
+      if (client.opt.channels.indexOf(data.channel) != -1) {
+        client.part(data.channel, data.message);
+        return;
+      }
+    }
+  });
   
   socket.on('disconnect', function () {
     var index = clients.indexOf(socket);
@@ -99,7 +112,6 @@ exports.newClient = function (socket) {
       ircClients[index][i].disconnect('Client closed connection to the server.');
     }
     ircClients.remove(index);
-
   });
 
   // TODO

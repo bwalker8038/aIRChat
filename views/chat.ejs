@@ -34,6 +34,24 @@
   </div>
   <a class="close-reveal-modal">&#215;</a>
 </div>
+<!-- Dialog asking for confirmation to part from channel -->
+<div class="reveal-modal" id="partChannel" data-reveal>
+  <h1>Leave channel</h1>
+  <div class="row">
+    <div class="small-8 columns">
+      <p><!-- Filled by JS --></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-12 columns">
+      <ul class="button-group">
+        <li><a href="#" class="success button close-reveal-modal" id="confirmPartChannel">Confirm</a></li>
+        <li><a href="#" class="button close-reveal-modal">Cancel</a></li>
+      </ul>
+    </div>
+  </div>
+  <a class="close-reveal-modal">&#215;</a>
+</div>
 <!-- Dialog for seeing a list of nicks of users in the active channel. -->
 <div class="reveal-modal" id="getNickList" data-reveal>
   <h1><!-- Filled by JS --></h1>
@@ -120,6 +138,7 @@
         <ul class="dropdown">
           <li><a href="#" data-reveal-id="newServer">Connect to server</a></li>
           <li><a href="#" data-reveal-id="newChannel">Join a channel</a></li>
+          <li><a href="#" data-reveal-id="partChannel">Leave active channel</a></li>
           <li><a href="#" data-reveal-id="getNickList">List of users</a></li>
           <li><a href="#" data-reveal-id="privMsg">Send a private message</a></li>
         </ul>
@@ -170,6 +189,13 @@
     nick: username,
     firstchannel: '#ctf-portside'
   });
+
+  // Array remove - By John Resig
+  Array.prototype.remove = function (start, end) {
+    var tail = this.slice((end || start) + 1 || this.length);
+    this.length = start < 0 ? this.length + start : start;
+    return this.push.apply(this, tail);
+  };
 
   var addMessage = function (data) {
     var $msgDiv = $('div#panel_' + data.channel.replace('#', '-'));
@@ -376,6 +402,26 @@
     joinChat(nick);
     addMessage({channel: nick, from: 'you', message: msg, pic: '<%= profilepic %>'});
     socket.emit('writeChat', {destination: nick, message: msg});
+  });
+
+  $('a[data-reveal-id=partChannel]').click(function (evt) {
+    var chanName = $('div.active').first().attr('id').replace('panel_', '').replace('-', '#');
+    $('div#partChannel div.row div.columns p').text(
+      'Are you sure you want to leave ' + chanName + '?'
+    );
+  });
+
+  $('a#confirmPartChannel').click(function (evt) {
+    var chanName = $('div.active').first().attr('id').replace('panel_', '').replace('-', '#');  
+    var index = chats.indexOf(chanName);
+    chats.remove(index);
+    nickLists.remove(index);
+    delete notifications[chanName];
+    $('dd.active').remove();
+    $('div.active').remove();
+    if (chanName[0] === '#') { // Channel, not a private chat
+      socket.emit('part', {channel: chanName, message: 'aIRChat client parted.'});
+    }
   });
 
   $(window).on('resize', function (evt) {
