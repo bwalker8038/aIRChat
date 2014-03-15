@@ -219,6 +219,15 @@
     $tab.children('span.notifyHigh').text(notifications[data.channel].high);
   };
 
+  var clearNotifications = function (evt) {
+    var text = $(evt.currentTarget).text().trim();
+    var channel = text.slice(text.lastIndexOf(' ') + 1);
+    notifications[channel].low = 0;
+    notifications[channel].high = 0;
+    var $anchor = $(evt.currentTarget).children('a');
+    $anchor.children('span.notifyLow').text('0');
+    $anchor.children('span.notifyHigh').text('0');
+  }
   // Add a new tab to the list of chat tabs and a content div to contain
   // the nick list and messages.
   var addChatSection = function (chanOrNick) {
@@ -247,16 +256,6 @@
     notifications[channel] = {low: 0, high: 0};
     addChatSection(channel);
   };
-
-  var clearNotifications = function (evt) {
-    var text = $(evt.currentTarget).text();
-    var channel = text.slice(text.indexOf('#')).trim();
-    notifications[channel].low = 0;
-    notifications[channel].high = 0;
-    var $anchor = $(evt.currentTarget).children('a');
-    $anchor.children('span.notifyLow').text('0');
-    $anchor.children('span.notifyHigh').text('0');
-  }
 
   socket.on('notifyLow', function (data) {
     var $activeDiv = $('div.active');
