@@ -45,10 +45,12 @@ div.message {
 div.titlebar {
   background-color: #F9F9F9;
   padding: 5px;
+  width: calc(100% + 50px);
 }
 
 div.messageContent {
   padding: 5px;
+  width: calc(100% + 50px);
 }
 
 div.titlebar > span {
@@ -102,6 +104,10 @@ span.notifyHigh {
 div.message div.left, div.message div.left img {
   width: 50px;
   height: 50px;
+}
+
+div.message div.left + div {
+  width: calc(100% - 50px);
 }
 
 ul#listOfNicks {

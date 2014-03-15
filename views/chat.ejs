@@ -161,10 +161,7 @@
 </div>
 <div class="row">
   <div class="small-6 large-8 columns">
-    <textarea type="text" id="messageInput" placeholder="Message"></textarea>
-  </div>
-  <div class="small-4 large-2 columns">
-    <a href="#" id="sendMessage" class="small button">send</a>
+    <input type="text" type="text" id="messageInput" placeholder="Message" />
   </div>
 </div>
 <script src="/socket.io/socket.io.js"></script>
@@ -244,6 +241,8 @@
       '<div class="content" id="panel_' + chanOrNick.replace('#', '-') + '">' +
       '</div>'
     ));
+    // Set the height for this and any other chat content areas to fit nicely.
+    $('div.content').height(($(window).height() - 130) + 'px');
   };
 
   var joinChat = function (channel) {
@@ -366,12 +365,27 @@
       alert('You cannot send a message until you have joined a chat.');
       return;
     }
-    var $ta = $('textarea#messageInput');
+    var $ta = $('#messageInput');
     var dest = $('div.active').first().attr('id').replace('panel_', '').replace('-', '#');
     addMessage({channel: dest, from: 'you', message: $ta.val(), pic: '<%= profilepic %>'});
     socket.emit('writeChat', {destination: dest, message: $ta.val()});
     console.log('Sent "' + $ta.val() + '" to ' + dest);
     $ta.val('');
+  });
+
+  $('#messageInput').keypress(function (evt) {
+    if (evt.which === 13) { // On [Enter]
+      if ($('div.tabs-content').length === 0) {
+        alert('You cannot send a message until you have joined a chat.');
+        return;
+      }
+      var $ta = $('#messageInput');
+      var dest = $('div.active').first().attr('id').replace('panel_', '').replace('-', '#');
+      addMessage({channel: dest, from: 'you', message: $ta.val(), pic: '<%= profilepic %>'});
+      socket.emit('writeChat', {destination: dest, message: $ta.val()});
+      console.log('Sent "' + $ta.val() + '" to ' + dest);
+      $ta.val('');
+    }
   });
 
   // TODO
@@ -425,12 +439,13 @@
   });
 
   $(window).on('resize', function (evt) {
-    $('div.content').height(($(window).height() - 140) + 'px');
+    $('div.content').height(($(window).height() - 130) + 'px');
     $('div#nickListPane').height(($(window).height() - 250) + 'px');
   });
 
-  $(document).ready(function (evt) {
-    $('div.content').height(($(window).height() - 140) + 'px');
+  $(document).ready(function () {
+    // It doesn't make sense to set any chat content areas' height here
+    // because none exist yet!
     $('div#nickListPane').height(($(window).height() - 250) + 'px');
   });
 </script>
