@@ -13,6 +13,17 @@ Array.prototype.remove = function (start, end) {
   return this.push.apply(this, tail);
 };
 
+var sanitize = function (string) {
+  string = string.replace('&', '&amp;').replace('=', '&#61;');
+  string = string.replace('<', '&lt;').replace('>', '&gt;');
+  string = string.replace('[', '&#91;').replace(']', '&#93;');
+  string = string.replace('{', '&#123;').replace('}', '&#125;');
+  string = string.replace('"', '&#34;').replace("'", '&#39;');
+  string = string.replace('(', '&#40;').replace(')', '&#41;');
+  string = string.replace('/', '&#47;').replace('\\', '&#92;');
+  return string.replace('%', '&#37;');
+};
+
 var createIRCClient = function (socket, params) {
   var newClient = new irc.Client(params.server, params.nick, {
     channels: [params.firstchannel]
@@ -25,7 +36,7 @@ var createIRCClient = function (socket, params) {
     socket.emit('notifyLow', {
       channel: to, 
       from: from, 
-      message: msg, 
+      message: sanitize(msg),
       pic: '/images/defaultusericon.jpg'
     });
   });
@@ -35,7 +46,7 @@ var createIRCClient = function (socket, params) {
     socket.emit('notifyHigh', {
       channel: from,
       from: from, 
-      message: msg, 
+      message: sanitize(msg),
       pic: '/images/defaultusericon.jpg'
     });
   });
