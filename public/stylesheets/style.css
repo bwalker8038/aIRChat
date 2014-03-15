@@ -113,3 +113,8 @@ div.message div.left + div {
 ul#listOfNicks {
   list-style-type: none;
 }
+
+#messageInput {
+  margin-left: 25%;
+  width: 70%;
+}
