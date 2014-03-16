@@ -11,3 +11,9 @@ exports.location = 'localhost/postgres';
   * connection to the server
   */
 exports.host = 'http://localhost';
+
+/** Session secret
+  * Express' sessions use a secret key to provide security.
+  * This should never be shared with anyone once set.
+  */
+exports.secret = 'your secret key value';
