@@ -27,8 +27,12 @@ img#ircPhotography {
 }
 
 div#infoSection {
-  background-color: #BB1F29 !important;
-  color: #222 !important;
+  background-color: #333 !important;
+  color: #d8d8d9 !important;
+}
+
+div#infoSection h3 {
+  color: #d8d8d9 !important;
 }
 
 dl.tabs {
