@@ -166,6 +166,9 @@ exports.newClient = function (socket) {
 };
 
 exports.main = function (req, res) {
+  if (req.session.loggIn != true) {
+    res.redirect(401, '/');
+  }
   res.render('chat', {
     title: 'aIRChat', 
     host: config.host, 
