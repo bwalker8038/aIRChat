@@ -275,6 +275,16 @@
       });
   };
 
+  var channelNotification = function (type, channel, nick) {
+    console.log(nick + ' ' + type + ' ' + channel);
+    var $msgDiv = $('div#panel_' + channel.replace('#', '-'));
+    $msgDiv.append($(
+      '<div class="message">' +
+      '  <span>User ' + nick + ' has ' + type + ' this channel.</span>' +
+      '</div>'
+    ));
+  };
+
   socket.on('notifyLow', function (data) {
     var $activeDiv = $('div.active');
     if ($activeDiv.length > 0) {
@@ -335,6 +345,7 @@
     } else {
       var index = chats.indexOf(data.channel);
       nickLists[index].push(data.nick);
+      channelNotification('joined', data.channel, data.nick);
     }
   });
 
@@ -374,9 +385,12 @@
       socket.emit('joinChannel', {channel: data.to});
     }
   });
+
   socket.on('userLeft', function (data) {
-    // Remove a user's nick from the list of nicks
-    // data.from, data.nick, data.reason
+    var index = chats.indexOf(data.from);
+    var nickIndex = nickLists[index].indexOf(data.nick);
+    nickLists[index].remove(nickIndex);
+    channelNotification('departed from', data.from, data.nick);
   });
 
   $('a#sendMessage').click(function (evt) {
