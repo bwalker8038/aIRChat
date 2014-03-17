@@ -222,6 +222,9 @@
     ));
     $tab.children('span.notifyLow').text(notifications[data.channel].low);
     $tab.children('span.notifyHigh').text(notifications[data.channel].high);
+    if ($msgDiv[0].scrollHeight - $msgDiv[0].offsetHeight - $msgDiv[0].scrollTop >= 60) {
+      $msgDiv.scrollTop($msgDiv.scrollTop() + 60);
+    }
   };
 
   var clearNotifications = function (evt) {
