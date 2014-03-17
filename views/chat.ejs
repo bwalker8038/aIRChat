@@ -284,7 +284,7 @@
         }
       }
     }
-    if (windowFocused === false) {
+    if (windowFocused === false && intervalID === undefined) {
       intervalID = setInterval(titleBlinker('aIRChat', '[!!] aIRChat [!!]'), 1000);
     }
     addMessage(data);
@@ -307,7 +307,7 @@
       message: data.message,
       pic: data.pic
     });
-    if (windowFocused === false) {
+    if (windowFocused === false && intervalID === undefined) {
       intervalID = setInterval(titleBlinker('aIRChat', '[!!] aIRChat [!!]'), 1000);
     }
   });
