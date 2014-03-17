@@ -1,10 +1,11 @@
 <% include head %>
-<div class="row">
-  <div class="large-12 columns">
-    <h1>aIRChat</h1>
+<div id="indexTitleBar">
+  <div class="row">
+    <div class="small-12 columns">
+      <h1>aIRChat</h1>
+    </div>
   </div>
 </div>
-
 <!-- Register overlay -->
 <div class="reveal-modal" id="register" data-reveal>
   <div class="row">
@@ -61,18 +62,90 @@
     </div>
   </form>
 </div>
-
-<div class="row">
-  <div class="small-8 columns">
-    <h2>Get Started</h2>
+<div id="userActionArea">
+  <div class="row">
+    <div class="small-12 columns">
+      <h2>Take a peak</h2>
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-12 columns">
+      <p> 
+        Here's a quick look at what the world's most modern, people-oriented,
+        web-based IRC client looks like. We're sure you're going to love it!
+      </p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-12 centered columns">
+      <img src="/images/chatScreenshot.png" />
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-8 columns">
+      <h2>Get Started</h2>
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-10 columns">
+      <p>
+        Please keep in mind that aIRChat is still under development and thus does
+        not yet support all of the features that it is expected to in the future.
+        If you encounter any unexpected behavior or even if you'd like to suggest
+        an improvement, either send me (redwire) a private message, or write
+        to the <a href="https://github.com/redwire/aIRChat/issues">issue tracker</a>.
+        For now, you can log in with just a username, but try to make sure it will 
+        be unique, as aIRChat will not work if your name is taken.
+      </p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-8 columns">
+      <ul class="button-group">
+        <li><a href="#" data-reveal-id="register" class="button">Register</a></li>
+        <li><a href="#" data-reveal-id="login" class="button">Log in</a></li>
+      </ul>
+    </div>
   </div>
 </div>
-<div class="row">
-  <div class="small-8 columns">
-    <ul class="button-group">
-      <li><a href="#" data-reveal-id="register" class="button">Register</a></li>
-      <li><a href="#" data-reveal-id="login" class="button">Log in</a></li>
-    </ul>
+<div id="infoSection">
+  <div class="row">
+    <div class="small-12 medium-4 columns">
+      <h3>The Mission</h3>
+    </div>
+    <div class="small-12 medium-4 columns">
+      <h3>More than just IRC</h3>
+    </div>
+    <div class="small-12 medium-4 columns">
+      <h3>Better than ever</h3>
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-12 medium-4 columns">
+      <p>
+        The ultimate goal for aIRChat is to bring classic IRC into the twenty-first century
+        by building an interface that is comfortable to use.
+        Advanced features common to traditional IRC clients that aren't
+        needed by most users have been stripped out, and more common features made more
+        accessible.
+      </p>
+    </div>
+    <div class="small-12 medium-4 columns">
+      <p>
+        aIRChat becomes a service of its own by augmenting standard IRC with user profiles
+        that can can contain user data like a status, bio, and a profile picture. This
+        additional information is incorporated into the chat interface to further improve
+        the chatting experience.
+      </p>
+    </div>
+    <div class="small-12 medium-4 columns">
+      <p>
+        While many web-based IRC clients exist already, they are often very unusable and
+        poorly designed, prioritizing instead to provide a classical experience that is more
+        likely to remind users of terminal-based chat clients.
+        aIRChat improves on these minimalistic interfaces by making accessibility the top priority.
+      </p>
+    </div>
   </div>
 </div>
 <% include foot %>

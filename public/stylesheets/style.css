@@ -10,6 +10,27 @@ a {
   color: #00B7FF;
 }
 
+div#indexTitleBar {
+  width: 100% !important;
+  background-color: #222;
+  height: 65px;
+  margin-top: -5px;
+}
+
+div#indexTitleBar h1 {
+  color: #BB1F29 !important;
+}
+
+img#ircPhotography {
+  width: 100%;
+  height: 40%;
+}
+
+div#infoSection {
+  background-color: #BB1F29 !important;
+  color: #222 !important;
+}
+
 dl.tabs {
   width: 15%;
   height: calc(100% - 45px);
