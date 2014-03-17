@@ -166,6 +166,11 @@
   var username = '<%= username %>';
   var socket = io.connect(hostname);
   var connected = false;
+
+  // Storage for the ID of the interval used to blink the title
+  // when there is a message waiting for the user.
+  var intervalID = undefined;
+  var windowFocused = true;
   
   // Parallel arrays
   // nickLists[i] contains an array of nicks of users in chats[i]
@@ -228,6 +233,7 @@
     $anchor.children('span.notifyLow').text('0');
     $anchor.children('span.notifyHigh').text('0');
   }
+
   // Add a new tab to the list of chat tabs and a content div to contain
   // the nick list and messages.
   var addChatSection = function (chanOrNick) {
@@ -257,6 +263,15 @@
     addChatSection(channel);
   };
 
+  var titleBlinker = function (origTitle, altTitle) {
+    return (function () {
+      document.title = altTitle;
+      setTimeout(function () {
+        document.title = origTitle;
+      }, 500);
+      });
+  };
+
   socket.on('notifyLow', function (data) {
     var $activeDiv = $('div.active');
     if ($activeDiv.length > 0) {
@@ -268,6 +283,9 @@
           notifications[data.channel].low++; 
         }
       }
+    }
+    if (windowFocused === false) {
+      intervalID = setInterval(titleBlinker('aIRChat', '[!!] aIRChat [!!]'), 1000);
     }
     addMessage(data);
   });
@@ -289,6 +307,9 @@
       message: data.message,
       pic: data.pic
     });
+    if (windowFocused === false) {
+      intervalID = setInterval(titleBlinker('aIRChat', '[!!] aIRChat [!!]'), 1000);
+    }
   });
   
   socket.on('connected', function (channel) {
@@ -442,6 +463,18 @@
     // It doesn't make sense to set any chat content areas' height here
     // because none exist yet!
     $('div#nickListPane').height(($(window).height() - 250) + 'px');
+  });
+
+  $(window).focus(function (evt) {
+    windowFocused = true;
+    if (intervalID != undefined) {
+      clearInterval(intervalID);
+      intervalID = undefined;
+    }
+  });
+
+  $(window).blur(function (evt) {
+    windowFocused = false;
   });
 </script>
 <% include foot %>

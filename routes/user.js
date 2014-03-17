@@ -20,6 +20,7 @@ exports.login = function (req, res) {
     }
   } else if (req.route.method === 'post') {
     console.log('Inside POST for login');
+    console.log(req.body);
     if (authenticates(req.body.username, req.body.password) === true) {
       req.session.loggedIn = true;
       req.session.username = req.body.username;
@@ -43,6 +44,7 @@ exports.register = function (req, res) {
     }
   } else if (req.route.method === 'post') {
     console.log('Inside POST for register');
+    console.log(req.body);
     if (register(
           req.body.username, req.body.password, req.body.paswordrepeat
         ) === true) {
