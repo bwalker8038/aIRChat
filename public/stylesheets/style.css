@@ -10,6 +10,10 @@ a {
   color: #00B7FF;
 }
 
+div#nickListPane {
+  overflow: auto;
+}
+
 div#indexTitleBar {
   width: 100% !important;
   background-color: #222;
@@ -63,12 +67,12 @@ div#chatContent div.content {
 
 div.message {
   min-height: 40px;
-  background-color: #FDFDFD;
+  background-color: #fafafa;
   margin-top: 10px;
 }
 
 div.titlebar {
-  background-color: #F9F9F9;
+  background-color: #f2f2f2;
   padding: 5px;
   width: calc(100% + 50px);
 }
