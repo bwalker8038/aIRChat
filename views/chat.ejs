@@ -279,12 +279,13 @@
 
   var channelNotification = function (type, channel, nick) {
     console.log(nick + ' ' + type + ' ' + channel);
-    var $msgDiv = $('div#panel_' + channel.replace('#', '-'));
-    $msgDiv.append($(
-      '<div class="message">' +
-      '  <span>User ' + nick + ' has ' + type + ' this channel.</span>' +
-      '</div>'
-    ));
+    var picture = (type === 'joined') ? '/images/userjoined.jpg' : '/images/userparted.jpg';
+    addMessage({
+      from: 'System',
+      channel: channel,
+      message: 'User ' + nick + ' has ' + type + ' this channel.',
+      pic: picture
+    });
   };
 
   socket.on('notifyLow', function (data) {
