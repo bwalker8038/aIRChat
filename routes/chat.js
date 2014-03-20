@@ -21,7 +21,7 @@ var sanitize = function (string) {
   string = string.replace('"', '&#34;').replace("'", '&#39;');
   string = string.replace('(', '&#40;').replace(')', '&#41;');
   string = string.replace('/', '&#47;').replace('\\', '&#92;');
-  return string.replace('%', '&#37;');
+  return string.replace('%', '&#37;').replace(':', '&#58;');
 };
 
 var createIRCClient = function (socket, params) {
@@ -30,6 +30,7 @@ var createIRCClient = function (socket, params) {
   });
 
   newClient.addListener('message', function (from, to, msg) {
+    console.log('Received ' + msg + ' from ' + from);
     if (to === params.nick) {
       return; // Let private messages be handled by the pm handler.
     }
