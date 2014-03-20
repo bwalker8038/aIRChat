@@ -342,6 +342,9 @@
   // Add a new nick to the list of nicks for the provided channel. 
   // Create a new chat tab if the aIRChat user is the one joining.
   socket.on('joined', function (data) {
+    if (chats.indexOf(data.channel) === -1) {
+      username = data.nick; 
+    }
     if (data.nick === username) {
       console.log('Joined ' + data.channel);
       joinChat(data.channel);
