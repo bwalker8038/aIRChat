@@ -160,6 +160,7 @@
   </div>
 </div>
 <input type="text" type="text" id="messageInput" placeholder="Message" />
+<script src="/javascripts/users.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script type="text/javascript">
   var hostname = '<%= host %>';
@@ -173,7 +174,7 @@
   var windowFocused = true;
   
   // Parallel arrays
-  // nickLists[i] contains an array of nicks of users in chats[i]
+  // nickLists[i] contains an array of user objects in channel chats[i]
   var chats = new Array();
   var nickLists = new Array();
  
@@ -198,8 +199,12 @@
   var addMessage = function (data) {
     var $msgDiv = $('div#panel_' + data.channel.replace('#', '-'));
     var $tab = $('a[href=#panel_' + data.channel.replace('#', '-') + ']');
+    var cindex = chats.indexOf(data.channel);
+    var uindex = userIndex(nickLists[cindex], data.from);
+    var picture = nickLists[cindex][uindex].picture;
     var highlight = '';
-    if (data.from === 'you') {
+
+    if (data.from === username) {
       highlight = ' self'; // Space needed to separate class names
     } else if (data.message.indexOf(username) != -1) {
       highlight = ' mention';
@@ -208,7 +213,7 @@
     var $newMsg = $(
       '<div class="message">' +
       '  <div class="left">' +
-      '    <img src="' + data.pic + '" />' +
+      '    <img src="' + picture + '" />' +
       '  </div>' +
       '  <div>' +
       '    <div class="titlebar' + highlight + '">' +
@@ -283,8 +288,7 @@
     addMessage({
       from: 'System',
       channel: channel,
-      message: 'User ' + nick + ' has ' + type + ' this channel.',
-      pic: picture
+      message: 'User ' + nick + ' has ' + type + ' this channel.'
     });
   };
 
@@ -320,8 +324,7 @@
     addMessage({
       from: data.from,
       channel: data.from,
-      message: data.message,
-      pic: data.pic
+      message: data.message
     });
     if (windowFocused === false && intervalID === undefined) {
       intervalID = setInterval(titleBlinker('aIRChat', '[!!] aIRChat [!!]'), 1000);
@@ -336,7 +339,18 @@
   // The list will not be rendered until the channel is the active one.
   socket.on('nickList', function (data) {
     var index = chats.indexOf(data.channel);
-    nickLists[index] = Object.keys(data.nicks);
+    for (var i = data.users.length - 1; i >= 0; i--) {
+      nickLists[index].push(new User(
+        data.users[i].nick, 
+        data.users[i].bio, 
+        data.users[i].contact, 
+        data.users[i].picture, 
+        data.users[i].server
+      ));
+    }
+    nickLists[index].push(new User(
+      'System', '', '', '/images/defaultusericon.jpg', data.users[0].server
+    ));
   });
 
   // Add a new nick to the list of nicks for the provided channel. 
@@ -350,7 +364,7 @@
       joinChat(data.channel);
     } else {
       var index = chats.indexOf(data.channel);
-      nickLists[index].push(data.nick);
+      nickLists[index].push(new User(data.nick, data.bio, data.contact, data.picture, data.server));
       channelNotification('joined', data.channel, data.nick);
     }
   });
@@ -359,10 +373,9 @@
   // Also deactivate the send mechanism for this channel.
   socket.on('kicked', function (data) {
     addMessage({
-      from: 'Kicked by ' + data.by,
+      from: 'System',
       channel: data.channel,
-      message: 'Reason provided: ' + data.reason,
-      pic: '/images/defaultusericon.jpg'
+      message: 'You were kicked by ' + data.by + '. Reason provided: ' + data.reason
     });
     // TODO
     // Block the user from trying to send messages to the channel
@@ -373,13 +386,12 @@
   // Make sure to only change the nick on the appropriate servers
   // Change the nick of a user in the nicklist
   socket.on('newNick', function (data) {
-    for (var i = chats.length - 1; i >= 0; i--) {
-      if (chats[i] === data.channel) {
-        var index = nickLists[i].indexOf(data.old);
-        nickLists[index] = data.new;
-        return;
-      }
+    var cindex = chats.indexOf(data.channel);
+    var nindex = userIndex(nickLists[index], data.old);
+    if (cindex === -1 || nindex === -1) {
+      return;
     }
+    nickLists[cindex][nindex].changeNick(data.new);
   });
 
   socket.on('invite', function (data) {
@@ -394,7 +406,7 @@
 
   socket.on('userLeft', function (data) {
     var index = chats.indexOf(data.from);
-    var nickIndex = nickLists[index].indexOf(data.nick);
+    var nickIndex = userIndex(nickLists[index], data.nick);
     nickLists[index].remove(nickIndex);
     channelNotification('departed from', data.from, data.nick);
   });
@@ -406,7 +418,7 @@
     }
     var $ta = $('#messageInput');
     var dest = $('div.active').first().attr('id').replace('panel_', '').replace('-', '#');
-    addMessage({channel: dest, from: 'you', message: $ta.val(), pic: '<%= profilepic %>'});
+    addMessage({channel: dest, from: username, message: $ta.val()});
     socket.emit('writeChat', {destination: dest, message: $ta.val()});
     console.log('Sent "' + $ta.val() + '" to ' + dest);
     $ta.val('');
@@ -420,7 +432,7 @@
       }
       var $ta = $('#messageInput');
       var dest = $('div.active').first().attr('id').replace('panel_', '').replace('-', '#');
-      addMessage({channel: dest, from: 'you', message: $ta.val(), pic: '<%= profilepic %>'});
+      addMessage({channel: dest, from: username, message: $ta.val()});
       socket.emit('writeChat', {destination: dest, message: $ta.val()});
       console.log('Sent "' + $ta.val() + '" to ' + dest);
       $ta.val('');
@@ -437,11 +449,10 @@
   $('a[data-reveal-id=getNickList]').click(function (evt) {
     var channel = $($('div.active')[0]).attr('id').replace('panel_', '').replace('-', '#');
     var index = chats.indexOf(channel); 
-    console.log('Building nicklist\n' + nickLists[index].toString());
     $('div#getNickList > h1').text('Users in ' + channel);
     $('ul#listOfNicks').html(''); // Empty out the list in case is it populated already.
     for (var i = nickLists[index].length - 1; i >= 0; i--) {
-      $('ul#listOfNicks').prepend($('<li>' + nickLists[index][i] + '</li>'));
+      $('ul#listOfNicks').prepend($('<li>' + nickLists[index][i].nick + '</li>'));
     }
   });
 
@@ -453,7 +464,7 @@
     var msg = $('#privMsgContents').val();
     var nick = $('#privMsgNick').val();
     joinChat(nick);
-    addMessage({channel: nick, from: 'you', message: msg, pic: '<%= profilepic %>'});
+    addMessage({channel: nick, from: username, message: msg});
     socket.emit('writeChat', {destination: nick, message: msg});
   });
 

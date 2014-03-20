@@ -57,11 +57,34 @@ var createIRCClient = function (socket, params) {
   });
 
   newClient.addListener('names', function (channel, nicks) {
-    socket.emit('nickList', {channel: channel, nicks: nicks});
+    nicks = Object.keys(nicks);
+    var users = new Array();
+    // This is where user aIRChat user data will be loaded up from the
+    // database in the future.
+    for (var i = nicks.length - 1; i >= 0; i--) {
+      // Package users as simple objects to be created on the client side
+      users.push({
+        nick: nicks[i],
+        bio: '',
+        contact: '',
+        picture: '/images/defaultusericon.jpg',
+        server: ''
+      });
+    }
+    socket.emit('nickList', {channel: channel, users: users});
   });
 
   newClient.addListener('join', function (channel, nick, msg) {
-    socket.emit('joined', {channel: channel, nick: nick});
+    // Information for the default fields here will be filled with
+    // stored user info when accounts are implemented.
+    socket.emit('joined', {
+      channel: channel, 
+      nick: nick,
+      bio: '',
+      picture: '/images/defaultusericon.jpg',
+      contact: '',
+      server: 'freenode'
+    });
   });
 
   newClient.addListener('kick', function (channel, nick, by, reason, msg) {
