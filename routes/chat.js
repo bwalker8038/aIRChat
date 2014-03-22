@@ -1,10 +1,9 @@
 var irc = require('irc');
 var config = require('../config');
 
-// Parallel arrays. 
-// ircClients[i] is an array of IRC clients used by clients[i].
-var clients = new Array();
-var ircClients = new Array();
+// Maps the socket used to communicate with a given client to an object mapping
+// the names of IRC servers to the client object communicating with that server.
+var clients = {};
 
 // Array remove - By John Resig (MIT LICENSED)
 Array.prototype.remove = function (start, end) {
@@ -26,7 +25,9 @@ var sanitize = function (string) {
 
 var createIRCClient = function (socket, params) {
   var newClient = new irc.Client(params.server, params.nick, {
-    channels: [params.firstchannel]
+    channels: [params.firstchannel],
+    userName: 'aIRChat_' + params.nick,
+    realName: 'Airchat User'
   });
 
   newClient.addListener('message', function (from, to, msg) {
@@ -38,7 +39,7 @@ var createIRCClient = function (socket, params) {
       channel: to, 
       from: from, 
       message: sanitize(msg),
-      pic: '/images/defaultusericon.jpg'
+      server: params.server
     });
   });
 
@@ -48,12 +49,12 @@ var createIRCClient = function (socket, params) {
       channel: from,
       from: from, 
       message: sanitize(msg),
-      pic: '/images/defaultusericon.jpg'
+      server: params.server
     });
   });
 
   newClient.addListener('registered', function (msg) {
-    socket.emit('connected');
+    socket.emit('connected', params.server);
   });
 
   newClient.addListener('names', function (channel, nicks) {
@@ -68,7 +69,7 @@ var createIRCClient = function (socket, params) {
         bio: '',
         contact: '',
         picture: '/images/defaultusericon.jpg',
-        server: ''
+        server: params.server
       });
     }
     socket.emit('nickList', {channel: channel, users: users});
@@ -83,31 +84,51 @@ var createIRCClient = function (socket, params) {
       bio: '',
       picture: '/images/defaultusericon.jpg',
       contact: '',
-      server: 'freenode'
+      server: params.server
     });
   });
 
   newClient.addListener('kick', function (channel, nick, by, reason, msg) {
-    socket.emit('kicked', {channel: channel, by: by, reason: reason});
+    socket.emit('kicked', {
+      server: params.server, 
+      channel: channel, 
+      by: by, 
+      reason: reason
+    });
   });
 
   newClient.addListener('nick', function (oldnick, newnick, channels, msg) {
     for (var i = channels.length - 1; i >= 0; i--) {
-      socket.emit('newNick', {old: oldnick, new: newnick, channel: channels[i]});
+      socket.emit('newNick', {
+        old: oldnick, 
+        new: newnick, 
+        server: params.server, 
+        channel: channels[i]
+      });
     }
   });
 
   newClient.addListener('invite', function (channel, from) {
-    socket.emit('invited', {to: channel, by: from});
+    socket.emit('invited', {server: params.server, to: channel, by: from});
   });
 
   newClient.addListener('part', function (channel, nick, reason, msg) {
-    socket.emit('userLeft', {from: channel, nick: nick, reason: reason});
+    socket.emit('userLeft', {
+      server: params.server, 
+      from: channel, 
+      nick: nick, 
+      reason: reason
+    });
   });
 
   newClient.addListener('quit', function (nick, reason, channels, msg) {
     for (var i = channels.length - 1; i >= 0; i--) {
-      socket.emit('userLeft', {from: channels[i], nick: nick, reason: reason});
+      socket.emit('userLeft', {
+        server: params.server,
+        from: channels[i], 
+        nick: nick, 
+        reason: reason
+      });
     }
   });
 
@@ -119,76 +140,43 @@ var createIRCClient = function (socket, params) {
  };
 
 exports.newClient = function (socket) {
-  clients.push(socket);
-  ircClients.push(new Array());
+  clients[socket] = {};
   console.log('New connection.');
 
   socket.on('message', function (message, callback) {
     console.log("received: " + message);
   });
 
-  // TODO
-  // Modify to make sure the right channel on the right server has been aprted from.
   socket.on('part', function (data) {
-    var index = clients.indexOf(socket);
-    for (var i = ircClients[index].length - 1; i >= 0; i--) {
-      var client = ircClients[index][i];
-      if (client.opt.channels.indexOf(data.channel) != -1) {
-        client.part(data.channel, data.message);
-        return;
-      }
-    }
+    clients[socket][data.server].part(data.channel, data.message);
   });
   
   socket.on('disconnect', function () {
-    var index = clients.indexOf(socket);
-    clients.remove(index);
-    for (var i = ircClients[index].length - 1; i >= 0; i--) {
-      ircClients[index][i].disconnect('Client closed connection to the server.');
+    var servers = Object.keys(clients[socket]);
+    for (var i = servers.length - 1; i >= 0; i--) {
+      clients[socket][servers[i]].disconnect('Connect to server closed.');
     }
-    ircClients.remove(index);
+    delete clients[socket];
   });
 
-  // TODO
-  // Don't bother trying to connect to a server if there is already a client
-  // running for the user that is connected to that server.
   socket.on('serverJoin', function (data) {
-    ircClients[clients.indexOf(socket)].push(createIRCClient(socket, data));
+    if (!clients[socket][data.server]) {
+      clients[socket][data.server] = createIRCClient(socket, data);
+    }
   });
 
-  // TODO
-  // Have this function be able to deal with joining the provided channel
-  // on the correct server.
   socket.on('joinChannel', function (data) {
-    var index = clients.indexOf(socket);
-    // Here, 0 should be replaced with the index of the appropriate server's client.
-    ircClients[index][0].join(data.channel);
+    if (clients[socket][data.server].opt.channels.indexOf(data.channel) === -1) {
+      clients[socket][data.server].join(data.channel);
+    }
   });
 
-  // TODO
-  // Tweak this to make sure the message is being sent to the right channel
-  // on the right server.
   socket.on('writeChat', function (data) {
-    var clientsIndex = clients.indexOf(socket);
-    console.log('Got message "' + data.message + '" for ' + data.destination);
-    if (data.destination[0] != '#') {
-      // Send private message to user.
-      // Clearly isn't taking into account what server to send it to.
-      ircClients[clientsIndex][0].say(data.destination, data.message);
-      console.log('Sent private message');
-      return;
-    }
-    for (var i = ircClients[clientsIndex].length - 1; i >= 0; i--) {
-      var client = ircClients[clientsIndex][i];
-      if (client.opt.channels.indexOf(data.destination) != -1) {
-        client.say(data.destination, data.message);
-        console.log('Sent that message.');
-        return;
-      }
-    }
+    clients[socket][data.server].say(data.destination, data.message);
   });
 };
 
+// Will need to load the user's data from the DB for this section.
 exports.main = function (req, res) {
   if (req.session.loggedIn != true) {
     res.redirect(401, '/');
