@@ -161,6 +161,7 @@
 </div>
 <input type="text" type="text" id="messageInput" placeholder="Message" />
 <script src="/javascripts/users.js"></script>
+<script src="/javascripts/chats.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script type="text/javascript">
   var hostname = '<%= host %>';
@@ -172,22 +173,36 @@
   // when there is a message waiting for the user.
   var intervalID = undefined;
   var windowFocused = true;
-  
-  // Parallel arrays
-  // nickLists[i] contains an array of user objects in channel chats[i]
-  var chats = new Array();
-  var nickLists = new Array();
  
-  // channelName => {low => <int>, high => <int>}
-  // Maps a channel name to an object containing a number of unread messages
-  // of low and high prioriy (regular messages and highlights).
-  var notifications = {};
+  // Array of chat objects
+  var chats = new Array();
+ 
+  // Maps the name of a given server to the user's nick on that server.
+  var usernicks = {};
 
   socket.emit('serverJoin', {
     server: 'irc.freenode.net', 
     nick: username,
     firstchannel: '#ctf-portside'
   });
+
+  var chatTab = function (server, channel, active) {
+    if (active === undefined || active === false) {
+      var mod = '';
+    } else {
+      var mod = '.active';
+    }
+    return $('dd' + mod + '[data-server=' + server + '][data-channel=' + channel + ']').first();
+  };
+
+  var messageBox = function (server, channel, active) {
+    if (active === undefined || active === false) {
+      var mod = '';
+    } else {
+      var mod = '.active';
+    }
+    return $('div' + mod + '[data-server=' + server + '][data-channel=' + channel + ']').first();
+  };
 
   // Array remove - By John Resig
   Array.prototype.remove = function (start, end) {
@@ -197,11 +212,10 @@
   };
 
   var addMessage = function (data) {
-    var $msgDiv = $('div#panel_' + data.channel.replace('#', '-'));
-    var $tab = $('a[href=#panel_' + data.channel.replace('#', '-') + ']');
-    var cindex = chats.indexOf(data.channel);
-    var uindex = userIndex(nickLists[cindex], data.from);
-    var picture = nickLists[cindex][uindex].picture;
+    var $msgDiv = messageBox(data.server, data.channel);
+    var $tab = chatTab(data.server, data.channel).children('a').first();
+    var chat = chats[chatIndex(chats, data.server, data.channel)];
+    var picture = chat.getUser(data.from).picture;
     var highlight = '';
 
     if (data.from === username) {
@@ -235,42 +249,40 @@
   };
 
   var clearNotifications = function (evt) {
-    var text = $(evt.currentTarget).text().trim();
-    var channel = text.slice(text.lastIndexOf(' ') + 1);
-    notifications[channel].low = 0;
-    notifications[channel].high = 0;
+    var server = $(evt.currentTarget).data('server');
+    var channel = $(evt.currentTarget).data('channel');
     var $anchor = $(evt.currentTarget).children('a');
+    chats[chatIndex(chats, server, channel)].clearNotifications();
     $anchor.children('span.notifyLow').text('0');
     $anchor.children('span.notifyHigh').text('0');
-  }
+  };
 
   // Add a new tab to the list of chat tabs and a content div to contain
   // the nick list and messages.
-  var addChatSection = function (chanOrNick) {
+  var addChatSection = function (server, chanOrNick) {
     var $newTab = $(
-      '<dd>' +
-      '  <a href="#panel_' + chanOrNick.replace('#', '-') + '">' + 
+      '<dd data-server="' + server + '" data-channel="' + chanOrNick + ">' +
+      '  <a href="#panel_' + label(server, chanOrNick) + '">' +
       '    <span class="notifyLow">0</span>' +
       '    <span class="notifyHigh">0</span>' +
-      '    ' + chanOrNick +
+      '    ' + channel +
       '  </a>' +
       '</dd>'
     );
     $('dl#chatList').append($newTab);
     $newTab.click(clearNotifications);
     $('div#chatContent').append($(
-      '<div class="content" id="panel_' + chanOrNick.replace('#', '-') + '">' +
+      '<div class="content" id="panel_' + label(server, channel) + '" ' +
+           'data-server="' + server + '" data-channel="' + chanOrNick + '">' +
       '</div>'
     ));
     // Set the height for this and any other chat content areas to fit nicely.
     $('div.content').height(($(window).height() - 130) + 'px');
   };
 
-  var joinChat = function (channel) {
-    chats.push(channel);
-    nickLists.push(new Array());
-    notifications[channel] = {low: 0, high: 0};
-    addChatSection(channel);
+  var joinChat = function (server, channel) {
+    chats.push(new Chat(server, channel));
+    addChatSection(server, channel);
   };
 
   var titleBlinker = function (origTitle, altTitle) {
@@ -282,26 +294,22 @@
       });
   };
 
-  var channelNotification = function (type, channel, nick) {
-    console.log(nick + ' ' + type + ' ' + channel);
-    var picture = (type === 'joined') ? '/images/userjoined.jpg' : '/images/userparted.jpg';
+  var channelNotification = function (type, server, channel, nick) {
     addMessage({
       from: 'System',
+      server: server,
       channel: channel,
       message: 'User ' + nick + ' has ' + type + ' this channel.'
     });
   };
 
   socket.on('notifyLow', function (data) {
-    var $activeDiv = $('div.active');
-    if ($activeDiv.length > 0) {
-      var activeChannel = $activeDiv.first().attr('id').replace('panel_', '').replace('-', '#'); 
-      if (data.channel != activeChannel) { 
-        if (data.message.indexOf(username) != -1) {
-          notifications[data.channel].high++;
-        } else {
-          notifications[data.channel].low++; 
-        }
+    var $ad = $('div.active');
+    if ($ad.data('server') != data.server || $ad.data('channel') != data.channel) {
+      if (data.message.indexOf(usernicks[data.server]) != -1) {
+        chats[chatIndex(chats, data.server, data.channel)].gotHighPriorityMessage();
+      } else {
+        chats[chatIndex(chats, data.server, data.channel)].gotLowPriorityMessage(); 
       }
     }
     if (windowFocused === false && intervalID === undefined) {
@@ -312,17 +320,15 @@
   
   socket.on('notifyHigh', function (data) {
     var $activeDiv = $('div.active');
-    if (notifications[data.from] === undefined) {
-      joinChat(data.from); 
+    if (chats[chatIndex(chats, data.server, data.channel)] === undefined) {
+      joinChat(data.server, data.from);
     }
-    if ($activeDiv.length > 0) {
-      var activeChannel = $activeDiv.first().attr('id').replace('panel_', '').replace('-', '#');
-      if (data.from != activeChannel) { 
-        notifications[data.from].high++; 
-      }
+    if ($activeDiv.data('server') != data.server || $activeDiv.data('channel') != data.channel) {
+      chats[chatIndex(chats, data.server, data.channel)].gotHighPriorityNotification();
     }
     addMessage({
       from: data.from,
+      server: data.server,
       channel: data.from,
       message: data.message
     });
@@ -332,7 +338,7 @@
   });
   
   socket.on('connected', function (channel) {
-    connected = true;
+    usernicks[server] = username;
   });
   
   // Create a listing of nicks for the appropriate channel.
@@ -356,16 +362,18 @@
   // Add a new nick to the list of nicks for the provided channel. 
   // Create a new chat tab if the aIRChat user is the one joining.
   socket.on('joined', function (data) {
-    if (chats.indexOf(data.channel) === -1) {
-      username = data.nick; 
+    if (chatIndex(chats, data.server, data.channel) === -1) { 
+      usernicks[data.server] = data.nick;
     }
-    if (data.nick === username) {
+    if (data.nick === usernicks[data.server]) {
       console.log('Joined ' + data.channel);
-      joinChat(data.channel);
+      joinChat(data.server, data.channel);
     } else {
-      var index = chats.indexOf(data.channel);
-      nickLists[index].push(new User(data.nick, data.bio, data.contact, data.picture, data.server));
-      channelNotification('joined', data.channel, data.nick);
+      var index = chatIndex(chats, data.server, data.channel);
+      chats[index].users.push(new User(
+        data.nick, data.bio, data.contact, data.picture, data.server
+      ));
+      channelNotification('joined', data.server, data.channel, data.nick);
     }
   });
 
@@ -374,54 +382,39 @@
   socket.on('kicked', function (data) {
     addMessage({
       from: 'System',
+      server: data.server,
       channel: data.channel,
       message: 'You were kicked by ' + data.by + '. Reason provided: ' + data.reason
     });
     // TODO
     // Block the user from trying to send messages to the channel
     // that they were kicked from.
+    // Might want to use an alert or something and close the tab automatically.
   });
 
-  // TODO
-  // Make sure to only change the nick on the appropriate servers
-  // Change the nick of a user in the nicklist
   socket.on('newNick', function (data) {
-    var cindex = chats.indexOf(data.channel);
-    var nindex = userIndex(nickLists[index], data.old);
-    if (cindex === -1 || nindex === -1) {
-      return;
-    }
-    nickLists[cindex][nindex].changeNick(data.new);
+    var chat = chats[chatIndex(chats, data.server, data.channel)];
+    chat.getUser(data.old).changeNick(data.new);
   });
 
   socket.on('invite', function (data) {
-    // Ask the user if they want to join the channel they were invited to
-    // data.to, data.by
-    var msg = 'You have been invited to the channel ' + data.to + ' by ' + data.from + '\n';
+    var msg = 'You have been invited to the channel ' + data.to;
+    msg += 'on ' + data.server + ' by ' + data.from + '\n';
     msg += 'Would you like to join this channel now?';
     if (confirm(msg)) {
-      socket.emit('joinChannel', {channel: data.to});
+      socket.emit('joinChannel', {server: data.server, channel: data.to});
     }
   });
 
   socket.on('userLeft', function (data) {
-    var index = chats.indexOf(data.from);
-    var nickIndex = userIndex(nickLists[index], data.nick);
-    nickLists[index].remove(nickIndex);
+    var userList = chats[chatIndex(chats, data.server, data.from)].users;
+    var index = userList.findIndex(function (elem, index, arr) {
+      return elem.sameUserAs(data.nick);
+    });
+    // TODO
+    // Test to make sure this is definitely removing the user from the list
+    userList.remove(index);
     channelNotification('departed from', data.from, data.nick);
-  });
-
-  $('a#sendMessage').click(function (evt) {
-    if ($('div.tabs-content').length === 0) {
-      alert('You cannot send a message until you have joined a chat.');
-      return;
-    }
-    var $ta = $('#messageInput');
-    var dest = $('div.active').first().attr('id').replace('panel_', '').replace('-', '#');
-    addMessage({channel: dest, from: username, message: $ta.val()});
-    socket.emit('writeChat', {destination: dest, message: $ta.val()});
-    console.log('Sent "' + $ta.val() + '" to ' + dest);
-    $ta.val('');
   });
 
   $('#messageInput').keypress(function (evt) {
@@ -431,10 +424,15 @@
         return;
       }
       var $ta = $('#messageInput');
-      var dest = $('div.active').first().attr('id').replace('panel_', '').replace('-', '#');
-      addMessage({channel: dest, from: username, message: $ta.val()});
-      socket.emit('writeChat', {destination: dest, message: $ta.val()});
-      console.log('Sent "' + $ta.val() + '" to ' + dest);
+      var server = $('div.active').first().data('server');
+      var dest = $('div.active').first().data('channel');
+      addMessage({
+        server: server,
+        channel: dest, 
+        from: username, 
+        message: $ta.val()
+      });
+      socket.emit('writeChat', {server: server, destination: dest, message: $ta.val()});
       $ta.val('');
     }
   });
@@ -442,17 +440,24 @@
   // TODO
   // Make sure the channel name is valid
   $('a#joinNewChannel').click(function (evt) {
+    var server = $('div.active').data('server');
     var chanName = $('#newChannelName').val();
-    socket.emit('joinChannel', {channel: chanName});
+    if (server === undefined) {
+      alert('You must select a chat tab for a channel belonging to the ' +
+            'same server the channel you wish to join is in.'
+      );
+    }
+    socket.emit('joinChannel', {server: server, channel: chanName});
   });
 
   $('a[data-reveal-id=getNickList]').click(function (evt) {
-    var channel = $($('div.active')[0]).attr('id').replace('panel_', '').replace('-', '#');
-    var index = chats.indexOf(channel); 
+    var channel = $('div.active').first().data('channel');
+    var server = $('div.active').first().data('server');
+    var users = chats[chatIndex(chats, server, channel)];
     $('div#getNickList > h1').text('Users in ' + channel);
     $('ul#listOfNicks').html(''); // Empty out the list in case is it populated already.
-    for (var i = nickLists[index].length - 1; i >= 0; i--) {
-      $('ul#listOfNicks').prepend($('<li>' + nickLists[index][i].nick + '</li>'));
+    for (var i = users.length - 1; i >= 0; i--) {
+      $('ul#listOfNicks').prepend($('<li>' + users[i].nick + '</li>'));
     }
   });
 
@@ -463,28 +468,28 @@
   $('a#sendPrivMsg').click(function (evt) {
     var msg = $('#privMsgContents').val();
     var nick = $('#privMsgNick').val();
-    joinChat(nick);
-    addMessage({channel: nick, from: username, message: msg});
-    socket.emit('writeChat', {destination: nick, message: msg});
+    var server = $('div.active').first().data('server');
+    joinChat(server, nick);
+    addMessage({server: server, channel: nick, from: username, message: msg});
+    socket.emit('writeChat', {server: server, destination: nick, message: msg});
   });
 
   $('a[data-reveal-id=partChannel]').click(function (evt) {
-    var chanName = $('div.active').first().attr('id').replace('panel_', '').replace('-', '#');
+    var channel = $('div.active').first().data('channel');
     $('div#partChannel div.row div.columns p').text(
-      'Are you sure you want to leave ' + chanName + '?'
+      'Are you sure you want to leave ' + channel + '?'
     );
   });
 
   $('a#confirmPartChannel').click(function (evt) {
-    var chanName = $('div.active').first().attr('id').replace('panel_', '').replace('-', '#');  
-    var index = chats.indexOf(chanName);
+    var channel = $('div.active').first().data('channel');
+    var server = $('div.active').first().data('server');
+    var index = chats[chatIndex(chats, server, channel)];
     chats.remove(index);
-    nickLists.remove(index);
-    delete notifications[chanName];
-    $('dd.active').remove();
-    $('div.active').remove();
-    if (chanName[0] === '#') { // Channel, not a private chat
-      socket.emit('part', {channel: chanName, message: 'aIRChat client parted.'});
+    $('dd.active').first().remove();
+    $('div.active').first().remove();
+    if (channel[0] === '#') { // Channel, not a private chat
+      socket.emit('part', {server: server, channel: chanName, message: 'aIRChat client parted.'});
     }
   });
 
