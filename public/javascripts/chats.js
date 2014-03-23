@@ -47,5 +47,5 @@ function chatIndex(chatList, server, channel) {
 
 // Used for the anchors from chat tabs to the corresponding content div.
 function label(server, channel) {
-  return server + '/' + channel.replace('#', '-');
+  return server + '_' + channel.replace('#', '-');
 }

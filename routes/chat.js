@@ -72,7 +72,7 @@ var createIRCClient = function (socket, params) {
         server: params.server
       });
     }
-    socket.emit('nickList', {channel: channel, users: users});
+    socket.emit('nickList', {server: params.server, channel: channel, users: users});
   });
 
   newClient.addListener('join', function (channel, nick, msg) {

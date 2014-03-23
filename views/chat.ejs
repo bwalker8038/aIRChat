@@ -249,8 +249,10 @@
   };
 
   var clearNotifications = function (evt) {
+    console.log('clearNotifications called');
     var server = $(evt.currentTarget).data('server');
     var channel = $(evt.currentTarget).data('channel');
+    console.log('clearing notifications for ' + label(server, channel));
     var $anchor = $(evt.currentTarget).children('a');
     chats[chatIndex(chats, server, channel)].clearNotifications();
     $anchor.children('span.notifyLow').text('0');
@@ -261,18 +263,18 @@
   // the nick list and messages.
   var addChatSection = function (server, chanOrNick) {
     var $newTab = $(
-      '<dd data-server="' + server + '" data-channel="' + chanOrNick + ">' +
+      '<dd data-server="' + server + '" data-channel="' + chanOrNick + '">' +
       '  <a href="#panel_' + label(server, chanOrNick) + '">' +
       '    <span class="notifyLow">0</span>' +
       '    <span class="notifyHigh">0</span>' +
-      '    ' + channel +
+      '    ' + chanOrNick +
       '  </a>' +
       '</dd>'
     );
     $('dl#chatList').append($newTab);
     $newTab.click(clearNotifications);
     $('div#chatContent').append($(
-      '<div class="content" id="panel_' + label(server, channel) + '" ' +
+      '<div class="content" id="panel_' + label(server, chanOrNick) + '" ' +
            'data-server="' + server + '" data-channel="' + chanOrNick + '">' +
       '</div>'
     ));
@@ -337,16 +339,17 @@
     }
   });
   
-  socket.on('connected', function (channel) {
+  socket.on('connected', function (server, channel) {
     usernicks[server] = username;
   });
   
   // Create a listing of nicks for the appropriate channel.
   // The list will not be rendered until the channel is the active one.
   socket.on('nickList', function (data) {
-    var index = chats.indexOf(data.channel);
+    console.log('Got nick list for ' + label(data.server, data.channel));
+    var chat = chats[chatIndex(chats, data.server, data.channel)];
     for (var i = data.users.length - 1; i >= 0; i--) {
-      nickLists[index].push(new User(
+      chat.users.push(new User(
         data.users[i].nick, 
         data.users[i].bio, 
         data.users[i].contact, 
@@ -354,7 +357,7 @@
         data.users[i].server
       ));
     }
-    nickLists[index].push(new User(
+    chat.users.push(new User(
       'System', '', '', '/images/defaultusericon.jpg', data.users[0].server
     ));
   });
@@ -453,7 +456,13 @@
   $('a[data-reveal-id=getNickList]').click(function (evt) {
     var channel = $('div.active').first().data('channel');
     var server = $('div.active').first().data('server');
-    var users = chats[chatIndex(chats, server, channel)];
+    if (channel === undefined || server === undefined) {
+      $('div#getNickList > h1').text(
+        'You must select a channel to retrieve a list of users from.'
+      );
+      return;
+    }
+    var users = chats[chatIndex(chats, server, channel)].users;
     $('div#getNickList > h1').text('Users in ' + channel);
     $('ul#listOfNicks').html(''); // Empty out the list in case is it populated already.
     for (var i = users.length - 1; i >= 0; i--) {
