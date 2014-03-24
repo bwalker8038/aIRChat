@@ -156,8 +156,6 @@
 </dl>
 <!-- Content of chat -->
 <div class="tabs-content vertical" id="chatContent">
-  <div class="content" id="ctf-portside">
-  </div>
 </div>
 <input type="text" type="text" id="messageInput" placeholder="Message" />
 <script src="/javascripts/users.js"></script>
@@ -192,7 +190,9 @@
     } else {
       var mod = '.active';
     }
-    return $('dd' + mod + '[data-server=' + server + '][data-channel=' + channel + ']').first();
+    return $('dd' + mod).filter(function () {
+      return $.data(this, 'server') === server && $.data(this, 'channel') === channel;
+    }).first();
   };
 
   var messageBox = function (server, channel, active) {
@@ -201,7 +201,9 @@
     } else {
       var mod = '.active';
     }
-    return $('div' + mod + '[data-server=' + server + '][data-channel=' + channel + ']').first();
+    return $('div' + mod).filter(function () {
+      return $.data(this, 'server') === server && $.data(this, 'channel') === channel;
+    }).first();
   };
 
   // Array remove - By John Resig
@@ -240,8 +242,8 @@
       '</div>'
     );
     $msgDiv.append($newMsg);
-    $tab.children('span.notifyLow').text(notifications[data.channel].low);
-    $tab.children('span.notifyHigh').text(notifications[data.channel].high);
+    $tab.children('span.notifyLow').text(chat.lowPriorityNotifications());
+    $tab.children('span.notifyHigh').text(chat.highPriorityNotifications());
     var scrollDist = $msgDiv[0].scrollHeight - $msgDiv[0].offsetHeight - $msgDiv[0].scrollTop;
     if (scrollDist >= 40) {
       $msgDiv.scrollTop($msgDiv[0].scrollHeight);
@@ -257,6 +259,7 @@
     chats[chatIndex(chats, server, channel)].clearNotifications();
     $anchor.children('span.notifyLow').text('0');
     $anchor.children('span.notifyHigh').text('0');
+    console.log('Cleared notification text');
   };
 
   // Add a new tab to the list of chat tabs and a content div to contain
