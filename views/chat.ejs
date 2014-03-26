@@ -256,15 +256,12 @@
   };
 
   var clearNotifications = function (evt) {
-    console.log('clearNotifications called');
     var server = $(evt.currentTarget).data('server');
     var channel = $(evt.currentTarget).data('channel');
-    console.log('clearing notifications for ' + label(server, channel));
     var $anchor = $(evt.currentTarget).children('a');
     chats[chatIndex(chats, server, channel)].clearNotifications();
     $anchor.children('span.notifyLow').text('0');
     $anchor.children('span.notifyHigh').text('0');
-    console.log('Cleared notification text');
   };
 
   // Add a new tab to the list of chat tabs and a content div to contain
@@ -354,7 +351,6 @@
   // Create a listing of nicks for the appropriate channel.
   // The list will not be rendered until the channel is the active one.
   socket.on('nickList', function (data) {
-    console.log('Got nick list for ' + label(data.server, data.channel));
     var chat = chats[chatIndex(chats, data.server, data.channel)];
     for (var i = data.users.length - 1; i >= 0; i--) {
       chat.users.push(new User(
@@ -377,7 +373,6 @@
       usernicks[data.server] = data.nick;
     }
     if (data.nick === usernicks[data.server]) {
-      console.log('Joined ' + data.channel);
       joinChat(data.server, data.channel);
     } else {
       var index = chatIndex(chats, data.server, data.channel);
