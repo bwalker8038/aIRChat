@@ -1,11 +1,17 @@
 <% include head %>
-<div id="indexTitleBar">
-  <div class="row">
-    <div class="small-12 columns">
-      <h1>aIRChat</h1>
-    </div>
-  </div>
-</div>
+<nav class="top-bar" data-topbar>
+  <ul class="title-area">
+    <li class="name">
+      <h1><a href="#">aIRChat</a></h1>
+    </li>
+  </ul>
+  <section class="top-bar-section">
+    <ul class="right">
+      <li class="active"><a href="#" data-reveal-id="register">Register</a></li>
+      <li><a href="#" data-reveal-id="login">Log in</a></li>
+    </ul>
+  </section>
+</nav>
 <!-- Register overlay -->
 <div class="reveal-modal" id="register" data-reveal>
   <div class="row">
@@ -107,6 +113,8 @@
       </ul>
     </div>
   </div>
+</div>
+<div class="sepBar">
 </div>
 <div id="infoSection">
   <div class="row">

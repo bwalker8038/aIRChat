@@ -31,12 +31,12 @@ img#ircPhotography {
 }
 
 div#infoSection {
-  background-color: #333 !important;
-  color: #d8d8d9 !important;
+  background-color: #222 !important;
+  color: #f2f2f2 !important;
 }
 
 div#infoSection h3 {
-  color: #d8d8d9 !important;
+  color: #f2f2f2 !important;
 }
 
 dl.tabs {
@@ -146,4 +146,10 @@ ul#listOfNicks {
 #messageInput {
   margin-left: 25%;
   width: 70%;
+}
+
+div.sepBar {
+  height: 8px;
+  width: 100%;
+  background-color: #bb1f29;
 }
