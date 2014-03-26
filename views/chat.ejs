@@ -14,7 +14,7 @@
   </div>
   <div class="row">
     <div class="small-8 columns">
-      <a href="#" class="success button" id="connectToNewServer">Connect</a>
+      <a href="#" class="success button close-reveal-modal" id="connectToNewServer">Connect</a>
     </div>
   </div>
   <a class="close-reveal-modal">&#215;</a>
@@ -191,7 +191,7 @@
       var mod = '.active';
     }
     return $('dd' + mod).filter(function () {
-      return $.data(this, 'server') === server && $.data(this, 'channel') === channel;
+      return $(this).data('server') === server && $(this).data('channel') === channel;
     }).first();
   };
 
@@ -202,7 +202,7 @@
       var mod = '.active';
     }
     return $('div' + mod).filter(function () {
-      return $.data(this, 'server') === server && $.data(this, 'channel') === channel;
+      return $(this).data('server') === server && $(this).data('channel') === channel;
     }).first();
   };
 
@@ -217,7 +217,12 @@
     var $msgDiv = messageBox(data.server, data.channel);
     var $tab = chatTab(data.server, data.channel).children('a').first();
     var chat = chats[chatIndex(chats, data.server, data.channel)];
-    var picture = chat.getUser(data.from).picture;
+    var user = chat.getUser(data.from);
+    if (user === undefined) {
+      var picture = '/images/defaultusericon.jpg';
+    } else {
+      var picture = user.picture;
+    }
     var highlight = '';
 
     if (data.from === username) {
@@ -454,6 +459,16 @@
       );
     }
     socket.emit('joinChannel', {server: server, channel: chanName});
+  });
+
+  $('a#connectToNewServer').click(function (evt) {
+    var serverName = $('#newServerAddr').val();
+    var firstChannel = $('#newServerChannel').val();
+    socket.emit('serverJoin', {
+      server: serverName,
+      nick: username,
+      firstchannel: firstChannel
+    });
   });
 
   $('a[data-reveal-id=getNickList]').click(function (evt) {

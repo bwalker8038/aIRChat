@@ -27,7 +27,8 @@ var createIRCClient = function (socket, params) {
   var newClient = new irc.Client(params.server, params.nick, {
     channels: [params.firstchannel],
     userName: 'aIRChat_' + params.nick,
-    realName: 'Airchat User'
+    realName: 'Airchat User',
+    autoRejoin: false
   });
 
   newClient.addListener('message', function (from, to, msg) {
