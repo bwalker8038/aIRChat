@@ -408,9 +408,9 @@
     chat.getUser(data.old).changeNick(data.new);
   });
 
-  socket.on('invite', function (data) {
+  socket.on('invited', function (data) {
     var msg = 'You have been invited to the channel ' + data.to;
-    msg += 'on ' + data.server + ' by ' + data.from + '\n';
+    msg += ' on ' + data.server + ' by ' + data.by + '\n';
     msg += 'Would you like to join this channel now?';
     if (confirm(msg)) {
       socket.emit('joinChannel', {server: data.server, channel: data.to});
