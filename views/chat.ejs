@@ -52,6 +52,29 @@
   </div>
   <a class="close-reveal-modal">&#215;</a>
 </div>
+<!-- Dialog for changing the user's nick -->
+<div class="reveal-modal" id="changeNickModal" data-reveal>
+  <h1>Change your nick</h1>
+  <div class="row">
+    <div class="small-8 columns">
+      <p>
+        Change the name that people will see alongside all of the messages you send
+        to channels or users on the currently selected server.
+      </p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-8 columns">
+      <input type="text" id="newNickInput" placeholder="New nick" />
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-12 columns">
+      <a href="#" class="success button close-reveal-modal" id="changeNickConfirm">Comfirm</a>
+    </div>
+  </div>
+  <a class="close-reveal-modal">&#215;</a>
+</div>
 <!-- Dialog for seeing a list of nicks of users in the active channel. -->
 <div class="reveal-modal" id="getNickList" data-reveal>
   <h1><!-- Filled by JS --></h1>
@@ -139,6 +162,7 @@
           <li><a href="#" data-reveal-id="newServer">Connect to server</a></li>
           <li><a href="#" data-reveal-id="newChannel">Join a channel</a></li>
           <li><a href="#" data-reveal-id="partChannel">Leave active channel</a></li>
+          <li><a href="#" data-reveal-id="changeNickModal">Change your nickname</a></li>
           <li><a href="#" data-reveal-id="getNickList">List of users</a></li>
           <li><a href="#" data-reveal-id="privMsg">Send a private message</a></li>
         </ul>
@@ -425,18 +449,18 @@
   });
 
   $('#messageInput').keypress(function (evt) {
+    var server = $('div.active').first().data('server');
+    var dest = $('div.active').first().data('channel');
     if (evt.which === 13) { // On [Enter]
-      if ($('div.tabs-content').length === 0) {
-        alert('You cannot send a message until you have joined a chat.');
+      if ($('div.tabs-content').length === 0 || !server || !channel) {
+        alert('You cannot send a message until you have joined and selected chat.');
         return;
       }
       var $ta = $('#messageInput');
-      var server = $('div.active').first().data('server');
-      var dest = $('div.active').first().data('channel');
       addMessage({
         server: server,
         channel: dest, 
-        from: username, 
+        from: usernicks[server], 
         message: $ta.val()
       });
       socket.emit('writeChat', {
@@ -499,7 +523,7 @@
     var nick = $('#privMsgNick').val();
     var server = $('div.active').first().data('server');
     joinChat(server, nick);
-    addMessage({server: server, channel: nick, from: username, message: msg});
+    addMessage({server: server, channel: nick, from: usernicks[server], message: msg});
     socket.emit('writeChat', {server: server, destination: nick, message: msg, sid: sid});
   });
 
@@ -525,6 +549,21 @@
         sid: sid
       });
     }
+  });
+
+  $('a#changeNickConfirm').click(function (evt) {
+    var newNick = $('input#newNickInput').val();
+    if (newNick.length === 0) {
+      alert('You need to provide a new nickname to switch to!');
+      return;
+    }
+    var server = $('dd.active').first().data('server');
+    if (!server) {
+      alert('You have not yet selected a chat tab to base changes on!');
+      return;
+    }
+    socket.emit('changeNick', {server: server, sid: sid, nick: newNick});
+    usernicks[server] = newNick;
   });
 
   $(window).on('resize', function (evt) {

@@ -190,6 +190,11 @@ exports.newClient = function (socket) {
     if (clients[data.sid] === undefined) return;
     clients[data.sid][data.server].say(data.destination, data.message);
   });
+
+  socket.on('changeNick', function (data) {
+    if (clients[data.sid] === undefined) return;
+    clients[data.sid][data.server].send('nick', data.nick);
+  });
 };
 
 // Will need to load the user's data from the DB for this section.
