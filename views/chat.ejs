@@ -165,7 +165,7 @@
   var hostname = '<%= host %>';
   var username = '<%= username %>';
   var socket = io.connect(hostname);
-  var connected = false;
+  var sid = '<%= sessionID %>';
 
   // Storage for the ID of the interval used to blink the title
   // when there is a message waiting for the user.
@@ -181,7 +181,8 @@
   socket.emit('serverJoin', {
     server: 'irc.freenode.net', 
     nick: username,
-    firstchannel: '#ctf-portside'
+    firstchannel: '#ctf-portside',
+    sid: sid
   });
 
   var chatTab = function (server, channel, active) {
@@ -408,7 +409,7 @@
     msg += ' on ' + data.server + ' by ' + data.by + '\n';
     msg += 'Would you like to join this channel now?';
     if (confirm(msg)) {
-      socket.emit('joinChannel', {server: data.server, channel: data.to});
+      socket.emit('joinChannel', {server: data.server, channel: data.to, sid: sid});
     }
   });
 
@@ -438,7 +439,12 @@
         from: username, 
         message: $ta.val()
       });
-      socket.emit('writeChat', {server: server, destination: dest, message: $ta.val()});
+      socket.emit('writeChat', {
+        server: server, 
+        destination: dest, 
+        message: $ta.val(),
+        sid: sid
+      });
       $ta.val('');
     }
   });
@@ -453,7 +459,7 @@
             'same server the channel you wish to join is in.'
       );
     }
-    socket.emit('joinChannel', {server: server, channel: chanName});
+    socket.emit('joinChannel', {server: server, channel: chanName, sid: sid});
   });
 
   $('a#connectToNewServer').click(function (evt) {
@@ -462,7 +468,8 @@
     socket.emit('serverJoin', {
       server: serverName,
       nick: username,
-      firstchannel: firstChannel
+      firstchannel: firstChannel,
+      sid: sid
     });
   });
 
@@ -484,7 +491,7 @@
   });
 
   $('a#logout').click(function (evt) {
-    socket.emit('disconnect'); 
+    socket.emit('disconnect', {sid: sid}); 
   });
 
   $('a#sendPrivMsg').click(function (evt) {
@@ -493,7 +500,7 @@
     var server = $('div.active').first().data('server');
     joinChat(server, nick);
     addMessage({server: server, channel: nick, from: username, message: msg});
-    socket.emit('writeChat', {server: server, destination: nick, message: msg});
+    socket.emit('writeChat', {server: server, destination: nick, message: msg, sid: sid});
   });
 
   $('a[data-reveal-id=partChannel]').click(function (evt) {
@@ -511,7 +518,12 @@
     $('dd.active').first().remove();
     $('div.active').first().remove();
     if (channel[0] === '#') { // Channel, not a private chat
-      socket.emit('part', {server: server, channel: chanName, message: 'aIRChat client parted.'});
+      socket.emit('part', {
+        server: server, 
+        channel: chanName, 
+        message: 'aIRChat client parted.',
+        sid: sid
+      });
     }
   });
 

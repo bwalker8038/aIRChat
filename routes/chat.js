@@ -1,3 +1,4 @@
+var crypto = require('crypto');
 var irc = require('irc');
 var config = require('../config');
 
@@ -10,6 +11,22 @@ Array.prototype.remove = function (start, end) {
   var tail = this.slice((end || start) + 1 || this.length);
   this.length = start < 0 ? this.length + start : start;
   return this.push.apply(this, tail);
+};
+
+var randString = function (bytes, source) {
+  if (!source) {
+    source = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  }
+  try {
+    var s = '';
+    var buf = crypto.randomBytes(bytes);
+    for (var i = buf.length - 1; i >= 0; i--) {
+      s += source[buf[i] % source.length];
+    }
+    return s;
+  } catch (ex) {
+    return null;
+  }
 };
 
 var sanitize = function (string) {
@@ -141,39 +158,37 @@ var createIRCClient = function (socket, params) {
  };
 
 exports.newClient = function (socket) {
-  clients[socket] = {};
-  console.log('New connection.');
-
-  socket.on('message', function (message, callback) {
-    console.log("received: " + message);
-  });
-
   socket.on('part', function (data) {
-    clients[socket][data.server].part(data.channel, data.message);
+    if (clients[data.sid] === undefined) return;
+    clients[data.sid][data.server].part(data.channel, data.message);
   });
   
-  socket.on('disconnect', function () {
-    var servers = Object.keys(clients[socket]);
+  socket.on('disconnect', function (data) {
+    if (clients[data.sid] === undefined) return;
+    var servers = Object.keys(clients[data.sid]);
     for (var i = servers.length - 1; i >= 0; i--) {
-      clients[socket][servers[i]].disconnect('Connect to server closed.');
+      clients[data.sid][servers[i]].disconnect('Connect to server closed.');
     }
-    delete clients[socket];
+    delete clients[data.sid];
   });
 
   socket.on('serverJoin', function (data) {
-    if (!clients[socket][data.server]) {
-      clients[socket][data.server] = createIRCClient(socket, data);
+    if (clients[data.sid] === undefined) return;
+    if (!clients[data.sid][data.server]) {
+      clients[data.sid][data.server] = createIRCClient(socket, data);
     }
   });
 
   socket.on('joinChannel', function (data) {
-    if (clients[socket][data.server].opt.channels.indexOf(data.channel) === -1) {
-      clients[socket][data.server].join(data.channel);
+    if (clients[data.sid] === undefined) return;
+    if (clients[data.sid][data.server].opt.channels.indexOf(data.channel) === -1) {
+      clients[data.sid][data.server].join(data.channel);
     }
   });
 
   socket.on('writeChat', function (data) {
-    clients[socket][data.server].say(data.destination, data.message);
+    if (clients[data.sid] === undefined) return;
+    clients[data.sid][data.server].say(data.destination, data.message);
   });
 };
 
@@ -182,10 +197,17 @@ exports.main = function (req, res) {
   if (req.session.loggedIn != true) {
     res.redirect(401, '/');
   }
+  var sessionID = randString(128);
+  if (!sessionID) {
+    res.redirect(500, '/');
+    return;
+  }
+  clients[sessionID] = {};
   res.render('chat', {
     title: 'aIRChat', 
     host: config.host, 
     username: req.session.username,
+    sessionID: sessionID,
     profilepic: '/images/defaultusericon.jpg',
     userbio: 'Your biography',
     contact: 'How can you be reached?'
