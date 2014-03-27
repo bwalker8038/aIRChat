@@ -164,7 +164,7 @@ exports.newClient = function (socket) {
   });
   
   socket.on('disconnect', function (data) {
-    if (clients[data.sid] === undefined) return;
+    if (!data || !data.sid || !clients[data.sid]) return;
     var servers = Object.keys(clients[data.sid]);
     for (var i = servers.length - 1; i >= 0; i--) {
       clients[data.sid][servers[i]].disconnect('Connect to server closed.');
