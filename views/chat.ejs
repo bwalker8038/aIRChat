@@ -452,7 +452,7 @@
     var server = $('div.active').first().data('server');
     var dest = $('div.active').first().data('channel');
     if (evt.which === 13) { // On [Enter]
-      if ($('div.tabs-content').length === 0 || !server || !channel) {
+      if ($('div.tabs-content').length === 0 || !server) {
         alert('You cannot send a message until you have joined and selected chat.');
         return;
       }
