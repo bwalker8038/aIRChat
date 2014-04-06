@@ -3,6 +3,12 @@ var Connection = require('mongodb').Connection;
 var Server = require('mongodb').Server;
 var BSON = require('mongodb').BSON;
 var ObjectID = require('mongodb').ObjectID;
+var bcrypt = require('bcrypt');
+
+const DEFAULT_PICTURE = '/images/defaultusericon.jpg';
+const DEFAULT_BIO = 'This user has not set a bio for themselves yet.';
+const DEFAULT_CONTACT = 'This user has not provided any contact information.';
+const DEFAULT_FAVES = {'irc.freenode.net', ['#aIRChat']};
 
 var UserProvider = function (host, port) {
   this.db = new Db('airchat', new Server(host, port, {auto_reconnect: true}, {}));
@@ -57,7 +63,7 @@ UserProvider.prototype.findById = function (id, callback) {
   });
 };
 
-UserProvider.prototype.save = function (users, callback) {
+UserProvider.prototype.updateProfile = function (users, callback) {
   this.getCollection(function (error, user_collection) {
     if (error) {
       callback(error);
@@ -68,21 +74,71 @@ UserProvider.prototype.save = function (users, callback) {
       for (var i = 0; i < users.length; i++) {
         user = users[i];
         if (user.picture === undefined) {
-          user.picture = '/images/defaultusericon.jpg';
+          user.picture = DEFAULT_PICTURE;
         }
         if (user.bio === undefined) {
-          user.bio = 'This user has not written anything about themselves yet.';
+          user.bio = DEFAULT_BIO;
         }
         if (user.contact === undefined) {
-          user.contact = 'This user has not listed any contact information.';
+          user.contact = DEFAULT_CONTACT;
         }
         if (user.favorites === undefined) {
-          user.favorites = {}; // Mapping of server name to array of channel names
+          user.favorites = DEFAULT_FAVES;
         }
+        user_collection.update({username: user.username}, {'$set': {
+          picture  : user.picture,
+          bio      : user.bio,
+          contact  : user.contact,
+          favorites: user.favorites
+        }});
       }
-      user_collection.insert(users, function () {
-        callback(null, users);
+      callback(null, users);
+  });
+};
+
+UserProvider.prototype.authenticate = function (username, password, callback) {
+  this.getCollection(function (error, user_collection) {
+    if (error) {
+      callback(error);
+    } else {
+      var user = user_collection.find({username: username});
+      if (!user.password_hash) {
+        callback(null, false);
+      } else {
+        bcrypt.compare(password, user.password_hash, function (error, result) {
+          if (error) {
+            callback(error);
+          } else {
+            callback(null, result);
+          }
+        });
+      }
+  });
+};
+
+UserProvider.prototype.register = function (username, password, callback) {
+  this.getCollection(function (error, user_collection) {
+    if (error) {
+      callback(error);
+    } else {
+      bcrypt.genSalt(10, function (error, salt) {
+        if (err) {
+          callback(error);
+        } else {
+          bcrypt.hash(password, salt, function (error, hash) {
+            user_collection.save({
+              username     : username,
+              password_hash: hash,
+              picture      : DEFAULT_PICTURE,
+              bio          : DEFAULT_BIO,
+              contact      : DEFAULT_CONTACT,
+              favorites    : DEFAULT_FAVES
+            });
+            callback(null, true);
+          });
+        }
       });
+    }
   });
 };
 

@@ -1,4 +1,3 @@
-
 var express = require('express');
 var routes = require('./routes');
 var user = require('./routes/user');
@@ -7,8 +6,16 @@ var config = require('./config');
 var http = require('http');
 var path = require('path');
 var socketio = require('socket.io');
+var UserProvider = require('./userprovider').UserProvider;
 
 var app = express();
+var host = process.env['MONGO_NODE_DRIVER_HOST'] != null ? 
+           process.env['MONGO_NODE_DRIVER_HOST']         :
+           'localhost';
+var port = process.env['MONGO_NODE_DRIVER_PORT'] != null ?
+           process.env['MONGO_NODE_DRIVER_PORT']         :
+           27017;
+var userProvider = new UserProvider(host, port);
 
 // all environments
 app.set('port', process.env.PORT || 3000);
@@ -31,12 +38,18 @@ if ('development' == app.get('env')) {
 }
 
 app.get('/', routes.index);
-app.post('/login', user.login);
-app.post('/register', user.register);
+app.post('/login', function (req, res) {
+  user.login(req, res, userProvider);
+});
+app.post('/register', function (req, res) {
+  user.register(req, res, userProvider);
+});
 app.get('/login', user.login);
 app.get('/register', user.register);
 app.get('/logout', user.logout);
-app.get('/chat', chat.main);
+app.get('/chat', function (req, res) {
+  chat.main(req, res, userProvider);
+});
 
 var server = http.createServer(app);
 
