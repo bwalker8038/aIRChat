@@ -47,9 +47,7 @@ app.post('/register', function (req, res) {
 app.get('/login', user.login);
 app.get('/register', user.register);
 app.get('/logout', user.logout);
-app.get('/chat', function (req, res) {
-  chat.main(req, res, userProvider);
-});
+app.get('/chat', chat.main);
 
 var server = http.createServer(app);
 
@@ -58,4 +56,6 @@ server.listen(app.get('port'), function(){
 });
 
 var io = socketio.listen(server);
-io.on('connection', chat.newClient);
+io.on('connection', function (socket, params) {
+  chat.newClient(socket, params, userProvider);
+});

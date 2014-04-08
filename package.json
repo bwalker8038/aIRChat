@@ -9,6 +9,8 @@
     "express": "3.4.8",
     "ejs": "*",
     "irc": "0.3.5",
-    "socket.io": "0.9.x"
+    "socket.io": "0.9.x",
+    "mongodb": "1.4.x",
+    "bcrypt": "0.7.7"
   }
 }

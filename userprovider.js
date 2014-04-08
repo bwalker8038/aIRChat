@@ -63,6 +63,27 @@ UserProvider.prototype.findById = function (id, callback) {
   });
 };
 
+UserProvider.prototype.profileInfo = function (username, callback) {
+  this.getCollection(function (error, user_collection) {
+    if (error) {
+      callback(error);
+    } else {
+      user_collection.findOne({username: username}, function (error, result) {
+        if (error) {
+          callback(error);
+        } else {
+          callback(null, {
+            username: username,
+            bio     : result.bio,
+            contact : result.contact,
+            picture : result.picture
+          });
+        }
+      });
+    }
+  });
+};
+
 UserProvider.prototype.updateProfile = function (users, callback) {
   this.getCollection(function (error, user_collection) {
     if (error) {

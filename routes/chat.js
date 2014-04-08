@@ -40,12 +40,12 @@ var sanitize = function (string) {
   return string.replace('%', '&#37;').replace(':', '&#58;');
 };
 
-var createIRCClient = function (socket, params) {
+var createIRCClient = function (socket, params, userProvider) {
   var newClient = new irc.Client(params.server, params.nick, {
-    channels: [params.firstchannel],
-    userName: 'aIRChat_' + params.nick,
-    realName: 'Airchat User',
-    autoRejoin: false
+    channels   : [params.firstchannel],
+    userName   : 'aIRChat_' + params.nick,
+    realName   : 'Airchat User',
+    autoRejoin : false
   });
 
   newClient.addListener('message', function (from, to, msg) {
@@ -54,20 +54,20 @@ var createIRCClient = function (socket, params) {
       return; // Let private messages be handled by the pm handler.
     }
     socket.emit('notifyLow', {
-      channel: to, 
-      from: from, 
-      message: sanitize(msg),
-      server: params.server
+      channel : to, 
+      from    : from, 
+      message : sanitize(msg),
+      server  : params.server
     });
   });
 
   newClient.addListener('pm', function (from, msg) {
     console.log('Received ' + msg + ' from ' + from);
     socket.emit('notifyHigh', {
-      channel: from,
-      from: from, 
-      message: sanitize(msg),
-      server: params.server
+      channel : from,
+      from    : from, 
+      message : sanitize(msg),
+      server  : params.server
     });
   });
 
@@ -82,12 +82,16 @@ var createIRCClient = function (socket, params) {
     // database in the future.
     for (var i = nicks.length - 1; i >= 0; i--) {
       // Package users as simple objects to be created on the client side
-      users.push({
-        nick: nicks[i],
-        bio: '',
-        contact: '',
-        picture: '/images/defaultusericon.jpg',
-        server: params.server
+      userProvider.profileInfo(nicks[i], function (error, info) {
+        if (!error) {
+          users.push({
+            nick    : info.username,
+            bio     : info.bio,
+            contact : info.contact,
+            picture : info.picture,
+            server  : params.server
+          });
+        }
       });
     }
     socket.emit('nickList', {server: params.server, channel: channel, users: users});
@@ -96,32 +100,36 @@ var createIRCClient = function (socket, params) {
   newClient.addListener('join', function (channel, nick, msg) {
     // Information for the default fields here will be filled with
     // stored user info when accounts are implemented.
-    socket.emit('joined', {
-      channel: channel, 
-      nick: nick,
-      bio: '',
-      picture: '/images/defaultusericon.jpg',
-      contact: '',
-      server: params.server
+    userProvider.profileInfo(nick, function (error, info) {
+      if (!error) {
+        socket.emit('joined', {
+          channel : channel,
+          nick    : nick,
+          bio     : info.bio,
+          picture : info.picture,
+          contact : info.contact,
+          server  : params.server
+        });
+      }
     });
   });
 
   newClient.addListener('kick', function (channel, nick, by, reason, msg) {
     socket.emit('kicked', {
-      server: params.server, 
-      channel: channel, 
-      by: by, 
-      reason: reason
+      server  : params.server, 
+      channel : channel, 
+      by      : by, 
+      reason  : reason
     });
   });
 
   newClient.addListener('nick', function (oldnick, newnick, channels, msg) {
     for (var i = channels.length - 1; i >= 0; i--) {
       socket.emit('newNick', {
-        old: oldnick, 
-        new: newnick, 
-        server: params.server, 
-        channel: channels[i]
+        old     : oldnick, 
+        new     : newnick, 
+        server  : params.server, 
+        channel : channels[i]
       });
     }
   });
@@ -132,20 +140,20 @@ var createIRCClient = function (socket, params) {
 
   newClient.addListener('part', function (channel, nick, reason, msg) {
     socket.emit('userLeft', {
-      server: params.server, 
-      from: channel, 
-      nick: nick, 
-      reason: reason
+      server : params.server, 
+      from   : channel, 
+      nick   : nick, 
+      reason : reason
     });
   });
 
   newClient.addListener('quit', function (nick, reason, channels, msg) {
     for (var i = channels.length - 1; i >= 0; i--) {
       socket.emit('userLeft', {
-        server: params.server,
-        from: channels[i], 
-        nick: nick, 
-        reason: reason
+        server : params.server,
+        from   : channels[i], 
+        nick   : nick, 
+        reason : reason
       });
     }
   });
@@ -197,7 +205,6 @@ exports.newClient = function (socket) {
   });
 };
 
-// Will need to load the user's data from the DB for this section.
 exports.main = function (req, res) {
   if (req.session.loggedIn != true) {
     res.redirect(401, '/');
@@ -208,13 +215,17 @@ exports.main = function (req, res) {
     return;
   }
   clients[sessionID] = {};
-  res.render('chat', {
-    title: 'aIRChat', 
-    host: config.host, 
-    username: req.session.username,
-    sessionID: sessionID,
-    profilepic: '/images/defaultusericon.jpg',
-    userbio: 'Your biography',
-    contact: 'How can you be reached?'
+  userProvider.profileInfo(req.session.username, function (error, info) {
+    if (!error) {
+      res.render('chat', {
+        profilepic : info.picture,
+        userbio    : info.bio,
+        contact    : info.contact,
+        username   : req.session.username,
+        sessionID  : sessionID,
+        host       : config.host,
+        title      : 'aIRChat'
+      });
+    }
   });
 };
