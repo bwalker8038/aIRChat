@@ -119,6 +119,11 @@
     </div>
   </div>
   <div class="row">
+    <div class="small-12 small-centered columns">
+      <input type="text" id="profilePicLocation" placeholder="Image URL" />
+     </div>
+  </div>
+  <div class="row">
     <div class="small-12 columns">
       <h3>Bio</h3>
     </div>
@@ -136,6 +141,14 @@
   <div class="row">
     <div class="small-12 medium-8 columns">
       <input type="text" placeholder="contact information" id="contact" value="<%= contact %>" />
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-12 columns">
+      <p>
+        Enter your password to authorize this change to your profile.
+      </p>
+      <input type="password" id="passwordConfirm" />
     </div>
   </div>
   <div class="row">
@@ -564,6 +577,30 @@
     }
     socket.emit('changeNick', {server: server, sid: sid, nick: newNick});
     usernicks[server] = newNick;
+  });
+
+  $('#submitProfile').click(function (evt) {
+    $.ajax('/profileupdate', {
+      type    : 'POST',
+      data    : {
+        username : username,
+        password : $('#passwordConfirm').val(),
+        contact  : $('#contact').val(),
+        bio      : $('#bio').val(),
+        picture  : $('#profilePicLocation').val()
+      },
+      error   : function (obj, status, errorThrown) {
+        alert('Your profile information could not be updated. Reason: ' + status);
+      },
+      success : function (data, status, obj) {
+        if (data.success) {
+          alert('Your profile information was updated successfully.');
+        } else {
+          alert('Your profile information could not be updated.\n' +
+                'Please ensure that you have entered the correct password and try again.');
+        }
+      }
+    });
   });
 
   $(window).on('resize', function (evt) {

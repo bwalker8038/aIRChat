@@ -1,7 +1,3 @@
-/** For now, just have the login and register functions redirect
-  * to the chat page to test all the important stuff.
-  */
-
 exports.login = function (req, res, userProvider) {
   if (req.route.method === 'get') {
     console.log('Inside GET for login');
@@ -57,6 +53,28 @@ exports.register = function (req, res, userProvider) {
   } else {
     res.redirect(400, '/'); 
   }
+};
+
+exports.updateProfile = function (req, res, userProvider) {
+  var data = req.body.data;
+  userProvider.authenticate(data.username, data.password, function (error, result) {
+    if (!error && result) {
+      userProvider.updateProfile({
+        picture : data.picture,
+        bio     : data.bio,
+        contact : data.contact
+      },
+      function (error, user) {
+        if (!error) {
+          res.send({success: true});
+        } else {
+          res.send({success: false});
+        }
+      });
+    } else {
+      res.send({success: false});
+    }
+  });
 };
 
 exports.logout = function (req, res) {

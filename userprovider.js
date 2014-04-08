@@ -8,7 +8,7 @@ var bcrypt = require('bcrypt');
 const DEFAULT_PICTURE = '/images/defaultusericon.jpg';
 const DEFAULT_BIO = 'This user has not set a bio for themselves yet.';
 const DEFAULT_CONTACT = 'This user has not provided any contact information.';
-const DEFAULT_FAVES = {'irc.freenode.net', ['#aIRChat']};
+const DEFAULT_FAVES = {'irc.freenode.net': ['#aIRChat']};
 
 var UserProvider = function (host, port) {
   this.db = new Db('airchat', new Server(host, port, {auto_reconnect: true}, {}));
@@ -37,6 +37,7 @@ UserProvider.prototype.findAll = function (callback) {
           callback(null, results);
         }
       });
+    }
   });
 };
 
@@ -84,36 +85,31 @@ UserProvider.prototype.profileInfo = function (username, callback) {
   });
 };
 
-UserProvider.prototype.updateProfile = function (users, callback) {
+UserProvider.prototype.updateProfile = function (user, callback) {
   this.getCollection(function (error, user_collection) {
     if (error) {
       callback(error);
     } else {
-      if (users.length === undefined) {
-        users = [users];
+      if (user.picture === undefined) {
+        user.picture = DEFAULT_PICTURE;
       }
-      for (var i = 0; i < users.length; i++) {
-        user = users[i];
-        if (user.picture === undefined) {
-          user.picture = DEFAULT_PICTURE;
-        }
-        if (user.bio === undefined) {
-          user.bio = DEFAULT_BIO;
-        }
-        if (user.contact === undefined) {
-          user.contact = DEFAULT_CONTACT;
-        }
-        if (user.favorites === undefined) {
-          user.favorites = DEFAULT_FAVES;
-        }
-        user_collection.update({username: user.username}, {'$set': {
-          picture  : user.picture,
-          bio      : user.bio,
-          contact  : user.contact,
-          favorites: user.favorites
-        }});
+      if (user.bio === undefined) {
+        user.bio = DEFAULT_BIO;
       }
-      callback(null, users);
+      if (user.contact === undefined) {
+        user.contact = DEFAULT_CONTACT;
+      }
+      if (user.favorites === undefined) {
+        user.favorites = DEFAULT_FAVES;
+      }
+      user_collection.update({username: user.username}, {'$set': {
+        picture  : user.picture,
+        bio      : user.bio,
+        contact  : user.contact,
+        favorites: user.favorites
+      }});
+      callback(null, user);
+    }
   });
 };
 
@@ -132,10 +128,11 @@ UserProvider.prototype.authenticate = function (username, password, callback) {
           } else {
             callback(null, result);
           }
-        });
-      }
-  });
-};
+        }); // The last sip of tea
+      }     // at one AM in the morn'
+    }       // escaping callbacks
+  });       // by
+};          // redwire
 
 UserProvider.prototype.register = function (username, password, callback) {
   this.getCollection(function (error, user_collection) {
@@ -143,24 +140,30 @@ UserProvider.prototype.register = function (username, password, callback) {
       callback(error);
     } else {
       bcrypt.genSalt(10, function (error, salt) {
-        if (err) {
+        if (error) {
           callback(error);
         } else {
           bcrypt.hash(password, salt, function (error, hash) {
-            user_collection.save({
+            user_collection.insert({
               username     : username,
               password_hash: hash,
               picture      : DEFAULT_PICTURE,
               bio          : DEFAULT_BIO,
               contact      : DEFAULT_CONTACT,
               favorites    : DEFAULT_FAVES
-            });
-            callback(null, true);
-          });
-        }
-      });
-    }
-  });
-};
+            },
+            function (error, data) {
+              if (error) {
+                callback(error);
+              } else {
+                callback(null, true);
+              }
+            }); // We're getting awfully close to what
+          });   // people are always complaining about
+        }       // with regards to Node.js, here
+      });       // With these way-too-deeply nested
+    }           // callback functions, whose closing
+  });           // brackets take up so much space that
+};              // I could fit this monolog in here.
 
 exports.UserProvider = UserProvider;

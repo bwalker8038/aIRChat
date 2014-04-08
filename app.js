@@ -48,6 +48,9 @@ app.get('/login', user.login);
 app.get('/register', user.register);
 app.get('/logout', user.logout);
 app.get('/chat', chat.main);
+app.post('/profileupdate', function (req, res) {
+  user.updateProfile(req, res, userProvider);
+});
 
 var server = http.createServer(app);
 
