@@ -6,16 +6,22 @@ var config = require('./config');
 var http = require('http');
 var path = require('path');
 var socketio = require('socket.io');
+
+var MongoClient = require('mongodb').MongoClient;
 var UserProvider = require('./userprovider').UserProvider;
 
 var app = express();
-var host = process.env['MONGO_NODE_DRIVER_HOST'] != null ? 
-           process.env['MONGO_NODE_DRIVER_HOST']         :
-           'localhost';
-var port = process.env['MONGO_NODE_DRIVER_PORT'] != null ?
-           process.env['MONGO_NODE_DRIVER_PORT']         :
-           27017;
-var userProvider = new UserProvider(host, port);
+var userProvider;
+
+MongoClient.connect(config.dbURI, function (error, db) {
+  if (!error) {
+    userProvider = new UserProvider(db);
+    console.log('A connection to the database has been successfully established.');
+  } else {
+    console.log('A connection to the database could not be established.');
+    throw new Error('Could not connect to DB: ' + config.dbURI);
+  }
+});
 
 // all environments
 app.set('port', process.env.PORT || 3000);

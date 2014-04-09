@@ -10,13 +10,13 @@ const DEFAULT_BIO = 'This user has not set a bio for themselves yet.';
 const DEFAULT_CONTACT = 'This user has not provided any contact information.';
 const DEFAULT_FAVES = {'irc.freenode.net': ['#aIRChat']};
 
-var UserProvider = function (host, port) {
-  this.db = new Db('airchat', new Server(host, port, {auto_reconnect: true}, {}));
-  this.db.open(function () {});
+var UserProvider = function (connection) {
+  this.db = connection;
+
 };
 
 UserProvider.prototype.getCollection = function (callback) {
-  this.db.collection('users', function (error, user_collection) {
+  this.db.createCollection('users', {w: 1}, function (error, user_collection) {
     if (error) {
       callback(error);
     } else {
@@ -135,30 +135,40 @@ UserProvider.prototype.authenticate = function (username, password, callback) {
 };          // redwire
 
 UserProvider.prototype.register = function (username, password, callback) {
+  console.log('Register function called.');
   this.getCollection(function (error, user_collection) {
     if (error) {
       callback(error);
     } else {
+      console.log('Got user collection.');
       bcrypt.genSalt(10, function (error, salt) {
         if (error) {
           callback(error);
         } else {
+          console.log('Generated a salt to has password with.');
           bcrypt.hash(password, salt, function (error, hash) {
-            user_collection.insert({
-              username     : username,
-              password_hash: hash,
-              picture      : DEFAULT_PICTURE,
-              bio          : DEFAULT_BIO,
-              contact      : DEFAULT_CONTACT,
-              favorites    : DEFAULT_FAVES
-            },
-            function (error, data) {
-              if (error) {
-                callback(error);
-              } else {
-                callback(null, true);
-              }
-            }); // We're getting awfully close to what
+            if (error) {
+              callback(error);
+            } else {
+              console.log('Hashed password');
+              user_collection.insert({
+                username     : username,
+                password_hash: hash,
+                picture      : DEFAULT_PICTURE,
+                bio          : DEFAULT_BIO,
+                contact      : DEFAULT_CONTACT,
+                favorites    : DEFAULT_FAVES
+              },
+              function (error, data) {
+                if (error) {
+                  console.log('Error inserting new user: ' + error);
+                  callback(error);
+                } else {
+                  console.log('Inserted new user');
+                  callback(null, true);
+                }
+              });
+            }   // We're getting awfully close to what
           });   // people are always complaining about
         }       // with regards to Node.js, here
       });       // With these way-too-deeply nested
