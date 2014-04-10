@@ -10,9 +10,7 @@ var socketio = require('socket.io');
 var MongoClient = require('mongodb').MongoClient;
 var UserProvider = require('./userprovider').UserProvider;
 
-(function () {
 var app = express();
-var userProvider;
 
 // all environments
 app.set('port', process.env.PORT || 3000);
@@ -36,8 +34,10 @@ if ('development' == app.get('env')) {
 
 MongoClient.connect(config.dbURI, function (error, db) {
   if (!error) {
-    userProvider = new UserProvider(db);
+    var userProvider = new UserProvider(db);
     console.log('A connection to the database has been successfully established.');
+    console.log('userProvider = ');
+    console.log(userProvider);
     app.get('/', routes.index);
     app.post('/login', function (req, res) {
       user.login(req, res, userProvider);
@@ -63,13 +63,12 @@ MongoClient.connect(config.dbURI, function (error, db) {
     });
 
     var io = socketio.listen(server);
-    io.on('connection', function (socket, params) {
-      chat.newClient(socket, params, userProvider);
+    io.on('connection', function (socket) {
+      chat.newClient(socket, userProvider); 
     });
   } else {
     console.log('A connection to the database could not be established.');
-    return;
+    throw new Error('Connection could not be made to the database.');
   }
 });
 
-})();

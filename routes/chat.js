@@ -165,7 +165,7 @@ var createIRCClient = function (socket, params, userProvider) {
   return newClient;
  };
 
-exports.newClient = function (socket) {
+exports.newClient = function (socket, userProvider) {
   socket.on('part', function (data) {
     if (clients[data.sid] === undefined) return;
     clients[data.sid][data.server].part(data.channel, data.message);
@@ -183,7 +183,7 @@ exports.newClient = function (socket) {
   socket.on('serverJoin', function (data) {
     if (clients[data.sid] === undefined) return;
     if (!clients[data.sid][data.server]) {
-      clients[data.sid][data.server] = createIRCClient(socket, data);
+      clients[data.sid][data.server] = createIRCClient(socket, data, userProvider);
     }
   });
 

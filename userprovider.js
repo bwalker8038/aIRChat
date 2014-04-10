@@ -46,6 +46,7 @@ var userFavoritesCoding = function (users, method) {
 
 var UserProvider = function (connection) {
   this.db = connection;
+  console.log('Stored connection object');
 };
 
 UserProvider.prototype.getCollection = function (callback) {
