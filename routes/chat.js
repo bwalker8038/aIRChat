@@ -205,7 +205,7 @@ exports.newClient = function (socket) {
   });
 };
 
-exports.main = function (req, res) {
+exports.main = function (req, res, userProvider) {
   if (req.session.loggedIn != true) {
     res.redirect(401, '/');
   }

@@ -10,18 +10,9 @@ var socketio = require('socket.io');
 var MongoClient = require('mongodb').MongoClient;
 var UserProvider = require('./userprovider').UserProvider;
 
+(function () {
 var app = express();
 var userProvider;
-
-MongoClient.connect(config.dbURI, function (error, db) {
-  if (!error) {
-    userProvider = new UserProvider(db);
-    console.log('A connection to the database has been successfully established.');
-  } else {
-    console.log('A connection to the database could not be established.');
-    throw new Error('Could not connect to DB: ' + config.dbURI);
-  }
-});
 
 // all environments
 app.set('port', process.env.PORT || 3000);
@@ -43,28 +34,42 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
-app.get('/', routes.index);
-app.post('/login', function (req, res) {
-  user.login(req, res, userProvider);
-});
-app.post('/register', function (req, res) {
-  user.register(req, res, userProvider);
-});
-app.get('/login', user.login);
-app.get('/register', user.register);
-app.get('/logout', user.logout);
-app.get('/chat', chat.main);
-app.post('/profileupdate', function (req, res) {
-  user.updateProfile(req, res, userProvider);
+MongoClient.connect(config.dbURI, function (error, db) {
+  if (!error) {
+    userProvider = new UserProvider(db);
+    console.log('A connection to the database has been successfully established.');
+    app.get('/', routes.index);
+    app.post('/login', function (req, res) {
+      user.login(req, res, userProvider);
+    });
+    app.post('/register', function (req, res) {
+      user.register(req, res, userProvider);
+    });
+    app.get('/login', user.login);
+    app.get('/register', user.register);
+    app.get('/logout', user.logout);
+    app.get('/chat', function (req, res) {
+      chat.main(req, res, userProvider);
+    });
+    app.post('/profileupdate', function (req, res) {
+      user.updateProfile(req, res, userProvider);
+    });
+    console.log('Routes established.');
+
+    var server = http.createServer(app);
+
+    server.listen(app.get('port'), function(){
+      console.log('Express server listening on port ' + app.get('port'));
+    });
+
+    var io = socketio.listen(server);
+    io.on('connection', function (socket, params) {
+      chat.newClient(socket, params, userProvider);
+    });
+  } else {
+    console.log('A connection to the database could not be established.');
+    return;
+  }
 });
 
-var server = http.createServer(app);
-
-server.listen(app.get('port'), function(){
-  console.log('Express server listening on port ' + app.get('port'));
-});
-
-var io = socketio.listen(server);
-io.on('connection', function (socket, params) {
-  chat.newClient(socket, params, userProvider);
-});
+})();

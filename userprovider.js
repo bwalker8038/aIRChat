@@ -8,11 +8,44 @@ var bcrypt = require('bcrypt');
 const DEFAULT_PICTURE = '/images/defaultusericon.jpg';
 const DEFAULT_BIO = 'This user has not set a bio for themselves yet.';
 const DEFAULT_CONTACT = 'This user has not provided any contact information.';
-const DEFAULT_FAVES = {'irc.freenode.net': ['#aIRChat']};
+const DEFAULT_FAVES = {'irc_freenode_net': ['#aIRChat']};
+
+var replaceAll = function (str, from, to) {
+  var i = str.indexOf(from);
+  while (i != -1) {
+    str.replace(from, to);
+    i = str.indexOf(from, i);
+  }
+  return str;
+}
+
+var encodeServerNameAsKey = function (serverName) {
+  return replaceAll(serverName, '.', '_');
+};
+
+var decodeServerNameFromKey = function (serverName) {
+  return replaceAll(serverName, '_', '.');
+};
+
+var userFavoritesCoding = function (users, method) {
+  if (users.length === undefined) {
+    users = [users];
+  }
+  for (var i = 0, len = users.length; i < len; i++) {
+    var keys = Object.keys(users[i].favorites);
+    for (var j = 0, klen = keys.length; j < klen; j++) {
+      var channels = users[i].favorites[keys[j]];
+      var newName = method(users[i].favorites[keys[j]]);
+      delete users[i].favorites[keys[j]];
+      users[i].favorites[newName] = channels;
+    }
+  }
+  return users;
+}
+
 
 var UserProvider = function (connection) {
   this.db = connection;
-
 };
 
 UserProvider.prototype.getCollection = function (callback) {
@@ -34,6 +67,7 @@ UserProvider.prototype.findAll = function (callback) {
         if (error) {
           callback(error);
         } else {
+          results = userFavoritesCoding(results, decodeServerNameFromKey);
           callback(null, results);
         }
       });
@@ -57,6 +91,7 @@ UserProvider.prototype.findById = function (id, callback) {
         if (error) {
           callback(error);
         } else {
+          result = userFavoritesCoding(result, decodeServerNameFromKey);
           callback(null, result);
         }
       });
@@ -74,10 +109,11 @@ UserProvider.prototype.profileInfo = function (username, callback) {
           callback(error);
         } else {
           callback(null, {
-            username: username,
-            bio     : result.bio,
-            contact : result.contact,
-            picture : result.picture
+            username  : username,
+            bio       : result.bio,
+            contact   : result.contact,
+            picture   : result.picture,
+            favorites : userFavoritesCoding(result, decodeServerNameFromKey)
           });
         }
       });
@@ -101,6 +137,8 @@ UserProvider.prototype.updateProfile = function (user, callback) {
       }
       if (user.favorites === undefined) {
         user.favorites = DEFAULT_FAVES;
+      } else {
+        user = userFavoritesCoding(user, encodeServerNameAsKey);
       }
       user_collection.update({username: user.username}, {'$set': {
         picture  : user.picture,
