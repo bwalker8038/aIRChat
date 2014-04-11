@@ -115,7 +115,7 @@
   </div>
   <div class="row">
     <div class="small-12 small-centered columns">
-      <img class="thumbnail" src="<%= profilepic %>" />
+      <img class="thumbnail" id="ownProfilePic" src="<%= profilepic %>" />
     </div>
   </div>
   <div class="row">
@@ -401,7 +401,7 @@
       ));
     }
     chat.users.push(new User(
-      'System', '', '', '/images/defaultusericon.jpg', data.users[0].server
+      'System', '', '', '/images/defaultusericon.jpg', data.server
     ));
   });
 
@@ -581,14 +581,17 @@
   });
 
   $('#submitProfile').click(function (evt) {
+    var ci = $('#contact').val();
+    var bi = $('#bio').val();
+    var pp = $('#profilePicLocation').val();
     $.ajax('/profileupdate', {
       type    : 'POST',
       data    : {
         username : username,
         password : $('#passwordConfirm').val(),
-        contact  : $('#contact').val(),
-        bio      : $('#bio').val(),
-        picture  : $('#profilePicLocation').val()
+        contact  : ci,
+        bio      : bi,
+        picture  : pp
       },
       error   : function (obj, status, errorThrown) {
         alert('Your profile information could not be updated. Reason: ' + status);
@@ -596,6 +599,10 @@
       success : function (data, status, obj) {
         if (data.success) {
           alert('Your profile information was updated successfully.');
+          $('#ownProfilePic').attr('src', pp);
+          profilepic = pp;
+          contact = ci;
+          userbio = bi;
         } else {
           alert('Your profile information could not be updated.\n' +
                 'Please ensure that you have entered the correct password and try again.');

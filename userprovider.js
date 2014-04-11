@@ -100,32 +100,34 @@ UserProvider.prototype.findById = function (id, callback) {
 };
 
 UserProvider.prototype.profileInfo = function (username, callback) {
+  var handleUser = function (error, result) {
+    if (error) {
+      callback(error);
+    } else if (result) {
+      callback(null, {
+        username  : username,
+        bio       : result.bio,
+        contact   : result.contact,
+        picture   : result.picture,
+        favorites : userFavoritesCoding(result, decodeServerNameFromKey)
+      });
+    } else {
+      callback(null, null);
+    }
+  };
   this.getCollection(function (error, user_collection) {
     if (error) {
       callback(error);
     } else {
-      user_collection.findOne({username: username}, function (error, result) {
-        if (error) {
-          callback(error);
-        } else {
-          if (result) {
-            callback(null, {
-              username  : username,
-              bio       : result.bio,
-              contact   : result.contact,
-              picture   : result.picture,
-              favorites : userFavoritesCoding(result, decodeServerNameFromKey)
-            });
-          } else {
-            callback(null, null);
-          }
-        }
-      });
+      user_collection.findOne({username: username}, handleUser);
     }
   });
 };
 
 UserProvider.prototype.updateProfile = function (user, callback) {
+  var doNothing = function (error, result) {};
+  console.log('Update user info: ');
+  console.log(user);
   this.getCollection(function (error, user_collection) {
     if (error) {
       callback(error);
@@ -144,80 +146,85 @@ UserProvider.prototype.updateProfile = function (user, callback) {
       } else {
         user = userFavoritesCoding(user, encodeServerNameAsKey);
       }
-      user_collection.update({username: user.username}, {'$set': {
-        picture  : user.picture,
-        bio      : user.bio,
-        contact  : user.contact,
-        favorites: user.favorites
-      }});
+      user_collection.update({username: user.username}, {'$set': {picture: user.picture}}, {w: 1}, doNothing);
+      user_collection.update({username: user.username}, {'$set': {bio: user.bio}}, {w: 1}, doNothing);
+      user_collection.update({username: user.username}, {'$set': {contact: user.contact}}, {w: 1}, doNothing);
+      user_collection.update({username: user.username}, {'$set': {favorites: user.favorites}}, {w: 1}, doNothing);
       callback(null, user);
     }
   });
 };
 
 UserProvider.prototype.authenticate = function (username, password, callback) {
+  var checkPassword = function (error, result) {
+    if (error) callback(error);
+    else callback(null, result);
+  };
+  var checkUserExistence = function (error, user) {
+    if (error) {
+      callback(error);
+    } else {
+      if (!user || user.password_hash === undefined) {
+        callback(new Error('No user ' + username));
+      } else {
+        bcrypt.compare(password, user.password_hash, checkPassword);
+      }
+    }
+  };
   this.getCollection(function (error, user_collection) {
     if (error) {
       callback(error);
     } else {
-      user_collection.findOne({'username': username}, function (error, user) {
-        if (!error) {
-          if (!user || user.password_hash === undefined) {
-            console.log('No user ' + username + ' found.');
-            callback(null, false);
-          } else {
-            bcrypt.compare(password, user.password_hash, function (error, result) {
-              if (error) {
-                callback(error);
-              } else {
-                console.log('Authorization status for ' + username + ' ' + result);
-                callback(null, result);
-              }
-            });
-          }
-        } else {
-          callback(error);
-        }
-      });
+      user_collection.findOne({'username': username}, checkUserExistence);
     }
   });
 };
           
 
 UserProvider.prototype.register = function (username, password, callback) {
+  var handleInsertion = function (error, data) {
+    if (error) callback(error);
+    else callback(null, true);
+  };
+  var insertUser = function (user_collection, error, pwhash) {
+    if (error) {
+      callback(error);
+    } else {
+      user_collection.insert({
+        username     : username,
+        password_hash: pwhash,
+        picture      : DEFAULT_PICTURE,
+        bio          : DEFAULT_BIO,
+        contact      : DEFAULT_CONTACT,
+        favorites    : DEFAULT_FAVES
+      },
+      handleInsertion
+      );
+    }
+  };
+  var hashpw = function (user_collection, error, salt) {
+    if (error) callback(error);
+    else bcrypt.hash(password, salt, function (error, pwhash) {
+      insertUser(user_collection, error, pwhash);
+    });
+  };
+  var storeUser = function (user_collection, error, user) {
+    if (error || user) callback(new Error('Could not store user.'));
+    else bcrypt.genSalt(10, function (error, salt) {
+      hashpw(user_collection, error, salt);
+    });
+  };
   this.getCollection(function (error, user_collection) {
     if (error) {
       callback(error);
     } else {
-      bcrypt.genSalt(10, function (error, salt) {
-        if (error) {
-          callback(error);
-        } else {
-          bcrypt.hash(password, salt, function (error, hash) {
-            if (error) {
-              callback(error);
-            } else {
-              user_collection.insert({
-                username     : username,
-                password_hash: hash,
-                picture      : DEFAULT_PICTURE,
-                bio          : DEFAULT_BIO,
-                contact      : DEFAULT_CONTACT,
-                favorites    : DEFAULT_FAVES
-              },
-              function (error, data) {
-                if (error) {
-                  callback(error);
-                } else {
-                  callback(null, true);
-                }
-              });
-            }   // We're getting awfully close to what
-          });   // people are always complaining about
-        }       // with regards to Node.js, here
-      });       // With these way-too-deeply nested
-    }           // callback functions, whose closing
-  });           // brackets take up so much space that
-};              // I could fit this monolog in here.
+      // Check to see if the user already exists, otherwise salt and hash their
+      // password and store their user information.
+      user_collection.findOne({username: username}, function (error, user) {
+        storeUser(user_collection, error, user);
+      });
+    }
+  });
+};
 
 exports.UserProvider = UserProvider;
