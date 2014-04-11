@@ -109,13 +109,19 @@ UserProvider.prototype.profileInfo = function (username, callback) {
         if (error) {
           callback(error);
         } else {
-          callback(null, {
-            username  : username,
-            bio       : result.bio,
-            contact   : result.contact,
-            picture   : result.picture,
-            favorites : userFavoritesCoding(result, decodeServerNameFromKey)
-          });
+          console.log('Got user info for ' + username);
+          console.log(result);
+          if (result) {
+            callback(null, {
+              username  : username,
+              bio       : result.bio,
+              contact   : result.contact,
+              picture   : result.picture,
+              favorites : userFavoritesCoding(result, decodeServerNameFromKey)
+            });
+          } else {
+            callback(null, null);
+          }
         }
       });
     }

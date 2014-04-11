@@ -84,13 +84,23 @@ var createIRCClient = function (socket, params, userProvider) {
       // Package users as simple objects to be created on the client side
       userProvider.profileInfo(nicks[i], function (error, info) {
         if (!error) {
-          users.push({
-            nick    : info.username,
-            bio     : info.bio,
-            contact : info.contact,
-            picture : info.picture,
-            server  : params.server
-          });
+          if (info) {
+            users.push({
+              nick    : info.username,
+              bio     : info.bio,
+              contact : info.contact,
+              picture : info.picture,
+              server  : params.server
+            });
+          } else {
+            users.push({ 
+              nick    : nicks[i],
+              bio     : 'Not an aIRChat user',
+              contact : '',
+              picture : '/images/defaultusericon.jpg',
+              server  : params.server
+            });
+          }
         }
       });
     }
