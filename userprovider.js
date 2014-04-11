@@ -46,7 +46,6 @@ var userFavoritesCoding = function (users, method) {
 
 var UserProvider = function (connection) {
   this.db = connection;
-  console.log('Stored connection object');
 };
 
 UserProvider.prototype.getCollection = function (callback) {
@@ -109,8 +108,6 @@ UserProvider.prototype.profileInfo = function (username, callback) {
         if (error) {
           callback(error);
         } else {
-          console.log('Got user info for ' + username);
-          console.log(result);
           if (result) {
             callback(null, {
               username  : username,
@@ -163,39 +160,43 @@ UserProvider.prototype.authenticate = function (username, password, callback) {
     if (error) {
       callback(error);
     } else {
-      var user = user_collection.find({username: username});
-      if (!user.password_hash) {
-        callback(null, false);
-      } else {
-        bcrypt.compare(password, user.password_hash, function (error, result) {
-          if (error) {
-            callback(error);
+      user_collection.findOne({'username': username}, function (error, user) {
+        if (!error) {
+          if (!user || user.password_hash === undefined) {
+            console.log('No user ' + username + ' found.');
+            callback(null, false);
           } else {
-            callback(null, result);
+            bcrypt.compare(password, user.password_hash, function (error, result) {
+              if (error) {
+                callback(error);
+              } else {
+                console.log('Authorization status for ' + username + ' ' + result);
+                callback(null, result);
+              }
+            });
           }
-        }); // The last sip of tea
-      }     // at one AM in the morn'
-    }       // escaping callbacks
-  });       // by
-};          // redwire
+        } else {
+          callback(error);
+        }
+      });
+    }
+  });
+};
+          
 
 UserProvider.prototype.register = function (username, password, callback) {
-  console.log('Register function called.');
   this.getCollection(function (error, user_collection) {
     if (error) {
       callback(error);
     } else {
-      console.log('Got user collection.');
       bcrypt.genSalt(10, function (error, salt) {
         if (error) {
           callback(error);
         } else {
-          console.log('Generated a salt to has password with.');
           bcrypt.hash(password, salt, function (error, hash) {
             if (error) {
               callback(error);
             } else {
-              console.log('Hashed password');
               user_collection.insert({
                 username     : username,
                 password_hash: hash,
@@ -206,10 +207,8 @@ UserProvider.prototype.register = function (username, password, callback) {
               },
               function (error, data) {
                 if (error) {
-                  console.log('Error inserting new user: ' + error);
                   callback(error);
                 } else {
-                  console.log('Inserted new user');
                   callback(null, true);
                 }
               });

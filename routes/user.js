@@ -56,7 +56,7 @@ exports.register = function (req, res, userProvider) {
 };
 
 exports.updateProfile = function (req, res, userProvider) {
-  var data = req.body.data;
+  var data = req.body;
   userProvider.authenticate(data.username, data.password, function (error, result) {
     if (!error && result) {
       userProvider.updateProfile({
