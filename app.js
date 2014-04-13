@@ -32,7 +32,7 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
-MongoClient.connect(config.dbURI, function (error, db) {
+MongoClient.connect(config.dbURI, {w: 1}, function (error, db) {
   if (!error) {
     var userProvider = new UserProvider(db);
     console.log('A connection to the database has been successfully established.');

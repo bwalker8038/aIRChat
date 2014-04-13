@@ -99,33 +99,41 @@ UserProvider.prototype.findById = function (id, callback) {
   });
 };
 
-UserProvider.prototype.profileInfo = function (username, callback) {
-  var handleUser = function (error, result) {
+UserProvider.prototype.profileInfo = function (usernames, callback) {
+  var filterData = function (error, users) {
+    if (error) {
+      callback(error);
+    } else {
+      for (var i = users.length - 1; i >= 0; i--) {
+        delete users[i].password_hash;
+        users[i].nick = users[i].username;
+        delete users[i].username;
+      }
+      callback(null, users);
+    }
+  };
+  var handleUsers = function (error, result) {
     if (error) {
       callback(error);
     } else if (result) {
-      callback(null, {
-        username  : username,
-        bio       : result.bio,
-        contact   : result.contact,
-        picture   : result.picture,
-        favorites : userFavoritesCoding(result, decodeServerNameFromKey)
-      });
+      result.toArray(filterData);
     } else {
-      callback(null, null);
+      callback(null, []);
     }
   };
   this.getCollection(function (error, user_collection) {
     if (error) {
       callback(error);
     } else {
-      user_collection.findOne({username: username}, handleUser);
+      user_collection.find({username: {$in: usernames}}, handleUsers);
     }
   });
 };
 
 UserProvider.prototype.updateProfile = function (user, callback) {
-  var doNothing = function (error, result) {};
+  var hUpdate = function (error, result) {
+    console.log('Update result status: ' + result);
+  };
   console.log('Update user info: ');
   console.log(user);
   this.getCollection(function (error, user_collection) {
@@ -146,10 +154,10 @@ UserProvider.prototype.updateProfile = function (user, callback) {
       } else {
         user = userFavoritesCoding(user, encodeServerNameAsKey);
       }
-      user_collection.update({username: user.username}, {'$set': {picture: user.picture}}, {w: 1}, doNothing);
-      user_collection.update({username: user.username}, {'$set': {bio: user.bio}}, {w: 1}, doNothing);
-      user_collection.update({username: user.username}, {'$set': {contact: user.contact}}, {w: 1}, doNothing);
-      user_collection.update({username: user.username}, {'$set': {favorites: user.favorites}}, {w: 1}, doNothing);
+      user_collection.update({username: user.username}, {$set: {picture: user.picture}}, hUpdate);
+      user_collection.update({username: user.username}, {$set: {bio: user.bio}}, hUpdate);
+      user_collection.update({username: user.username}, {$set: {contact: user.contact}}, hUpdate);
+      user_collection.update({username: user.username}, {$set: {favorites: user.favorites}}, hUpdate);
       callback(null, user);
     }
   });

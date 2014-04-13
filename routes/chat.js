@@ -76,50 +76,61 @@ var createIRCClient = function (socket, params, userProvider) {
   });
 
   newClient.addListener('names', function (channel, nicks) {
-    nicks = Object.keys(nicks);
-    var users = new Array();
-    // This is where user aIRChat user data will be loaded up from the
-    // database in the future.
-    for (var i = nicks.length - 1; i >= 0; i--) {
-      // Package users as simple objects to be created on the client side
-      userProvider.profileInfo(nicks[i], function (error, info) {
-        if (!error) {
-          if (info) {
-            users.push({
-              nick    : info.username,
-              bio     : info.bio,
-              contact : info.contact,
-              picture : info.picture,
-              server  : params.server
-            });
-          } else {
-            users.push({ 
-              nick    : nicks[i],
-              bio     : 'Not an aIRChat user',
-              contact : '',
-              picture : '/images/defaultusericon.jpg',
-              server  : params.server
-            });
+    var nicknames = Object.keys(nicks);
+    userProvider.profileInfo(nicknames, function (error, userdata) {
+      if (!error) {
+        // Filter down the list of nicknames to only those who don't have
+        // accounts as aIRChat users.
+        for (var i = 0, len = userdata.length; i < len; i++) {
+          var index = nicknames.indexOf(userdata[i].username);
+          if (index != -1) {
+            nicknames.remove(index);
           }
         }
-      });
-    }
-    socket.emit('nickList', {server: params.server, channel: channel, users: users});
+        // Create template profiles for non-aIRChat users.
+        for (var i = 0, len = nicknames.length; i < len; i++) {
+          userdata.push({
+            nick    : nicknames[i],
+            bio     : 'Not an aIRChat user.',
+            contact : '',
+            picture : '/images/defaultusericon.jpg',
+            server  : params.server
+          });
+        }
+        socket.emit('nickList', {
+          server  : params.server,
+          channel : channel,
+          users   : userdata
+        });
+      }
+    });
   });
 
   newClient.addListener('join', function (channel, nick, msg) {
     // Information for the default fields here will be filled with
     // stored user info when accounts are implemented.
-    userProvider.profileInfo(nick, function (error, info) {
+    userProvider.profileInfo([nick], function (error, info) {
       if (!error) {
-        socket.emit('joined', {
-          channel : channel,
-          nick    : nick,
-          bio     : info.bio,
-          picture : info.picture,
-          contact : info.contact,
-          server  : params.server
-        });
+        if (info) {
+          info = info[0];
+          socket.emit('joined', {
+            channel : channel,
+            nick    : nick,
+            bio     : info.bio,
+            picture : info.picture,
+            contact : info.contact,
+            server  : params.server
+          });
+        } else {
+          socket.emit('joined', {
+            channel : channel,
+            nick    : nick,
+            bio     : '',
+            picture : '/images/defaultusericon.jpg',
+            contact : '',
+            server  : params.server
+          });
+        }
       }
     });
   });
@@ -225,8 +236,11 @@ exports.main = function (req, res, userProvider) {
     return;
   }
   clients[sessionID] = {};
-  userProvider.profileInfo(req.session.username, function (error, info) {
+  userProvider.profileInfo([req.session.username], function (error, info) {
+    console.log('Data from profileInfo():');
+    console.log(info);
     if (!error) {
+      info = info[0];
       res.render('chat', {
         profilepic : info.picture,
         userbio    : info.bio,
@@ -236,6 +250,8 @@ exports.main = function (req, res, userProvider) {
         host       : config.host,
         title      : 'aIRChat'
       });
+    } else {
+      res.redirect(500, '/');
     }
   });
 };

@@ -62,9 +62,10 @@ exports.updateProfile = function (req, res, userProvider) {
   userProvider.authenticate(data.username, data.password, function (error, result) {
     if (!error && result) {
       userProvider.updateProfile({
-        picture : data.picture,
-        bio     : data.bio,
-        contact : data.contact
+        username : data.username,
+        picture  : data.picture,
+        bio      : data.bio,
+        contact  : data.contact
       },
       function (error, user) {
         if (!error) {
