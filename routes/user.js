@@ -79,8 +79,3 @@ exports.updateProfile = function (req, res, userProvider) {
     }
   });
 };
-
-exports.logout = function (req, res) {
-  req.session = null;
-  res.redirect(303, '/');
-};

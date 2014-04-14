@@ -49,7 +49,6 @@ var createIRCClient = function (socket, params, userProvider) {
   });
 
   newClient.addListener('message', function (from, to, msg) {
-    console.log('Received ' + msg + ' from ' + from);
     if (to === params.nick) {
       return; // Let private messages be handled by the pm handler.
     }
@@ -62,7 +61,6 @@ var createIRCClient = function (socket, params, userProvider) {
   });
 
   newClient.addListener('pm', function (from, msg) {
-    console.log('Received ' + msg + ' from ' + from);
     socket.emit('notifyHigh', {
       channel : from,
       from    : from, 
@@ -77,31 +75,8 @@ var createIRCClient = function (socket, params, userProvider) {
 
   newClient.addListener('names', function (channel, nicks) {
     var nicknames = Object.keys(nicks);
-    console.log('names listener got list of nicknames: ');
-    console.log(nicknames);
     userProvider.profileInfo(nicknames, function (error, userdata) {
       if (!error) {
-        // Filter down the list of nicknames to only those who don't have
-        // accounts as aIRChat users.
-        for (var i = 0, len = userdata.length; i < len; i++) {
-          var index = nicknames.indexOf(userdata[i].username);
-          if (index != -1) {
-            console.log('Removing user: ' + nicknames[index]);
-            nicknames.remove(index);
-          }
-        }
-        /*
-        // Create template profiles for non-aIRChat users.
-        for (var i = 0, len = nicknames.length; i < len; i++) {
-          userdata.push({
-            nick    : nicknames[i],
-            bio     : 'Not an aIRChat user.',
-            contact : '',
-            picture : '/images/defaultusericon.jpg',
-            server  : params.server
-          });
-        }
-        */
         socket.emit('nickList', {
           server  : params.server,
           channel : channel,
@@ -197,17 +172,6 @@ exports.newClient = function (socket, userProvider) {
     clients[data.sid][data.server].part(data.channel, data.message);
   });
   
-  socket.on('disconnect', function (data) {
-    if (!data || !data.sid || !clients[data.sid]) return;
-    var servers = Object.keys(clients[data.sid]);
-    for (var i = servers.length - 1; i >= 0; i--) {
-      clients[data.sid][servers[i]].disconnect('Connection to server closed.');
-      console.log('Disconnected from ' + servers[i]);
-      delete clients[data.sid][servers[i]];
-    }
-    delete clients[data.sid];
-  });
-
   socket.on('serverJoin', function (data) {
     if (clients[data.sid] === undefined) return;
     if (!clients[data.sid][data.server]) {
@@ -233,6 +197,17 @@ exports.newClient = function (socket, userProvider) {
   });
 };
 
+exports.logout = function (req, res) {
+  var sid = req.session.sessionID;
+  var servers = Object.keys(clients[sid]);
+  for (var i = servers.length - 1; i >= 0; i--) {
+    clients[sid][servers[i]].disconnect('Connection to server closed.');
+  }
+  delete clients[sid];
+  req.session = null;
+  res.redirect(303, '/');
+};
+
 exports.main = function (req, res, userProvider) {
   if (req.session.loggedIn != true) {
     res.redirect(401, '/');
@@ -244,10 +219,9 @@ exports.main = function (req, res, userProvider) {
   }
   clients[sessionID] = {};
   userProvider.profileInfo([req.session.username], function (error, info) {
-    console.log('Data from profileInfo():');
-    console.log(info);
     if (!error) {
       info = info[0];
+      req.session.sessionID = sessionID;
       res.render('chat', {
         profilepic : info.picture,
         userbio    : info.bio,

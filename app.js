@@ -47,7 +47,7 @@ MongoClient.connect(config.dbURI, {w: 1}, function (error, db) {
     });
     app.get('/login', user.login);
     app.get('/register', user.register);
-    app.get('/logout', user.logout);
+    app.get('/logout', chat.logout);
     app.get('/chat', function (req, res) {
       chat.main(req, res, userProvider);
     });

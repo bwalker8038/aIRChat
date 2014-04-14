@@ -184,7 +184,7 @@
       <li class="divider"></li>
       <li><a href="#" data-reveal-id="profileSettings">Profile</a></li>
       <li class="divider"></li>
-      <li><a href="/logout" id="logout">Log out</a></li>
+      <li><a href="/logout">Log out</a></li>
     </ul>
   </section>
 </nav>
@@ -532,10 +532,6 @@
     for (var i = users.length - 1; i >= 0; i--) {
       $('ul#listOfNicks').prepend($('<li>' + users[i].nick + '</li>'));
     }
-  });
-
-  $('a#logout').click(function (evt) {
-    socket.emit('disconnect', {sid: sid}); 
   });
 
   $('a#sendPrivMsg').click(function (evt) {
