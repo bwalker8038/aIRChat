@@ -35,16 +35,20 @@ To be able to run aIRChat, you need to have installed the following:
 * [npm](https://www.npmjs.org/)
 * [MongoDB](http://www.mongodb.org/) 
 
-Running
-=======
+Configuration
+=============
 
-To run aIRChat yourself, first, install dependancies:
+Configuration information for aIRChat is contained in the file `config.js`.
 
-`npm install`
-
-Secondly, start the Mongo database server daemon:
-
-`mongod --dbpath data/db&`
+If you are just running aIRChat on your own computer for testing purposes, you
+do not need to change either the `host` nor the `dbURI` variables.  
+  
+If, however, you are hosting aIRChat on a server somewhere for others to connect to, 
+the host variable should contain the URL used to reach the site, as it is used for
+a client's browser to create a connection back to the server to communicate messages
+and commands.
+Likewise, the dbURI variable must be changed to contain the URI through which a 
+connection to the database can be made.
 
 If it is your first time running aIRChat, you must configure it to use your own
 secret key value for securing session data. aIRChat comes packaged with a small
@@ -58,6 +62,19 @@ then open the file `config.js` in your favorite text editor and replace the text
 the single-quotes on the line containing exports.secret = ... with the key you copied.
 Make sure that your pasted key is contained within the single-quotes and that the line
 ends in a semi-colon.
+
+
+
+Running
+=======
+
+To run aIRChat yourself, first, install dependancies:
+
+`npm install`
+
+Secondly, start the Mongo database server daemon:
+
+`mongod --dbpath data/db&`
 
 Next, start up the application server:
 
