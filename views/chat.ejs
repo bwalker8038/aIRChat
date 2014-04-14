@@ -355,7 +355,7 @@
     } else if (type === 'departed') {
       message = data + ' has parted from this channel.';
     } else if (type === 'changedNick') {
-      message = data + ' has changed their nick to ' + newdata);
+      message = data + ' has changed their nick to ' + newdata + '.';
     } else {
       message = 'Received unknown notification event of type ' + type + ' on ' + 
                 server + '/' + channel + ' from ' + data;
