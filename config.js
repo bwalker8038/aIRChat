@@ -24,4 +24,4 @@ exports.dbURI = 'mongodb://localhost:27017/usersDb';
   * Express' sessions use a secret key to provide security.
   * This should never be shared with anyone once set.
   */
-exports.secret = 'DDxkIMtKdkDSG8hMqtuc7r6y4sETUcdQoe9zrLie3FFvgUAIHTBSjS7XjMuFp8ro';
+exports.secret = 'YOUR SECRET HERE';
