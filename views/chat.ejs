@@ -269,9 +269,9 @@
     }
     var highlight = '';
 
-    if (data.from === username) {
+    if (data.from === usernicks[data.server]) {
       highlight = ' self'; // Space needed to separate class names
-    } else if (data.message.indexOf(username) != -1) {
+    } else if (data.message.indexOf(usernicks[data.server]) != -1) {
       highlight = ' mention';
     }
 
@@ -345,12 +345,26 @@
       });
   };
 
-  var channelNotification = function (type, server, channel, nick) {
+  // Display a message about some occurrence in the channel.
+  // the newdata field is only required for events involving some data changing.
+  // This could be a user's nick being changed, or something else.
+  var channelNotification = function (type, server, channel, data, newdata) {
+    var message;
+    if (type === 'joined') {
+      message = data + ' has joined this channel.';
+    } else if (type === 'departed') {
+      message = data + ' has parted from this channel.';
+    } else if (type === 'changedNick') {
+      message = data + ' has changed their nick to ' + newdata);
+    } else {
+      message = 'Received unknown notification event of type ' + type + ' on ' + 
+                server + '/' + channel + ' from ' + data;
+    }
     addMessage({
       from: 'System',
       server: server,
       channel: channel,
-      message: 'User ' + nick + ' has ' + type + ' this channel.'
+      message: message
     });
   };
 
@@ -446,6 +460,7 @@
   socket.on('newNick', function (data) {
     var chat = chats[chatIndex(chats, data.server, data.channel)];
     chat.getUser(data.old).changeNick(data.new);
+    channelNotification('changedNick', data.server, data.channel, data.old, data.new);
   });
 
   socket.on('invited', function (data) {
@@ -462,10 +477,8 @@
     var index = userList.findIndex(function (elem, index, arr) {
       return elem.sameUserAs(data.nick);
     });
-    // TODO
-    // Test to make sure this is definitely removing the user from the list
     userList.remove(index);
-    channelNotification('departed from', data.from, data.nick);
+    channelNotification('departed', data.server, data.from, data.nick);
   });
 
   $('#messageInput').keypress(function (evt) {

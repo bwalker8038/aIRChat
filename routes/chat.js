@@ -199,13 +199,19 @@ exports.newClient = function (socket, userProvider) {
 
 exports.logout = function (req, res) {
   var sid = req.session.sessionID;
-  var servers = Object.keys(clients[sid]);
-  for (var i = servers.length - 1; i >= 0; i--) {
-    clients[sid][servers[i]].disconnect('Connection to server closed.');
+  // Avoid causing a TypeError if a user tries to navigate to /logout without
+  // ever having had a collection of servers created for them.
+  if (!sid || !clients[sid]) {
+    res.redirect(400, '/');
+  } else {
+    var servers = Object.keys(clients[sid]);
+    for (var i = servers.length - 1; i >= 0; i--) {
+      clients[sid][servers[i]].disconnect('Connection to server closed.');
+    }
+    delete clients[sid];
+    req.session = null;
+    res.redirect(303, '/');
   }
-  delete clients[sid];
-  req.session = null;
-  res.redirect(303, '/');
 };
 
 exports.main = function (req, res, userProvider) {

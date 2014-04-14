@@ -36,8 +36,6 @@ MongoClient.connect(config.dbURI, {w: 1}, function (error, db) {
   if (!error) {
     var userProvider = new UserProvider(db);
     console.log('A connection to the database has been successfully established.');
-    console.log('userProvider = ');
-    console.log(userProvider);
     app.get('/', routes.index);
     app.post('/login', function (req, res) {
       user.login(req, res, userProvider);
