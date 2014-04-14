@@ -111,7 +111,7 @@ var createIRCClient = function (socket, params, userProvider) {
     // stored user info when accounts are implemented.
     userProvider.profileInfo([nick], function (error, info) {
       if (!error) {
-        if (info) {
+        if (info.length > 0) {
           info = info[0];
           socket.emit('joined', {
             channel : channel,
@@ -196,7 +196,9 @@ exports.newClient = function (socket, userProvider) {
     if (!data || !data.sid || !clients[data.sid]) return;
     var servers = Object.keys(clients[data.sid]);
     for (var i = servers.length - 1; i >= 0; i--) {
-      clients[data.sid][servers[i]].disconnect('Connect to server closed.');
+      clients[data.sid][servers[i]].disconnect('Connection to server closed.');
+      console.log('Disconnected from ' + servers[i]);
+      delete clients[data.sid][servers[i]];
     }
     delete clients[data.sid];
   });
