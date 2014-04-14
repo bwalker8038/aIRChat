@@ -46,6 +46,19 @@ Secondly, start the Mongo database server daemon:
 
 `mongod --dbpath data/db&`
 
+If it is your first time running aIRChat, you must configure it to use your own
+secret key value for securing session data. aIRChat comes packaged with a small
+program `gensecret.js` which will generate a pseudorandom secret for you. Run
+the command:
+
+`node gensecret.js`
+
+and copy the string of characters it produces (make sure you get all of them!), and
+then open the file `config.js` in your favorite text editor and replace the text inside
+the single-quotes on the line containing exports.secret = ... with the key you copied.
+Make sure that your pasted key is contained within the single-quotes and that the line
+ends in a semi-colon.
+
 Next, start up the application server:
 
 `node app.js`
