@@ -77,6 +77,8 @@ var createIRCClient = function (socket, params, userProvider) {
 
   newClient.addListener('names', function (channel, nicks) {
     var nicknames = Object.keys(nicks);
+    console.log('names listener got list of nicknames: ');
+    console.log(nicknames);
     userProvider.profileInfo(nicknames, function (error, userdata) {
       if (!error) {
         // Filter down the list of nicknames to only those who don't have
@@ -84,9 +86,11 @@ var createIRCClient = function (socket, params, userProvider) {
         for (var i = 0, len = userdata.length; i < len; i++) {
           var index = nicknames.indexOf(userdata[i].username);
           if (index != -1) {
+            console.log('Removing user: ' + nicknames[index]);
             nicknames.remove(index);
           }
         }
+        /*
         // Create template profiles for non-aIRChat users.
         for (var i = 0, len = nicknames.length; i < len; i++) {
           userdata.push({
@@ -97,6 +101,7 @@ var createIRCClient = function (socket, params, userProvider) {
             server  : params.server
           });
         }
+        */
         socket.emit('nickList', {
           server  : params.server,
           channel : channel,

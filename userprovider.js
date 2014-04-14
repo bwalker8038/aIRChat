@@ -109,6 +109,8 @@ UserProvider.prototype.profileInfo = function (usernames, callback) {
         users[i].nick = users[i].username;
         delete users[i].username;
       }
+      console.log('profileInfo got array of users:');
+      console.log(users);
       callback(null, users);
     }
   };

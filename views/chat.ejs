@@ -397,11 +397,6 @@
   socket.on('nickList', function (data) {
     var chat = chats[chatIndex(chats, data.server, data.channel)];
     console.log('Got nicklist for ' + data.channel);
-    // The user will already have been added to the list of the chat's users,
-    // so remove them from the list of results.
-    data.users.remove(data.users.findIndex(function (elem, index, arr) {
-      return elem.nick === usernicks[elem.server];
-    }));
     for (var i = data.users.length - 1; i >= 0; i--) {
       chat.users.push(new User(
         data.users[i].nick, 
