@@ -39,13 +39,19 @@ Running
 =======
 
 To run aIRChat yourself, first, install dependancies:
+
 `npm install`
 
 Secondly, start the Mongo database server daemon:
+
 `mongod --dbpath data/db&`
 
 Next, start up the application server:
+
 `node app.js`
 
 You're done! You can now visit your aIRChat instance on localhost, port 3000.
 That is, simply enter `localhost:3000` into your browser's address bar.
+
+You can stop the aIRChat server at any time by pressing `Ctrl+c` on your keyboard
+with the terminal running the node process active.
