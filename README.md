@@ -26,11 +26,23 @@ possible to create an experience remniscient of popular chat clients. Doing this
 should make it easier for people who want to communicate over IRC to do so, and
 generally more pleasant for current IRC users to continue doing so.
 
+Requirements
+============
+
+To be able to run aIRChat, you need to have installed the following:
+
+* [Node.JS](http://nodejs.org/)
+* [npm](https://www.npmjs.org/)
+* [MongoDB](http://www.mongodb.org/) 
+
 Running
 =======
 
 To run aIRChat yourself, first, install dependancies:
 `npm install`
+
+Secondly, start the Mongo database server daemon:
+`mongod --dbpath data/db&`
 
 Next, start up the application server:
 `node app.js`
