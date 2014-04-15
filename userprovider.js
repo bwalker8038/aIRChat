@@ -10,6 +10,13 @@ const DEFAULT_BIO = 'This user has not set a bio for themselves yet.';
 const DEFAULT_CONTACT = 'This user has not provided any contact information.';
 const DEFAULT_FAVES = {'irc_freenode_net': ['#aIRChat']};
 
+// Array remove - By John Resig
+Array.prototype.remove = function (start, end) {
+  var tail = this.slice((end || start) + 1 || this.length);
+  this.length = start < 0 ? this.length + start : start;
+  return this.push.apply(this, tail);
+};
+
 var replaceAll = function (str, from, to) {
   var i = str.indexOf(from);
   while (i != -1) {
@@ -107,7 +114,17 @@ UserProvider.prototype.profileInfo = function (usernames, callback) {
       for (var i = users.length - 1; i >= 0; i--) {
         delete users[i].password_hash;
         users[i].nick = users[i].username;
+        // Filter the original list of usernames so that default profiles can be built for them
+        usernames.remove(usernames.indexOf(users[i].username));
         delete users[i].username;
+      }
+      for (var i = usernames.length - 1; i >= 0; i--) {
+        users.push({
+          nick    : usernames[i],
+          bio     : 'Not an aIRChat user.',
+          picture : '/images/defaultusericon.jpg',
+          contact : ''
+        });
       }
       console.log('profileInfo got array of users:');
       console.log(users);
