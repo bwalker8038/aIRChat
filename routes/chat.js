@@ -168,6 +168,8 @@ var createIRCClient = function (socket, params, userProvider) {
 
 exports.newClient = function (socket, userProvider) {
   socket.on('part', function (data) {
+    console.log('Got part event for ');
+    console.log(data);
     if (clients[data.sid] === undefined) return;
     clients[data.sid][data.server].part(data.channel, data.message);
   });
