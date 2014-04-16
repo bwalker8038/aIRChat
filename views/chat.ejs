@@ -84,14 +84,11 @@
         <tr>
           <th>Nick</th>
           <th>Last Message</th>
-          <th>Private Message</th>
-          <th>View Profile</th>
         </tr>
       </thead>
       <tbody>
         <!-- Filled by JS -->
       </tbody>
-    </tbody>
     </table>
   </div>
   <a class="close-reveal-modal">&#215;</a>
@@ -115,6 +112,40 @@
     </div>
   </div>
   <a class="close-reveal-modal">&#215;</a>
+</div>
+<!-- Dialog for seeing another user's profile information -->
+<div class="reveal-modal" id="showOtherProfile" data-reveal>
+  <h1><!-- Filled by JS --></h1>
+  <div class="row">
+    <div class="small-12 columns">
+      <!-- Source attribute filled by JS -->
+      <img src="" class="thumbnail" id="otherPicture" />
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-8 columns">
+      <h2>Bio</h2>
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-8 columns">
+      <p id="otherBio">
+        <!-- Filled by JS -->
+      </p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-8 columns">
+      <h2>Contact Information</h2>
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-8 columns">
+      <p id="otherContact">
+        <!-- Filled by JS -->
+      </p>
+    </div>
+  </div>
 </div>
 <!-- Dialog for setting profile information -->
 <div class="reveal-modal" id="profileSettings" data-reveal>
@@ -170,7 +201,6 @@
   <a class="close-reveal-modal">&#215;</a>
 </div>
   
-</div>
 <!-- Nav bar for chat management -->
 <nav class="top-bar" data-topbar>
   <ul class="title-area">
@@ -206,7 +236,7 @@
 <!-- Content of chat -->
 <div class="tabs-content vertical" id="chatContent">
 </div>
-<input type="text" type="text" id="messageInput" placeholder="Message" />
+<input type="text" id="messageInput" placeholder="Message" />
 <script src="/javascripts/users.js"></script>
 <script src="/javascripts/chats.js"></script>
 <script src="/socket.io/socket.io.js"></script>

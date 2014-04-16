@@ -345,12 +345,13 @@ $('a[data-reveal-id=getNickList]').click(function (evt) {
     if (users[i].nick === usernicks[server]) {
       continue;
     }
+    var lastMsg = (users[i].lastMessage === undefined) ? 'No messages received yet' : users[i].lastMessage;
+    // The two buttons here will open their respective modals from within their
+    // respective event handlers rather than using the data-reveal-id attribute.
     $list.prepend($(
       '<tr>' +
       '  <td>' + users[i].nick + '</td>' +
-      '  <td>' + users[i].lastMessage + '</td>' +
-      '  <td><a href="#" class="sendPMButton small button" data-nick="' + users[i].nick + '">Message</a></td>' +
-      '  <td><a href="#" class="viewProfButton small button" data-nick="' + users[i].nick + '">Profile</a></td>' +
+      '  <td>' + lastMsg + '</td>' + 
       '</tr>'
     ));
   }
