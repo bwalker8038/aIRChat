@@ -161,6 +161,12 @@ var channelNotification = function (type, server, channel, data, newdata) {
   });
 };
 
+socket.on('gotError', function (error) {
+  alert('Got an error from the server containing the following:\n' +
+        error.args.join(' ')
+  );
+});
+
 socket.on('notifyLow', function (data) {
   var $ad = $('div.active');
   var chat = chats[chatIndex(chats, data.server, data.channel)];
@@ -404,6 +410,18 @@ $('a#changeNickConfirm').click(function (evt) {
   }
   socket.emit('changeNick', {server: server, sid: sid, nick: newNick});
   usernicks[server] = newNick;
+});
+
+$('#sendCommandButton').click(function (evt) {
+  var commandArgs = $('#commandInput').val().split(' ');
+  var server = $('div.active').first().data('server');
+  if (!server) {
+    alert('You must have selected a chat tab for a channel on the server you wish to ' +
+          ' send your command to. Please connect to a server, select its tab, and try again'
+    );
+  } else {
+    socket.emit('rawCommand', {args: commandArgs, sid: sid, server: server});
+  }
 });
 
 $('#submitProfile').click(function (evt) {

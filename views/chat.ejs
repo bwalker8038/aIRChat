@@ -195,12 +195,38 @@
   </div>
   <div class="row">
     <div class="small-12 columns">
-      <a href="#" id="submitProfile" class="success button">Submit changes</a>
+      <a href="#" id="submitProfile" class="close-reveal-modal success button">Submit changes</a>
     </div>
   </div>
   <a class="close-reveal-modal">&#215;</a>
 </div>
-  
+<!-- Dialog for entering raw commands -->
+<div class="reveal-modal" id="rawCmdDialog" data-reveal>
+  <h1>Enter a raw command</h1>
+  <div class="row">
+    <div class="small-12 columns">
+      <p>
+        <a href="https://en.wikipedia.org/wiki/List_of_Internet_Relay_Chat_commands" target="_blank">
+          IRC commands
+        </a>
+        allow a client (you) to send the IRC server special data to query the server for information,
+        to invite users to join a channel, to change or reclaim your nick, and more.
+        Your command should not be prefixed with a forward-slash (/).
+      </p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-8 columns">
+      <input type="text" placeholder="Command" id="commandInput" />
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-12 columns">
+      <a href="#" class="close-reveal-modal success button" id="sendCommandButton">Send</a>
+    </div>
+  </div>
+  <a class="close-reveal-modal">&#215;</a>
+</div>
 <!-- Nav bar for chat management -->
 <nav class="top-bar" data-topbar>
   <ul class="title-area">
@@ -224,6 +250,8 @@
       </li>
       <li class="divider"></li>
       <li><a href="#" data-reveal-id="profileSettings">Profile</a></li>
+      <li class="divider"></li>
+      <li><a href="#" data-reveal-id="rawCmdDialog">Command</a></li>
       <li class="divider"></li>
       <li><a href="/logout">Log out</a></li>
     </ul>

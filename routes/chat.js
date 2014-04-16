@@ -159,17 +159,21 @@ var createIRCClient = function (socket, params, userProvider) {
     }
   });
 
-  newClient.addListener('error', function (message) {
-    console.log('IRC Client error: ' + message);
+  newClient.addListener('error', function (error) {
+    socket.emit('gotError', error);
   });
 
   return newClient;
  };
 
 exports.newClient = function (socket, userProvider) {
+  socket.on('rawCommand', function (data) {
+    if (data.sid === undefined || clients[data.sid] === undefined) return;
+    var client = clients[data.sid][data.server];
+    client.send.apply(client, data.args);
+  });
+
   socket.on('part', function (data) {
-    console.log('Got part event for ');
-    console.log(data);
     if (clients[data.sid] === undefined) return;
     clients[data.sid][data.server].part(data.channel, data.message);
   });
