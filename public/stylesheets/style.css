@@ -139,8 +139,8 @@ div.message div.left + div {
   width: calc(100% - 50px);
 }
 
-ul#listOfNicks {
-  list-style-type: none;
+table#listOfNicks {
+  width: 100%;
 }
 
 #messageInput {

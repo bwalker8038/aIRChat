@@ -59,8 +59,9 @@ var addMessage = function (data) {
   } else {
     var picture = user.picture;
   }
-  var highlight = '';
+  var time = ' at ' + formattedMessageTime(); // From users.js
 
+  var highlight = '';
   if (data.from === usernicks[data.server]) {
     highlight = ' self'; // Space needed to separate class names
   } else if (data.message.indexOf(usernicks[data.server]) != -1) {
@@ -74,7 +75,7 @@ var addMessage = function (data) {
     '  </div>' +
     '  <div>' +
     '    <div class="titlebar' + highlight + '">' +
-    '      <span>' + data.from + ' in ' + data.channel + '</span>' +
+    '      <span>' + data.from + ' in ' + data.channel + time + '</span>' +
     '    </div>' +
     '    <div class="messageContent' + highlight + '">' +
     '      <span>' + data.message + '</span>' +
@@ -162,27 +163,31 @@ var channelNotification = function (type, server, channel, data, newdata) {
 
 socket.on('notifyLow', function (data) {
   var $ad = $('div.active');
+  var chat = chats[chatIndex(chats, data.server, data.channel)];
   if ($ad.data('server') != data.server || $ad.data('channel') != data.channel) {
     if (data.message.indexOf(usernicks[data.server]) != -1) {
-      chats[chatIndex(chats, data.server, data.channel)].gotHighPriorityMessage();
+      chat.gotHighPriorityMessage();
     } else {
-      chats[chatIndex(chats, data.server, data.channel)].gotLowPriorityMessage(); 
+      chat.gotLowPriorityMessage(); 
     }
   }
   if (windowFocused === false && intervalID === undefined) {
     intervalID = setInterval(titleBlinker('aIRChat', '[!!] aIRChat [!!]'), 1000);
   }
+  chat.users[userIndex(chat.users, data.from)].gotNewMessage();
   addMessage(data);
 });
 
 socket.on('notifyHigh', function (data) {
   var $activeDiv = $('div.active');
-  if (chats[chatIndex(chats, data.server, data.channel)] === undefined) {
+  var chat = chats[chatIndex(chats, data.server, data.channel)];
+  if (chat === undefined) {
     joinChat(data.server, data.from);
   }
   if ($activeDiv.data('server') != data.server || $activeDiv.data('channel') != data.channel) {
-    chats[chatIndex(chats, data.server, data.channel)].gotHighPriorityNotification();
+    chat.gotHighPriorityNotification();
   }
+  chat.users[userIndex(chat.users, data.from)].gotNewMessage();
   addMessage({
     from: data.from,
     server: data.server,
@@ -334,9 +339,20 @@ $('a[data-reveal-id=getNickList]').click(function (evt) {
   }
   var users = chats[chatIndex(chats, server, channel)].users;
   $('div#getNickList > h1').text('Users in ' + channel);
-  $('ul#listOfNicks').html(''); // Empty out the list in case is it populated already.
+  var $list = $('table#listOfNicks tbody');
+  $list.html(''); // Clear out the table before filling it
   for (var i = users.length - 1; i >= 0; i--) {
-    $('ul#listOfNicks').prepend($('<li>' + users[i].nick + '</li>'));
+    if (users[i].nick === usernicks[server]) {
+      continue;
+    }
+    $list.prepend($(
+      '<tr>' +
+      '  <td>' + users[i].nick + '</td>' +
+      '  <td>' + users[i].lastMessage + '</td>' +
+      '  <td><a href="#" class="sendPMButton small button" data-nick="' + users[i].nick + '">Message</a></td>' +
+      '  <td><a href="#" class="viewProfButton small button" data-nick="' + users[i].nick + '">Profile</a></td>' +
+      '</tr>'
+    ));
   }
 });
 
