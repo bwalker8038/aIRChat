@@ -6,8 +6,6 @@ var ObjectID = require('mongodb').ObjectID;
 var bcrypt = require('bcrypt');
 
 const DEFAULT_PICTURE = '/images/defaultusericon.jpg';
-const DEFAULT_BIO = 'This user has not set a bio for themselves yet.';
-const DEFAULT_CONTACT = 'This user has not provided any contact information.';
 const DEFAULT_FAVES = {'irc_freenode_net': ['#aIRChat']};
 
 // Array remove - By John Resig
@@ -87,21 +85,23 @@ UserProvider.prototype.findById = function (id, callback) {
     if (error) {
       callback(error);
     } else {
-      user_collection.findOne({
-        _id: user_collection
-             .db
-             .bson_serializer
-             .ObjectID
-             .createFromHexString(id)
-      },
-      function (error, result) {
-        if (error) {
-          callback(error);
-        } else {
-          result = userFavoritesCoding(result, decodeServerNameFromKey);
-          callback(null, result);
+      user_collection.findOne(
+        {
+          _id: user_collection
+               .db
+               .bson_serializer
+               .ObjectID
+               .createFromHexString(id)
+        },
+        function (error, result) {
+          if (error) {
+            callback(error);
+          } else {
+            result = userFavoritesCoding(result, decodeServerNameFromKey);
+            callback(null, result);
+          }
         }
-      });
+      );
     }
   });
 };
@@ -119,12 +119,12 @@ UserProvider.prototype.profileInfo = function (usernames, callback) {
         delete users[i].username;
       }
       for (var i = usernames.length - 1; i >= 0; i--) {
-        users.push({
-          nick    : usernames[i],
-          bio     : 'Not an aIRChat user.',
-          picture : '/images/defaultusericon.jpg',
-          contact : ''
-        });
+        users.push(
+          {
+            nick    : usernames[i],
+            picture : '/images/defaultusericon.jpg',
+          }
+        );
       }
       console.log('profileInfo got array of users:');
       console.log(users);
@@ -162,20 +162,12 @@ UserProvider.prototype.updateProfile = function (user, callback) {
       if (user.picture === undefined) {
         user.picture = DEFAULT_PICTURE;
       }
-      if (user.bio === undefined) {
-        user.bio = DEFAULT_BIO;
-      }
-      if (user.contact === undefined) {
-        user.contact = DEFAULT_CONTACT;
-      }
       if (user.favorites === undefined) {
         user.favorites = DEFAULT_FAVES;
       } else {
         user = userFavoritesCoding(user, encodeServerNameAsKey);
       }
       user_collection.update({username: user.username}, {$set: {picture: user.picture}}, hUpdate);
-      user_collection.update({username: user.username}, {$set: {bio: user.bio}}, hUpdate);
-      user_collection.update({username: user.username}, {$set: {contact: user.contact}}, hUpdate);
       user_collection.update({username: user.username}, {$set: {favorites: user.favorites}}, hUpdate);
       callback(null, user);
     }
@@ -217,15 +209,14 @@ UserProvider.prototype.register = function (username, password, callback) {
     if (error) {
       callback(error);
     } else {
-      user_collection.insert({
-        username     : username,
-        password_hash: pwhash,
-        picture      : DEFAULT_PICTURE,
-        bio          : DEFAULT_BIO,
-        contact      : DEFAULT_CONTACT,
-        favorites    : DEFAULT_FAVES
-      },
-      handleInsertion
+      user_collection.insert(
+        {
+          username     : username,
+          password_hash: pwhash,
+          picture      : DEFAULT_PICTURE,
+          favorites    : DEFAULT_FAVES
+        },
+        handleInsertion
       );
     }
   };

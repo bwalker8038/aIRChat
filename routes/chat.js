@@ -96,18 +96,14 @@ var createIRCClient = function (socket, params, userProvider) {
           socket.emit('joined', {
             channel : channel,
             nick    : nick,
-            bio     : info.bio,
             picture : info.picture,
-            contact : info.contact,
             server  : params.server
           });
         } else {
           socket.emit('joined', {
             channel : channel,
             nick    : nick,
-            bio     : '',
             picture : '/images/defaultusericon.jpg',
-            contact : '',
             server  : params.server
           });
         }
@@ -236,8 +232,6 @@ exports.main = function (req, res, userProvider) {
       req.session.sessionID = sessionID;
       res.render('chat', {
         profilepic : info.picture,
-        userbio    : info.bio,
-        contact    : info.contact,
         username   : req.session.username,
         sessionID  : sessionID,
         host       : config.host,

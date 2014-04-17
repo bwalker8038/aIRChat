@@ -217,8 +217,6 @@ socket.on('nickList', function (data) {
   for (var i = data.users.length - 1; i >= 0; i--) {
     chat.users.push(new User(
       data.users[i].nick, 
-      data.users[i].bio, 
-      data.users[i].contact, 
       data.users[i].picture, 
       data.users[i].server
     ));
@@ -239,7 +237,7 @@ socket.on('joined', function (data) {
   } else {
     var index = chatIndex(chats, data.server, data.channel);
     chats[index].users.push(new User(
-      data.nick, data.bio, data.contact, data.picture, data.server
+      data.nick, data.picture, data.server
     ));
     channelNotification('joined', data.server, data.channel, data.nick);
   }
@@ -425,16 +423,12 @@ $('#sendCommandButton').click(function (evt) {
 });
 
 $('#submitProfile').click(function (evt) {
-  var ci = $('#contact').val();
-  var bi = $('#bio').val();
   var pp = $('#profilePicLocation').val();
   $.ajax('/profileupdate', {
     type    : 'POST',
     data    : {
       username : username,
       password : $('#passwordConfirm').val(),
-      contact  : ci,
-      bio      : bi,
       picture  : pp
     },
     error   : function (obj, status, errorThrown) {
@@ -445,8 +439,6 @@ $('#submitProfile').click(function (evt) {
         alert('Your profile information was updated successfully.');
         $('#ownProfilePic').attr('src', pp);
         profilepic = pp;
-        contact = ci;
-        userbio = bi;
       } else {
         alert('Your profile information could not be updated.\n' +
               'Please ensure that you have entered the correct password and try again.');

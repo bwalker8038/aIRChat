@@ -64,8 +64,6 @@ exports.updateProfile = function (req, res, userProvider) {
       userProvider.updateProfile({
         username : data.username,
         picture  : data.picture,
-        bio      : data.bio,
-        contact  : data.contact
       },
       function (error, user) {
         if (!error) {

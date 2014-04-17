@@ -12,10 +12,8 @@ var formattedMessageTime = function () {
   return days[date.getDay()] + ' ' + date.getHours() + ':' + date.getMinutes();
 };
 
-var User = function (nick, bio, contact, picture, server) {
+var User = function (nick, picture, server) {
   this.nick = nick;
-  this.bio = bio;
-  this.contact = contact;
   this.picture = picture;
   this.lastMessage = undefined;
 };
