@@ -113,58 +113,82 @@
   </div>
   <a class="close-reveal-modal">&#215;</a>
 </div>
-<!-- Dialog for seeing another user's profile information -->
-<div class="reveal-modal" id="showOtherProfile" data-reveal>
-  <h1><!-- Filled by JS --></h1>
-  <div class="row">
-    <div class="small-12 columns">
-      <!-- Source attribute filled by JS -->
-      <img src="" class="thumbnail" id="otherPicture" />
-    </div>
-  </div>
-  <div class="row">
-    <div class="small-8 columns">
-      <h2>Bio</h2>
-    </div>
-  </div>
-  <div class="row">
-    <div class="small-8 columns">
-      <p id="otherBio">
-        <!-- Filled by JS -->
-      </p>
-    </div>
-  </div>
-  <div class="row">
-    <div class="small-8 columns">
-      <h2>Contact Information</h2>
-    </div>
-  </div>
-  <div class="row">
-    <div class="small-8 columns">
-      <p id="otherContact">
-        <!-- Filled by JS -->
-      </p>
-    </div>
-  </div>
-</div>
 <!-- Dialog for setting profile information -->
 <div class="reveal-modal" id="profileSettings" data-reveal>
   <h1>Profile settings</h1>
-  <div class="row">
-    <div class="small-12 small-centered columns">
-      <h2><%= username %></h2>
+  <dl class="tabs" data-tab>
+    <dd class="active"><a href="#picAndPass">Profile</a></dd>
+    <dd><a href="#favoriteChannels">Favorites</a></dd>
+  </dl>
+  <div id="profileSettingsPane">
+  <div class="tabs-content" id="profileInfoContainer">
+    <div class="content active" id="picAndPass"> 
+      <div class="row">
+        <div class="small-12 small-centered columns">
+          <h2><%= username %></h2>
+        </div>
+      </div>
+      <div class="row">
+        <div class="small-12 small-centered columns">
+          <img class="thumbnail" id="ownProfilePic" src="<%= profilepic %>" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="small-12 medium-8 columns">
+          <input type="text" id="profilePicLocation" placeholder="Image URL" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="small-12 medium-8 columns">
+          <p>
+            If you do not wish to change your password, you can leave the fields below blank
+          </p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="small-12 medium-8 columns">
+          <label for="newPasswordField">New Password</label> 
+          <input type="password" id="newPasswordField" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="small-12 medium-8 columns">
+          <label for="newPasswordRepeat">Confirm</label>
+          <input type="password" id="newPasswordRepeat" />
+        </div>
+      </div>
+    </div>
+    <div class="content" id="favoriteChannels">
+      <!-- Current favorites will be prepended by JS -->
+      <div class="row">
+        <div class="small-12 columns">
+          <input type="text" id="newFaveServer" placeholder="irc.servername.net" />
+        </div>
+      </div>
+      <div id="newChannelList" class="row">
+        <div class="small-2 medium-1 columns">
+          <!-- FILLER -->
+        </div>
+        <div class="small-10 medium-11 columns">
+          <input type="text" class="newFaveChannel" placeholder="#channelName" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="small-2 medium-1 columns">
+          <!-- FILLER -->
+        </div>
+        <div class="small-10 medium-11 columns">
+          <a href="#" class="small button" id="addChannelFieldBtn">Add Channel</a>
+        </div>
+      </div>
+      <div class="row">
+        <div class="small-12 medium-12 columns">
+          <a href="#" class="small success button" id="addNewFavoriteBtn">Add to Favorites</a>
+        </div>
+      </div>
     </div>
   </div>
-  <div class="row">
-    <div class="small-12 small-centered columns">
-      <img class="thumbnail" id="ownProfilePic" src="<%= profilepic %>" />
-    </div>
-  </div>
-  <div class="row">
-    <div class="small-12 medium-8 columns">
-      <input type="text" id="profilePicLocation" placeholder="Image URL" />
-     </div>
-  </div>
+  </div> <!-- profile settings pane -->
   <div class="row">
     <div class="small-12 medium-8 columns">
       <p>

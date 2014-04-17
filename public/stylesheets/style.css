@@ -14,6 +14,11 @@ div#nickListPane {
   overflow: auto;
 }
 
+div#profileSettingsPane {
+  height: 450px;
+  overflow: auto;
+}
+
 div#indexTitleBar {
   width: 100% !important;
   background-color: #222;
@@ -39,23 +44,22 @@ div#infoSection h3 {
   color: #f2f2f2 !important;
 }
 
-dl.tabs {
-  width: 15%;
+dl#chatList {
   height: calc(100% - 45px);
   background-color: #222;
 }
 
-dl.tabs dd > a {
+dl#chatList dd > a {
   background-color: #222;
   color: #eee;
 }
 
-dl.tabs dd.active > a {
+dl#chatList dd.active > a {
   color: #eee;
   background-color: #333;
 }
 
-dl.tabs dd > a:hover {
+dl#chatList dd > a:hover {
   color: #222;
 }
 
