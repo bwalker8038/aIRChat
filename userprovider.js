@@ -117,12 +117,13 @@ UserProvider.prototype.profileInfo = function (usernames, callback) {
         // Filter the original list of usernames so that default profiles can be built for them
         usernames.remove(usernames.indexOf(users[i].username));
         delete users[i].username;
+        delete users[i].id;
       }
       for (var i = usernames.length - 1; i >= 0; i--) {
         users.push(
           {
-            nick    : usernames[i],
-            picture : '/images/defaultusericon.jpg',
+            nick      : usernames[i],
+            picture   : '/images/defaultusericon.jpg'
           }
         );
       }
@@ -162,13 +163,7 @@ UserProvider.prototype.updateProfile = function (user, callback) {
       if (user.picture === undefined) {
         user.picture = DEFAULT_PICTURE;
       }
-      if (user.favorites === undefined) {
-        user.favorites = DEFAULT_FAVES;
-      } else {
-        user = userFavoritesCoding(user, encodeServerNameAsKey);
-      }
       user_collection.update({username: user.username}, {$set: {picture: user.picture}}, hUpdate);
-      user_collection.update({username: user.username}, {$set: {favorites: user.favorites}}, hUpdate);
       callback(null, user);
     }
   });
@@ -214,7 +209,6 @@ UserProvider.prototype.register = function (username, password, callback) {
           username     : username,
           password_hash: pwhash,
           picture      : DEFAULT_PICTURE,
-          favorites    : DEFAULT_FAVES
         },
         handleInsertion
       );

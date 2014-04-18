@@ -11,13 +11,6 @@ var chats = new Array();
 // Maps the name of a given server to the user's nick on that server.
 var usernicks = {};
 
-socket.emit('serverJoin', {
-  server: 'irc.freenode.net', 
-  nick: username,
-  firstchannel: '#ctf-portside',
-  sid: sid
-});
-
 var chatTab = function (server, channel, active) {
   if (active === undefined || active === false) {
     var mod = '';
