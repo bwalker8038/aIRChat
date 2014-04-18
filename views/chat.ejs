@@ -262,11 +262,19 @@
 </dl>
 <!-- Content of chat -->
 <div class="tabs-content vertical" id="chatContent">
+  <div class="content active" id="helpSection">
+    <p>
+      You have not connected to a server yet. To get started, click the "Connect to Server" option
+      under the chat dropdown. If you don't know where to go first, connect to irc.freenode.net and
+      provide #aIRChat as the channel to talk to other aIRChat users!
+    </P>
+  </div>
 </div>
 <input type="text" id="messageInput" placeholder="Message" />
 <script src="/javascripts/users.js"></script>
 <script src="/javascripts/chats.js"></script>
 <script src="/socket.io/socket.io.js"></script>
+<script src="/javascripts/notifier.js"></script>
 <script type="text/javascript">
   var hostname = '<%= host %>';
   var username = '<%= username %>';

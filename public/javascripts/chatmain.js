@@ -155,9 +155,7 @@ var channelNotification = function (type, server, channel, data, newdata) {
 };
 
 socket.on('gotError', function (error) {
-  alert('Got an error from the server containing the following:\n' +
-        error.args.join(' ')
-  );
+  Notifier.error(error.args.join(' '), 'Server Error');
 });
 
 socket.on('notifyLow', function (data) {
@@ -281,7 +279,7 @@ $('#messageInput').keypress(function (evt) {
   var dest = $('div.active').first().data('channel');
   if (evt.which === 13) { // On [Enter]
     if ($('div.tabs-content').length === 0 || !server) {
-      alert('You cannot send a message until you have joined and selected chat.');
+      Notifier.info('You cannot send a message until you join and select a chat.');
       return;
     }
     var $ta = $('#messageInput');
@@ -307,8 +305,9 @@ $('a#joinNewChannel').click(function (evt) {
   var server = $('div.active').data('server');
   var chanName = $('#newChannelName').val();
   if (server === undefined) {
-    alert('You must select a chat tab for a channel belonging to the ' +
-          'same server the channel you wish to join is in.'
+    Notifier.info(
+      'You must select a chat tab for a channel belonging to the ' +
+      'same server the channel you wish to join is in.'
     );
   }
   socket.emit('joinChannel', {server: server, channel: chanName, sid: sid});
@@ -391,12 +390,15 @@ $('a#confirmPartChannel').click(function (evt) {
 $('a#changeNickConfirm').click(function (evt) {
   var newNick = $('input#newNickInput').val();
   if (newNick.length === 0) {
-    alert('You need to provide a new nickname to switch to!');
+    Notifier.error('You have not provided a new nick.');
     return;
   }
   var server = $('dd.active').first().data('server');
   if (!server) {
-    alert('You have not yet selected a chat tab to base changes on!');
+    Notifier.info(
+      'To change your nick on a server, you must first select ' +
+      'a chat tab for a channel on that server.'
+    );
     return;
   }
   socket.emit('changeNick', {server: server, sid: sid, nick: newNick});
@@ -407,8 +409,9 @@ $('#sendCommandButton').click(function (evt) {
   var commandArgs = $('#commandInput').val().split(' ');
   var server = $('div.active').first().data('server');
   if (!server) {
-    alert('You must have selected a chat tab for a channel on the server you wish to ' +
-          ' send your command to. Please connect to a server, select its tab, and try again'
+    Notifier.info(
+      'You must have selected a chat tab for a channel on the server you wish to ' +
+      'send your command to.'
     );
   } else {
     socket.emit('rawCommand', {args: commandArgs, sid: sid, server: server});
@@ -425,16 +428,21 @@ $('#submitProfile').click(function (evt) {
       picture  : pp
     },
     error   : function (obj, status, errorThrown) {
-      alert('Your profile information could not be updated. Reason: ' + status);
+      Notifier.error(
+        status,
+        'Update Failure'
+      );
     },
     success : function (data, status, obj) {
       if (data.success) {
-        alert('Your profile information was updated successfully.');
+        Notifier.success('Your profile information was updated successfully.');
         $('#ownProfilePic').attr('src', pp);
         profilepic = pp;
       } else {
-        alert('Your profile information could not be updated.\n' +
-              'Please ensure that you have entered the correct password and try again.');
+        Notifier.error(
+          'Your profile information could not be updated.\n' +
+          'Please ensure that you have entered the correct password and try again.'
+        );
       }
     }
   });
