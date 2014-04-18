@@ -60,18 +60,25 @@ exports.updateProfile = function (req, res, userProvider) {
   console.log('Update got data ');
   console.log(data);
   userProvider.authenticate(data.username, data.password, function (error, result) {
+    var newPassword = undefined;
+    if (data.newPassword === data.newPasswordRepeat && data.newPassword.length > 0) {
+      newPassword = data.newPassword;
+    }
     if (!error && result) {
-      userProvider.updateProfile({
-        username : data.username,
-        picture  : data.picture,
-      },
-      function (error, user) {
-        if (!error) {
-          res.send({success: true});
-        } else {
-          res.send({success: false});
+      userProvider.updateProfile(
+        {
+          username    : data.username,
+          picture     : data.picture,
+          newPassword : newPassword
+        },
+        function (error, user) {
+          if (!error) {
+            res.send({success: true});
+          } else {
+            res.send({success: false});
+          }
         }
-      });
+      );
     } else {
       res.send({success: false});
     }

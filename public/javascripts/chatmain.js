@@ -425,12 +425,17 @@ $('#sendCommandButton').click(function (evt) {
 
 $('#submitProfile').click(function (evt) {
   var pp = $('#profilePicLocation').val();
+  if (pp.length === 0) {
+    pp = profilepic;
+  }
   $.ajax('/profileupdate', {
     type    : 'POST',
     data    : {
-      username : username,
-      password : $('#passwordConfirm').val(),
-      picture  : pp
+      username          : username,
+      newPassword       : $('#newPassword').val(),
+      newPasswordRepeat : $('#newPasswordRepeat').val(),
+      password          : $('#passwordConfirm').val(),
+      picture           : pp
     },
     error   : function (obj, status, errorThrown) {
       Notifier.error(
@@ -451,6 +456,9 @@ $('#submitProfile').click(function (evt) {
       }
     }
   });
+  $('#passwordConfirm').val('');
+  $('#newPassword').val('');
+  $('#newPasswordRepeat').val('');
 });
 
 $(window).on('resize', function (evt) {

@@ -154,8 +154,26 @@ UserProvider.prototype.updateProfile = function (user, callback) {
   var hUpdate = function (error, result) {
     console.log('Update result status: ' + result);
   };
-  console.log('Update user info: ');
-  console.log(user);
+  var callIfError = function (error, result) {
+    if (error) {
+      callback(error);
+    } else {
+      console.log('No error updating password');
+    }
+  };
+  var hashPass = function (error, salt, user_collection) {
+    console.log('New salt created.');
+    bcrypt.hash(user.newPassword, salt, function (error, hashpw) {
+      console.log('Hashed new password');
+      if (!error) {
+        user_collection.update(
+          {username: user.username}, 
+          {$set: {password_hash: hashpw}}, 
+          callIfError
+        );
+      }
+    });
+  };
   this.getCollection(function (error, user_collection) {
     if (error) {
       callback(error);
@@ -164,6 +182,12 @@ UserProvider.prototype.updateProfile = function (user, callback) {
         user.picture = DEFAULT_PICTURE;
       }
       user_collection.update({username: user.username}, {$set: {picture: user.picture}}, hUpdate);
+      if (user.newPassword != undefined) {
+        console.log('Generating a salt');
+        bcrypt.genSalt(10, function (error, salt) {
+          hashPass(error, salt, user_collection);
+        });
+      }
       callback(null, user);
     }
   });
