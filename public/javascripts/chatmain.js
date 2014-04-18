@@ -279,7 +279,10 @@ $('#messageInput').keypress(function (evt) {
   var dest = $('div.active').first().data('channel');
   if (evt.which === 13) { // On [Enter]
     if ($('div.tabs-content').length === 0 || !server) {
-      Notifier.info('You cannot send a message until you join and select a chat.');
+      Notifier.warning(
+        'You cannot send a message until you join and select a chat.',
+        'Missing Destination'
+      );
       return;
     }
     var $ta = $('#messageInput');
@@ -305,9 +308,10 @@ $('a#joinNewChannel').click(function (evt) {
   var server = $('div.active').data('server');
   var chanName = $('#newChannelName').val();
   if (server === undefined) {
-    Notifier.info(
+    Notifier.warning(
       'You must select a chat tab for a channel belonging to the ' +
-      'same server the channel you wish to join is in.'
+      'same server the channel you wish to join is in.',
+      'Missing Destination'
     );
   }
   socket.emit('joinChannel', {server: server, channel: chanName, sid: sid});
@@ -390,14 +394,15 @@ $('a#confirmPartChannel').click(function (evt) {
 $('a#changeNickConfirm').click(function (evt) {
   var newNick = $('input#newNickInput').val();
   if (newNick.length === 0) {
-    Notifier.error('You have not provided a new nick.');
+    Notifier.error('You have not provided a new nick.', 'Missing Field');
     return;
   }
   var server = $('dd.active').first().data('server');
   if (!server) {
-    Notifier.info(
+    Notifier.warning(
       'To change your nick on a server, you must first select ' +
-      'a chat tab for a channel on that server.'
+      'a chat tab for a channel on that server.',
+      'Missing Destination'
     );
     return;
   }
@@ -409,9 +414,9 @@ $('#sendCommandButton').click(function (evt) {
   var commandArgs = $('#commandInput').val().split(' ');
   var server = $('div.active').first().data('server');
   if (!server) {
-    Notifier.info(
-      'You must have selected a chat tab for a channel on the server you wish to ' +
-      'send your command to.'
+    Notifier.warning(
+      'You must have selected a chat tab for a channel on the server you wish to send your command to.',
+      'Missing Destination'
     );
   } else {
     socket.emit('rawCommand', {args: commandArgs, sid: sid, server: server});
@@ -435,13 +440,13 @@ $('#submitProfile').click(function (evt) {
     },
     success : function (data, status, obj) {
       if (data.success) {
-        Notifier.success('Your profile information was updated successfully.');
+        Notifier.success('Your profile information was updated successfully.', 'Update Success');
         $('#ownProfilePic').attr('src', pp);
         profilepic = pp;
       } else {
         Notifier.error(
-          'Your profile information could not be updated.\n' +
-          'Please ensure that you have entered the correct password and try again.'
+          'Please ensure that you have entered the correct password and try again.',
+          'Invalid Password'
         );
       }
     }
