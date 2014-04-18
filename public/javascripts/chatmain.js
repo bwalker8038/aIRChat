@@ -201,6 +201,7 @@ socket.on('connected', function (server, channel) {
   Notifier.info(
     'You have been connected to ' + server + '. A chat tab will appear momentarily.',
     'Connection Successful'
+  );
 });
 
 // Create a listing of nicks for the appropriate channel.
