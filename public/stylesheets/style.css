@@ -25,7 +25,7 @@ div#indexTitleBar h1 {
   color: #BB1F29 !important;
 }
 
-img#ownProfilePic {
+img.thumbnail {
   width: 125px;
   height: 125px;
 }
