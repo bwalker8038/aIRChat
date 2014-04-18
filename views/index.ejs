@@ -95,13 +95,12 @@
   <div class="row">
     <div class="small-10 columns">
       <p>
-        Please keep in mind that aIRChat is still under development and thus does
-        not yet support all of the features that it is expected to in the future.
-        If you encounter any unexpected behavior or even if you'd like to suggest
-        an improvement, either send me (redwire) a private message, or write
-        to the <a href="https://github.com/redwire/aIRChat/issues">issue tracker</a>.
-        For now, you can log in with just a username, but try to make sure it will 
-        be unique, as aIRChat will not work if your name is taken.
+        This page provides a short introduction to IRC that you
+        can quickly read to learn everything you need to know to start using aIRChat
+        effectively, although plenty of help is offered in the app itself. If you would 
+        like to know more about the details, the
+        <a href="https://en.wikipedia.org/wiki/IRC">Wikipedia article</a> on the
+        subject should tell you everything you could ever want to know!
       </p>
     </div>
   </div>
@@ -116,37 +115,25 @@
 </div>
 <div class="sepBar">
 </div>
-<div id="infoSection">
+<div class="infoSection">
   <div class="row">
-    <div class="small-12 medium-4 columns">
+    <div class="small-12 medium-6 columns">
       <h3>The mission</h3>
     </div>
-    <div class="small-12 medium-4 columns">
-      <h3>More than just IRC</h3>
-    </div>
-    <div class="small-12 medium-4 columns">
+    <div class="small-12 medium-6 columns">
       <h3>Better than ever</h3>
     </div>
   </div>
   <div class="row">
-    <div class="small-12 medium-4 columns">
+    <div class="small-12 medium-6 columns">
       <p>
         The ultimate goal for aIRChat is to bring classic IRC into the twenty-first century
         by building an interface that is comfortable to use.
-        Advanced features common to traditional IRC clients that aren't
-        needed by most users have been stripped out, and more common features made more
-        accessible.
+        aIRChat makes the more common features required for using IRC, such as joining servers
+        and channels, more accessible and intuitive.
       </p>
     </div>
-    <div class="small-12 medium-4 columns">
-      <p>
-        aIRChat becomes a service of its own by augmenting standard IRC with user profiles
-        that can can contain user data like profile pictures. This
-        additional information is incorporated into the chat interface to further improve
-        the chatting experience.
-      </p>
-    </div>
-    <div class="small-12 medium-4 columns">
+    <div class="small-12 medium-6 columns">
       <p>
         While many web-based IRC clients exist already, they are often very unusable and
         poorly designed, prioritizing instead to provide a classical experience that is more
@@ -154,6 +141,75 @@
         aIRChat improves on these minimalistic interfaces by making accessibility the top priority.
       </p>
     </div>
+  </div>
+</div>
+<div class="sepBar">
+</div>
+<div name="ircintro">
+  <div class="row">
+    <h2>What is IRC?</h2>
+    <p>
+      IRC (Internet Relay Chat) is a mature internet communication system that has been around for
+      a long time.  When people talk about IRC, the phrase is often used to encompass all of the
+      client programs that people use to chat with one another, servers that handle commands and
+      messages, and the protocol itself that defines how clients and servers can talk to each other
+      in a meaningful way. IRC is very simple, but it is likely somewhat different to other chat
+      applications you may have used before, but there are only a few key terms you need to be
+      familiar with you get started!
+    </p>
+  </div>
+  <div class="row">
+    <h2>Definitions</h2>
+    <dl>
+      <dt>Server</dt>
+      <dd>
+        A server runs software that handles commands and messages from users, making changes
+        to various settings, and relaying messages to other users.
+      </dd>
+      <dt>Channel</dt>
+      <dd>
+        A channel is basically a chat room.  Users gather in channels to talk about their
+        shared interests.  Anyone can create a channel simply by joining it.  If the channel
+        you want to join doesn't exist, it will be created!
+      </dd>
+      <dt>User</dt>
+      <dd>
+        A user is anyone present in a channel.  Users can send messages to each other
+        privately or to anyone in a channel, and they can also create new channels.
+        Users are identified on a server by their "nick" (short for nickname).
+      </dd>
+      <dt>Operators</dt>
+      <dd>
+        IRC allows for individual users in a channel to be provided with special privileges
+        that give them the ability to kick, ban, and invite other users among other things.
+        When you create a new channel, you are automatically made its operator.
+      </dd>
+      <dt>Highlighting</dt>
+      <dd>
+        When a user writes a message containing another user's nick, that user's IRC client
+        will often display a special kind of notification informing them that somone is
+        trying to contact them directly.  aIRChat keeps a count in a red box next to the
+        name of the channel of the number of times you have been highlighted since reading
+        the messages in that channel, and by tinting message bubbles containing your nick red.
+      </dd>
+    </dl>
+  </div>
+</div>
+<div class="sepBar">
+</div>
+<div class="infoSection">
+  <div class="row">
+    <h3>Contributing</h3>
+    <p>
+      aIRChat is an open source project independantly developed by
+      <a href="https://twitter.com/_redwire">Zack Mullaly</a>, A.K.A.
+      <a href="https://github.com/redwire">redwire</a>. 
+    </p>
+    <p>
+      All of the source material is hosted on 
+      <a href="https://github.com/redwire/aIRChat">Github</a>,
+      and contributions of all kinds are welcome!
+    </p>
   </div>
 </div>
 <% include foot %>

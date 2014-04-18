@@ -30,12 +30,12 @@ img.thumbnail {
   height: 125px;
 }
 
-div#infoSection {
+div.infoSection {
   background-color: #222 !important;
   color: #f2f2f2 !important;
 }
 
-div#infoSection h3 {
+div.infoSection h3 {
   color: #f2f2f2 !important;
 }
 
