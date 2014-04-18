@@ -285,7 +285,7 @@ $('#messageInput').keypress(function (evt) {
     if ($('div.tabs-content').length === 0 || !server) {
       Notifier.warning(
         'You cannot send a message until you join and select a chat.',
-        'Missing Destination'
+        'Missing Selection'
       );
       return;
     }
@@ -315,7 +315,7 @@ $('a#joinNewChannel').click(function (evt) {
     Notifier.warning(
       'You must select a chat tab for a channel belonging to the ' +
       'same server the channel you wish to join is in.',
-      'Missing Destination'
+      'Missing Selection'
     );
   }
   socket.emit('joinChannel', {server: server, channel: chanName, sid: sid});
@@ -378,6 +378,13 @@ $('a[data-reveal-id=partChannel]').click(function (evt) {
 $('a#confirmPartChannel').click(function (evt) {
   var channel = $('div.active').first().data('channel');
   var server = $('div.active').first().data('server');
+  if (!channel || !server) {
+    Notifier.warning(
+      'You have not selected a channel to leave.',
+      'Missing Selection'
+    );
+    return;
+  }
   var index = chatIndex(chats, server, channel);
   chats.remove(index);
   $('dd.active').first().remove();
@@ -404,7 +411,7 @@ $('a#changeNickConfirm').click(function (evt) {
     Notifier.warning(
       'To change your nick on a server, you must first select ' +
       'a chat tab for a channel on that server.',
-      'Missing Destination'
+      'Missing Selection'
     );
     return;
   }
@@ -418,7 +425,7 @@ $('#sendCommandButton').click(function (evt) {
   if (!server) {
     Notifier.warning(
       'You must have selected a chat tab for a channel on the server you wish to send your command to.',
-      'Missing Destination'
+      'Missing Selection'
     );
   } else {
     socket.emit('rawCommand', {args: commandArgs, sid: sid, server: server});
