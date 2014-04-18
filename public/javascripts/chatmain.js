@@ -336,9 +336,7 @@ $('a[data-reveal-id=getNickList]').click(function (evt) {
   var channel = $('div.active').first().data('channel');
   var server = $('div.active').first().data('server');
   if (channel === undefined || server === undefined) {
-    $('div#getNickList > h1').text(
-      'You must select a channel to retrieve a list of users from.'
-    );
+    $('div#getNickList > h1').text('No channel selected');
     return;
   }
   var users = chats[chatIndex(chats, server, channel)].users;
