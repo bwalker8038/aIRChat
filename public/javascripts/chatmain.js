@@ -198,6 +198,9 @@ socket.on('notifyHigh', function (data) {
 
 socket.on('connected', function (server, channel) {
   usernicks[server] = username;
+  Notifier.info(
+    'You have been connected to ' + server + '. A chat tab will appear momentarily.',
+    'Connection Successful'
 });
 
 // Create a listing of nicks for the appropriate channel.
@@ -445,7 +448,7 @@ $('#submitProfile').click(function (evt) {
     },
     success : function (data, status, obj) {
       if (data.success) {
-        Notifier.success('Your profile information was updated successfully.', 'Update Success');
+        Notifier.success('Your profile information was updated successfully.', 'Update Successful');
         $('#ownProfilePic').attr('src', pp);
         profilepic = pp;
       } else {
