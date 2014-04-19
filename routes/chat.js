@@ -176,7 +176,6 @@ exports.newClient = function (socket, userProvider) {
   
   socket.on('serverJoin', function (data) {
     if (clients[data.sid] === undefined) return;
-    console.log('Got serverJoin event for ' + data.server);
     if (!clients[data.sid][data.server]) {
       clients[data.sid][data.server] = createIRCClient(socket, data, userProvider);
     }
@@ -184,7 +183,6 @@ exports.newClient = function (socket, userProvider) {
 
   socket.on('joinChannel', function (data) {
     if (clients[data.sid] === undefined) return;
-    console.log('Got joinChannel event for ' + data.channel);
     if (clients[data.sid][data.server].opt.channels.indexOf(data.channel) === -1) {
       clients[data.sid][data.server].join(data.channel);
     }

@@ -127,8 +127,6 @@ UserProvider.prototype.profileInfo = function (usernames, callback) {
           }
         );
       }
-      console.log('profileInfo got array of users:');
-      console.log(users);
       callback(null, users);
     }
   };
@@ -157,14 +155,10 @@ UserProvider.prototype.updateProfile = function (user, callback) {
   var callIfError = function (error, result) {
     if (error) {
       callback(error);
-    } else {
-      console.log('No error updating password');
     }
   };
   var hashPass = function (error, salt, user_collection) {
-    console.log('New salt created.');
     bcrypt.hash(user.newPassword, salt, function (error, hashpw) {
-      console.log('Hashed new password');
       if (!error) {
         user_collection.update(
           {username: user.username}, 
@@ -183,7 +177,6 @@ UserProvider.prototype.updateProfile = function (user, callback) {
       }
       user_collection.update({username: user.username}, {$set: {picture: user.picture}}, hUpdate);
       if (user.newPassword != undefined) {
-        console.log('Generating a salt');
         bcrypt.genSalt(10, function (error, salt) {
           hashPass(error, salt, user_collection);
         });
