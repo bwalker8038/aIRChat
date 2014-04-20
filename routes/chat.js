@@ -1,5 +1,5 @@
 var crypto = require('crypto');
-var irc = require('irc');
+var irc = require('../node-irc/lib/irc');
 var config = require('../config');
 
 // Maps the socket used to communicate with a given client to an object mapping
