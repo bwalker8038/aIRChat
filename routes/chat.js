@@ -197,6 +197,15 @@ exports.newClient = function (socket, userProvider) {
     if (clients[data.sid] === undefined) return;
     clients[data.sid][data.server].send('nick', data.nick);
   });
+
+  socket.on('leaving', function (data) {
+    if (clients[data.sid] === undefined) return;
+    var servers = Object.keys(clients[data.sid]);
+    for (var i = servers.length - 1; i >= 0; i--) {
+      clients[data.sid][servers[i]].disconnect('Connection to server closed.');
+    }
+    delete clients[data.sid];
+  });
 };
 
 exports.logout = function (req, res) {

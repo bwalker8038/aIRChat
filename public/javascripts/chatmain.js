@@ -482,3 +482,11 @@ $(window).focus(function (evt) {
 $(window).blur(function (evt) {
   windowFocused = false;
 });
+
+$(window).unload(function () {
+  socket.emit('leaving', {sid: sid});
+  Notifier.info(
+    'You are being disconnected.',
+    'Disconnecting'
+  );
+});
