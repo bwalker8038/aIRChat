@@ -11,33 +11,26 @@ var chats = new Array();
 // Maps the name of a given server to the user's nick on that server.
 var usernicks = {};
 
-var chatItem = function (type, server, channel, active) {
+var chatTab = function (server, channel, active) {
   if (active === undefined || active === false) {
     var mod = '';
   } else {
     var mod = '.active';
   }
-  channel = channel.toLowerCase();
-  var $dds = $(type + mod);
-  for (var index = 0, len = $dds.length; index < len; index++) {
-    var $dd = $($dds[index]);
-    if ($dd.data('server') === undefined || $dd.data('channel') === undefined) {
-      return undefined;
-    }
-    var chan = $dd.data('channel').toLowerCase();
-    if ($dd.data('server') === server && chan === channel) {
-      return $dd;
-    }
-  }
-  return undefined;
-};
-
-var chatTab = function (server, channel, active) {
-  return chatItem('dd', server, channel, active);
+  return $('dd' + mod).filter(function () {
+    return $(this).data('server') === server && $(this).data('channel') === channel;
+  }).first();
 };
 
 var messageBox = function (server, channel, active) {
-  return chatItem('div', server, channel, active);
+  if (active === undefined || active === false) {
+    var mod = '';
+  } else {
+    var mod = '.active';
+  }
+  return $('div' + mod).filter(function () {
+    return $(this).data('server') === server && $(this).data('channel') === channel;
+  }).first();
 };
 
 // Array remove - By John Resig
@@ -50,13 +43,6 @@ Array.prototype.remove = function (start, end) {
 var addMessage = function (data) {
   var $msgDiv = messageBox(data.server, data.channel);
   var $tab = chatTab(data.server, data.channel).children('a').first();
-  if ($msgDiv === undefined || $tab === undefined) {
-    Notifier.error(
-      'There is no chat opened for ' + data.channel + ' on ' + data.server + '.',
-      'Message Display Failure'
-    );
-    return;
-  }
   var chat = chats[chatIndex(chats, data.server, data.channel)];
   var user = chat.users[userIndex(chat.users, data.from)];
   console.log('Got user');
@@ -283,15 +269,13 @@ socket.on('invited', function (data) {
 });
 
 socket.on('userLeft', function (data) {
-  console.log('Got userLeft for ' + data.nick);
   var cindex = chatIndex(chats, data.server, data.from);
-  if (data.nick === usernicks[data.server]) {
+  if (cindex === -1) { // The user is the one who left, and the chat has been deleted
     return;
   }
   var users = chats[cindex].users;
-  users.remove(userIndex(users, data.nick));
+  userList.remove(userIndex(users, data.nick));
   channelNotification('departed', data.server, data.from, data.nick);
-  console.log(data.nick + ' parted.');
 });
 
 $('#messageInput').keypress(function (evt) {
