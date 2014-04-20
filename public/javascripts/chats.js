@@ -10,7 +10,7 @@ var Chat = function (server, channel) {
 };
 
 Chat.prototype.sameChat = function (server, channel) {
-  return this.server === server && this.channel === channel;
+  return this.server === server && this.channel.toLowerCase() === channel.toLowerCase();
 };
 
 Chat.prototype.getUser = function (nick) {
