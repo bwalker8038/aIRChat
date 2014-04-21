@@ -17,3 +17,17 @@ exports.dbURI = 'mongodb://localhost:27017/usersDb';
   * This should never be shared with anyone once set.
   */
 exports.secret = 'YOUR SECRET HERE';
+
+/** Heartbeat interval
+  * The aIRChat server will send a heartbeat signal to connected clients
+  * every number of seconds provided. This is to check that the connection
+  * is still strong and that messages should be being sent and received.
+  */
+exports.heartbeat_interval = 2; // Two seconds
+
+/** Heartbeat timeout
+  * If an aIRChat client fails te respond to a heartbeat signal after
+  * this number of seconds, all of its IRC connections will be
+  * disconnected to free the user's nick up for when (if) they reconnect.
+  */
+exports.heartbeat_timeout = 10; // Ten seconds

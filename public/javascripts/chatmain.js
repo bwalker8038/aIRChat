@@ -144,6 +144,11 @@ var channelNotification = function (type, server, channel, data, newdata) {
   });
 };
 
+socket.on('pulseCheck', function (timeSent) {
+  console.log('Got a pulseCheck from the server. Time=' + timeSent);
+  socket.emit('pulseSignal', sid);
+});
+
 socket.on('gotError', function (error) {
   Notifier.error(error.args.join(' '), 'Server Error');
 });
