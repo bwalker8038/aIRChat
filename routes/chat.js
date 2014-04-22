@@ -77,6 +77,15 @@ var createIRCClient = function (socket, params, userProvider) {
     });
   });
 
+  newClient.addListener('action', function (from, to, parts, msg) {
+    socket.emit('action', {
+      nick    : from,
+      server  : params.server,
+      channel : to,
+      message : parts
+    });
+  });
+
   newClient.addListener('registered', function (msg) {
     socket.emit('connected', params.server);
   });

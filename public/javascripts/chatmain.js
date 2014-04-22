@@ -132,6 +132,8 @@ var channelNotification = function (type, server, channel, data, newdata) {
     message = data + ' has parted from this channel.';
   } else if (type === 'changedNick') {
     message = data + ' has changed their nick to ' + newdata + '.';
+  } else if (type === 'action') {
+    message = 'Action :: ' + data + ' ' + newdata; // data = nick, newdata = message 
   } else {
     message = 'Received unknown notification event of type ' + type + ' on ' + 
               server + '/' + channel + ' from ' + data;
@@ -147,6 +149,10 @@ var channelNotification = function (type, server, channel, data, newdata) {
 socket.on('pulseCheck', function (timeSent) {
   console.log('Got a pulseCheck from the server. Time=' + timeSent);
   socket.emit('pulseSignal', sid);
+});
+
+socket.on('action', function (data) {
+  channelNotification('action', data.server, data.channel, data.nick, data.message);
 });
 
 socket.on('gotError', function (error) {
