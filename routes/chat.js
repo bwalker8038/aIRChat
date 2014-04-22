@@ -170,7 +170,7 @@ var createIRCClient = function (socket, params, userProvider) {
   return newClient;
  };
 
-var disconnectClients = function (sid)
+var disconnectClients = function (sid) {
   var servers = Object.keys(clients[sid]);
   for (var i = servers.length - 1; i >= 0; i--) {
     clients[sid][servers[i]].disconnect('Connection to server closed.');
