@@ -420,19 +420,6 @@ $('a#changeNickConfirm').click(function (evt) {
   usernicks[server] = newNick;
 });
 
-$('#sendCommandButton').click(function (evt) {
-  var commandArgs = $('#commandInput').val().split(' ');
-  var server = $('div.active').first().data('server');
-  if (!server) {
-    Notifier.warning(
-      'You must have selected a chat tab for a channel on the server you wish to send your command to.',
-      'Missing Selection'
-    );
-  } else {
-    socket.emit('rawCommand', {args: commandArgs, sid: sid, server: server});
-  }
-});
-
 $('#submitProfile').click(function (evt) {
   var pp = $('#profilePicLocation').val();
   if (pp.length === 0) {
