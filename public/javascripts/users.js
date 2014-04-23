@@ -1,15 +1,23 @@
 var formattedMessageTime = function () {
   var date = new Date();
   var days = [
+    'Sunday',
     'Monday', 
     'Tuesday', 
     'Wednesday', 
     'Thursday', 
     'Friday', 
-    'Saturday', 
-    'Sunday'
+    'Saturday'
   ];
-  return days[date.getDay()] + ' ' + date.getHours() + ':' + date.getMinutes();
+  var hours = date.getHours();
+  var mins = date.getMinutes();
+  if (hours.length === 1) {
+    hours = '0' + hours;
+  }
+  if (mins.length === 1) {
+    mins = '0' + mins;
+  }
+  return days[date.getDay()] + ' ' + hours + ':' + mins;
 };
 
 var User = function (nick, picture, server) {
