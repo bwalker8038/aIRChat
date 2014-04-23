@@ -23,11 +23,11 @@ exports.secret = 'YOUR SECRET HERE';
   * every number of seconds provided. This is to check that the connection
   * is still strong and that messages should be being sent and received.
   */
-exports.heartbeat_interval = 2; // Two seconds
+exports.heartbeat_interval = 4; // Four seconds
 
 /** Heartbeat timeout
   * If an aIRChat client fails te respond to a heartbeat signal after
   * this number of seconds, all of its IRC connections will be
   * disconnected to free the user's nick up for when (if) they reconnect.
   */
-exports.heartbeat_timeout = 10; // Ten seconds
+exports.heartbeat_timeout = 20; // Twenty seconds
