@@ -15,6 +15,10 @@ Array.prototype.remove = function (start, end) {
   return this.push.apply(this, tail);
 };
 
+var isSafeURL = function (url) {
+  return url.indexOf('<') < 0 && url.indexOf('>') < 0 && url.indexOf('{') < 0 && url.indexOf('}') < 0;
+};
+
 var replaceAll = function (str, from, to) {
   var i = str.indexOf(from);
   while (i != -1) {
@@ -172,9 +176,9 @@ UserProvider.prototype.updateProfile = function (user, callback) {
     if (error) {
       callback(error);
     } else {
-      if (user.picture === undefined) {
+      if (user.picture === undefined || !isSafeURL(user.picture)) {
         user.picture = DEFAULT_PICTURE;
-      }
+      } 
       user_collection.update({username: user.username}, {$set: {picture: user.picture}}, hUpdate);
       if (user.newPassword != undefined) {
         bcrypt.genSalt(10, function (error, salt) {
