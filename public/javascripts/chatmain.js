@@ -139,10 +139,10 @@ var channelNotification = function (type, server, channel, data, newdata) {
               server + '/' + channel + ' from ' + data;
   }
   addMessage({
-    from: 'System',
-    server: server,
-    channel: channel,
-    message: message
+    from    : 'System',
+    server  : server,
+    channel : channel,
+    message : message
   });
 };
 
@@ -218,7 +218,7 @@ socket.on('nickList', function (data) {
     ));
   }
   chat.users.push(new User(
-    'System', '', '', '/images/defaultusericon.jpg', data.server
+    'System', '/images/defaultusericon.jpg', data.server
   ));
 });
 
