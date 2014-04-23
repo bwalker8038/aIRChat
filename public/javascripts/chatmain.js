@@ -43,8 +43,8 @@ var chatElement = function (type, server, channel) {
   var $elems = $(type + '[data-server="' + server + '"]');
   for (var i = 0, len = $elems.length; i < len; i++) {
     var $elem = $($elems[i]);
-    var channel = $elem.data('channel');
-    if (channel != undefined && channel.toLowerCase() === channel.toLowerCase()) {
+    var e_channel = $elem.data('channel');
+    if (channel != undefined && e_channel.toLowerCase() === channel.toLowerCase()) {
       return $elem;
     }
   }
