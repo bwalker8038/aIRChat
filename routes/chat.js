@@ -294,11 +294,13 @@ exports.main = function (req, res, userProvider) {
       info = info[0];
       req.session.sessionID = sessionID;
       res.render('chat', {
-        profilepic : info.picture,
-        username   : req.session.username,
-        sessionID  : sessionID,
-        host       : config.host,
-        title      : 'aIRChat'
+        profilepic         : info.picture,
+        username           : req.session.username,
+        sessionID          : sessionID,
+        host               : config.host,
+        heartbeat_timeout  : config.heartbeat_timeout,
+        heartbeat_interval : config.heartbeat_interval,
+        title              : 'aIRChat'
       });
     } else {
       res.redirect(500, '/');

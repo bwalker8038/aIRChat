@@ -11,6 +11,34 @@ var chats = new Array();
 // Maps the name of a given server to the user's nick on that server.
 var usernicks = {};
 
+// The time since the epoch (in seconds) at which the last heartbeat packet was received
+// and the difference between the most recent and the previous pulse.
+var lastPulse = undefined;
+var lastPulseDiff = 0;
+
+var checkHeartbeatIntervalID = setInterval(
+  function () {
+    if (lastPulseDiff > heartbeat_timeout) {
+      clearInterval(checkHeartbeatIntervalID);
+      var msg = '' +
+        'It has been over ' + heartbeat_timeout + ' seconds since the server was heard from. ' +
+        'You may want to log out and then log in again to reestablish the connection.';
+      Notifier.info('The connection to the server was lost.', 'Connection Timeout');
+      var $tabs = $('dl#chatList dd');
+      for (var i = $tabs.length - 1; i >= 0; i--) {
+        var $tab = $($tabs[i]);
+        addMessage({
+          from    : 'System',
+          server  : $tab.data('server'),
+          channel : $tab.data('channel'),
+          message : msg
+        });
+      }
+    }
+  },
+  heartbeat_interval
+);
+
 var chatElement = function (type, server, channel) {
   var $elems = $(type + '[data-server="' + server + '"]');
   for (var i = 0, len = $elems.length; i < len; i++) {
@@ -149,6 +177,7 @@ var channelNotification = function (type, server, channel, data, newdata) {
 socket.on('pulseCheck', function (timeSent) {
   console.log('Got a pulseCheck from the server. Time=' + timeSent);
   socket.emit('pulseSignal', sid);
+  lastPulse = timeSent;
 });
 
 socket.on('action', function (data) {
