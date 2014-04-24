@@ -78,8 +78,11 @@ div.titlebar {
 }
 
 div.messageContent {
-  padding: 5px;
-  width: calc(100% + 50px);
+  width: calc(100% - 5px);
+  word-wrap: break-word;
+  margin-left: 55px;
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
 
 div.titlebar > span {
