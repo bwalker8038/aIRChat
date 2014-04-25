@@ -136,7 +136,9 @@ div.message div.left, div.message div.left img {
 }
 
 div.message div.left + div {
-  width: calc(100% - 50px);
+  margin-left: 50px;
+  width: calc(100% - 100px);
+  word-wrap: break-word;
 }
 
 table#listOfNicks {
