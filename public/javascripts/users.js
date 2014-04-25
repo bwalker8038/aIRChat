@@ -17,7 +17,7 @@ var formattedMessageTime = function () {
   if (hours.length === 1) {
     hours = '0' + hours;
   }
-  return days[date.getDay()] + ' ' + hours + ':' + mins;
+  return hours + ':' + mins + ' on ' + days[date.getDay()];
 };
 
 var User = function (nick, picture, server) {
