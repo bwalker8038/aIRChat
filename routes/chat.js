@@ -37,6 +37,10 @@ var randString = function (bytes, source) {
   }
 };
 
+var userID = function (username, sid) {
+  return username + '!' + sid;
+};
+
 var sanitize = function (string) {
   string = string.replace('&', '&amp;').replace('=', '&#61;');
   string = string.replace('<', '&lt;').replace('>', '&gt;');
@@ -193,9 +197,9 @@ var secondsSinceEpoch = function () {
 
 var heartbeat = function (sid, socket) {
   var newTime = secondsSinceEpoch();
-  if (intervalIDs[sid] && 
-      responseTimes[sid] && 
-      newTime - responseTimes[sid] > config.heartbeat_timeout) 
+  if ( intervalIDs[sid]
+    && responseTimes[sid]
+    && newTime - responseTimes[sid] > config.heartbeat_timeout )
   {
     disconnectClients(sid);
     clearInterval(intervalIDs[sid]);
@@ -282,21 +286,33 @@ exports.main = function (req, res, userProvider) {
   if (req.session.loggedIn != true) {
     res.redirect(401, '/');
   }
-  var sessionID = randString(128);
+  // Disconnect and destroy any clients that may not have been gotten rid of
+  // under circumstances where the user disconnected but no signal of them
+  // doing so has already been received.
+  var sessions = Object.keys(clients);
+  for (var i = sessions.length - 1; i >= 0; i--) {
+    if (sessions[i].indexOf(req.session.username + '!') === 0) {
+      disconnectClients(sessions[i]); 
+      intervalIDs[sessions[i]] = undefined;
+      responseTimes[sessions[i]] = undefined;
+    }
+  }
+  var sessionID = randString(64);
   if (!sessionID) {
     res.redirect(500, '/');
     return;
   }
-  clients[sessionID] = {};
-  intervalIDs[sessionID] = undefined;
+  var uid = userID(req.session.username, sessionID);
+  clients[uid] = {};
+  intervalIDs[uid] = undefined;
   userProvider.profileInfo([req.session.username], function (error, info) {
     if (!error) {
       info = info[0];
-      req.session.sessionID = sessionID;
+      req.session.sessionID = uid;
       res.render('chat', {
         profilepic         : info.picture,
         username           : req.session.username,
-        sessionID          : sessionID,
+        sessionID          : uid,
         host               : config.host,
         heartbeat_timeout  : config.heartbeat_timeout,
         heartbeat_interval : config.heartbeat_interval,
