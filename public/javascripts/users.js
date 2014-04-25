@@ -9,13 +9,13 @@ var formattedMessageTime = function () {
     'Friday', 
     'Saturday'
   ];
-  var hours = date.getHours();
-  var mins = date.getMinutes();
-  if (hours.length === 1) {
-    hours = '0' + hours;
-  }
+  var hours = date.getHours() + '';
+  var mins = date.getMinutes() + '';
   if (mins.length === 1) {
     mins = '0' + mins;
+  }
+  if (hours.length === 1) {
+    hours = '0' + hours;
   }
   return days[date.getDay()] + ' ' + hours + ':' + mins;
 };
