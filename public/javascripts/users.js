@@ -9,15 +9,15 @@ var formattedMessageTime = function () {
     'Friday', 
     'Saturday'
   ];
-  var hours = date.getHours() + '';
-  var mins = date.getMinutes() + '';
+  var hours = date.getUTCHours() + '';
+  var mins = date.getUTCMinutes() + '';
   if (mins.length === 1) {
     mins = '0' + mins;
   }
   if (hours.length === 1) {
     hours = '0' + hours;
   }
-  return hours + ':' + mins + ' on ' + days[date.getDay()];
+  return hours + ':' + mins + ' on ' + days[date.getUTCDay()] + ' (UTC)';
 };
 
 var User = function (nick, picture, server) {
