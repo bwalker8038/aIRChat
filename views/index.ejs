@@ -7,6 +7,9 @@
   </ul>
   <section class="top-bar-section">
     <ul class="right">
+      <% if (showDonationButton) {%>
+        <li><a href="#donations">Donate</a></li>
+      <% } %>
       <li class="active"><a href="#" data-reveal-id="login">Log in</a></li>
       <li><a href="#" data-reveal-id="register">Register</a></li>
     </ul>
@@ -211,5 +214,19 @@
       and contributions of all kinds are welcome!
     </p>
   </div>
+  <% if (showDonationButton) {%>
+    <div class="row">
+      <h3>Donating</h3>
+      <p>
+        aIRChat is a personal project, something I am developing on my own time.
+        If you really like aIRChat and would like to donate some
+        <a href="https://en.wikipedia.org/wiki/Bitcoin">Bitcoins</a> to me, so
+        that I can dedicate more time to its development, you can send donations
+        to the following address:<br />
+        <%= btcDonationAddress %>.
+      </p>
+    </div>
+    <a name="donations"></a>
+  <% } %>
 </div>
 <% include foot %>

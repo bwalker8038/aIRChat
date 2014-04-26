@@ -31,3 +31,11 @@ exports.heartbeat_interval = 4; // Four seconds
   * disconnected to free the user's nick up for when (if) they reconnect.
   */
 exports.heartbeat_timeout = 20; // Twenty seconds
+
+/** Bitcoint donations
+  * If showDonationButton is true, a couple of buttons will be placed on the
+  * index page linking users to where they can donate bitcoins to the site's
+  * owner.
+  */
+exports.showDonationButton = true;
+exports.btcDonationAddress = '199euqg2NwUzPTDhhtwQ54vnWjbQ34ABTR';
