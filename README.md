@@ -3,7 +3,7 @@ aIRChat
 
 IRC in the Air (cloud)- a modernized web interface to IRC with sugary extras.
 
-![What it looks like now](pn://raw.githubusercontent.com/redwire/aIRChat/master/public/images/airchatscrot.png)
+![What it looks like now](https://i.imgur.com/9VOYl3p.png)
 
 The plan
 ========
