@@ -136,8 +136,10 @@ var addChatSection = function (server, chanOrNick) {
 };
 
 var joinChat = function (server, channel) {
-  chats.push(new Chat(server, channel));
+  var newChat = new Chat(server, channel);
+  chats.push(newChat);
   addChatSection(server, channel);
+  return newChat;
 };
 
 var titleBlinker = function (origTitle, altTitle) {
@@ -209,12 +211,17 @@ socket.on('notifyHigh', function (data) {
   var $activeDiv = $('div.active');
   var chat = chats[chatIndex(chats, data.server, data.channel)];
   if (chat === undefined) {
-    joinChat(data.server, data.from);
+    chat = joinChat(data.server, data.from);
   }
   if ($activeDiv.data('server') != data.server || $activeDiv.data('channel') != data.channel) {
-    chat.gotHighPriorityNotification();
+    chat.gotHighPriorityMessage();
   }
-  chat.users[userIndex(chat.users, data.from)].gotNewMessage();
+  var uindex = userIndex(chat.users, data.from);
+  if (uindex === -1) {
+    chat.users.push(new User(data.from, data.picture, data.server));
+    uindex = chat.users.length - 1;
+  }
+  chat.users[uindex].gotNewMessage();
   addMessage({
     from: data.from,
     server: data.server,
@@ -393,7 +400,7 @@ $('a#sendPrivMsg').click(function (evt) {
   var msg = $('#privMsgContents').val();
   var nick = $('#privMsgNick').val();
   var server = $('div.active').first().data('server');
-  joinChat(server, nick);
+  var chat = joinChat(server, nick);
   addMessage({server: server, channel: nick, from: usernicks[server], message: msg});
   socket.emit('writeChat', {server: server, destination: nick, message: msg, sid: sid});
 });

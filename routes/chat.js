@@ -73,11 +73,20 @@ var createIRCClient = function (socket, params, userProvider) {
   });
 
   newClient.addListener('pm', function (from, msg) {
-    socket.emit('notifyHigh', {
-      channel : from,
-      from    : from, 
-      message : sanitize(msg),
-      server  : params.server
+    userProvider.profileInfo([from], function (error, users) {
+      if (error || users.length === 0) {
+        // Implement a serverNotification message to replace this with
+        // something to actually inform the user with.
+        return;
+      } else {
+        socket.emit('notifyHigh', {
+          channel : from,
+          from    : from, 
+          message : sanitize(msg),
+          server  : params.server,
+          picture : users[0].picture
+        });
+      }
     });
   });
 
