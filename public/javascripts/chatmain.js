@@ -66,7 +66,7 @@ var addMessage = function (data) {
   console.log('Got user');
   console.log(user);
   if (user === undefined) {
-    var picture = '/images/defaultusericon.jpg';
+    var picture = profilepic;
   } else {
     var picture = user.picture;
   }
@@ -82,7 +82,7 @@ var addMessage = function (data) {
   var $newMsg = $(
     '<div class="message">' +
     '  <div class="left">' +
-    '    <img src="' + picture + '" />' +
+    '    <img src="' + picture + '" data-nick="' + data.from + '" />' +
     '  </div>' +
     '  <div>' +
     '    <div class="titlebar' + highlight + '">' +
@@ -177,7 +177,6 @@ var channelNotification = function (type, server, channel, data, newdata) {
 };
 
 socket.on('pulseCheck', function (timeSent) {
-  console.log('Got a pulseCheck from the server. Time=' + timeSent);
   socket.emit('pulseSignal', sid);
   lastPulse = timeSent;
 });
@@ -210,23 +209,53 @@ socket.on('notifyLow', function (data) {
 socket.on('notifyHigh', function (data) {
   var $activeDiv = $('div.active');
   var chat = chats[chatIndex(chats, data.server, data.channel)];
+
+  // An unfortunate limitation of the way aIRChat augments IRC is that private messages
+  // will not come with data such as a profile picture URL.  Thus, to seamlessly retrieve
+  // this information to display it with the message received, the task of displaying
+  // the message and user data must be delegated to another handler function that will
+  // be provided with all the relevant information. This is the job of the dataResponse
+  // handler. The server and message data must be sent in the request so that it can
+  // be passed on by the aIRChat server in the dataResponse event it emits.
+  // This way, we save the server from having to lookup the sender's profile information
+  // every time they send a privmsg.
   if (chat === undefined) {
-    chat = joinChat(data.server, data.from);
+    socket.emit('dataRequest', {
+      username : data.from,
+      server   : data.server,
+      message  : data.message
+    });
+  } else {
+    if ($activeDiv.data('server') != data.server || $activeDiv.data('channel') != data.channel) {
+      chat.gotHighPriorityMessage();
+    }
+    chat.users[userIndex(chat.users, data.from)].gotNewMessage();
+    addMessage({
+      from    : data.from,
+      server  : data.server,
+      channel : data.from,
+      message : data.message
+    });
+    if (windowFocused === false && intervalID === undefined) {
+      intervalID = setInterval(titleBlinker('aIRChat', '[!!] aIRChat [!!]'), 1000);
+    }
   }
-  if ($activeDiv.data('server') != data.server || $activeDiv.data('channel') != data.channel) {
+});
+
+socket.on('dataResponse', function (data) {
+  var chat = joinChat(data.server, data.nick);
+  var $ad = $('div.active');
+  chat.users.push(new User(usernicks[data.server], profilepic, data.server));
+  chat.users.push(new User(data.nick, data.picture, data.server));
+  if ($ad.data('server') != data.server || $ad.data('channel') != data.nick) {
     chat.gotHighPriorityMessage();
   }
-  var uindex = userIndex(chat.users, data.from);
-  if (uindex === -1) {
-    chat.users.push(new User(data.from, data.picture, data.server));
-    uindex = chat.users.length - 1;
-  }
-  chat.users[uindex].gotNewMessage();
+  chat.users[chat.users.length - 1].gotNewMessage();
   addMessage({
-    from: data.from,
-    server: data.server,
-    channel: data.from,
-    message: data.message
+    channel : data.nick,
+    server  : data.server,
+    from    : data.nick,
+    message : data.message
   });
   if (windowFocused === false && intervalID === undefined) {
     intervalID = setInterval(titleBlinker('aIRChat', '[!!] aIRChat [!!]'), 1000);

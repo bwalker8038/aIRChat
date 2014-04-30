@@ -73,20 +73,11 @@ var createIRCClient = function (socket, params, userProvider) {
   });
 
   newClient.addListener('pm', function (from, msg) {
-    userProvider.profileInfo([from], function (error, users) {
-      if (error || users.length === 0) {
-        // Implement a serverNotification message to replace this with
-        // something to actually inform the user with.
-        return;
-      } else {
-        socket.emit('notifyHigh', {
-          channel : from,
-          from    : from, 
-          message : sanitize(msg),
-          server  : params.server,
-          picture : users[0].picture
-        });
-      }
+    socket.emit('notifyHigh', {
+      channel : from,
+      from    : from, 
+      message : sanitize(msg),
+      server  : params.server
     });
   });
 
@@ -206,8 +197,8 @@ var secondsSinceEpoch = function () {
 
 var heartbeat = function (sid, socket) {
   var newTime = secondsSinceEpoch();
-  if ( intervalIDs[sid]
-    && responseTimes[sid]
+  if ( intervalIDs[sid] != undefined
+    && responseTimes[sid] != undefined
     && newTime - responseTimes[sid] > config.heartbeat_timeout )
   {
     disconnectClients(sid);
@@ -224,6 +215,21 @@ exports.newClient = function (socket, userProvider) {
     if (data.sid === undefined || clients[data.sid] === undefined) return;
     var client = clients[data.sid][data.server];
     client.send.apply(client, data.args);
+  });
+
+  socket.on('dataRequest', function (data) {
+    userProvider.profileInfo([data.username], function (error, users) {
+      if (error) {
+        return; // Raplce with a notification
+      } else if (users.length === 0) {
+        return; // Replace with a notification
+      } else {
+        var result = users[0];
+        result.server = data.server;
+        result.message = data.message;
+        socket.emit('dataResponse', result); 
+      }
+    });
   });
 
   socket.on('part', function (data) {
