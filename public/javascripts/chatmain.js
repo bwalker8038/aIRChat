@@ -243,7 +243,8 @@ socket.on('notifyHigh', function (data) {
 });
 
 socket.on('dataResponse', function (data) {
-  var chat = joinChat(data.server, data.nick);
+  joinChat(data.server, data.nick);
+  var chat = chats[chatIndex(chats, data.server, data.channel)];
   var $ad = $('div.active');
   chat.users.push(new User(usernicks[data.server], profilepic, data.server));
   chat.users.push(new User(data.nick, data.picture, data.server));
