@@ -63,8 +63,6 @@ var addMessage = function (data) {
   var $tab = chatElement('dd', data.server, data.channel).children('a').first();
   var chat = chats[chatIndex(chats, data.server, data.channel)];
   var user = chat.users[userIndex(chat.users, data.from)];
-  console.log('Got user');
-  console.log(user);
   if (user === undefined) {
     var picture = profilepic;
   } else {
@@ -208,59 +206,45 @@ socket.on('notifyLow', function (data) {
 
 socket.on('notifyHigh', function (data) {
   var $activeDiv = $('div.active');
-  var chat = chats[chatIndex(chats, data.server, data.channel)];
-
-  // An unfortunate limitation of the way aIRChat augments IRC is that private messages
-  // will not come with data such as a profile picture URL.  Thus, to seamlessly retrieve
-  // this information to display it with the message received, the task of displaying
-  // the message and user data must be delegated to another handler function that will
-  // be provided with all the relevant information. This is the job of the dataResponse
-  // handler. The server and message data must be sent in the request so that it can
-  // be passed on by the aIRChat server in the dataResponse event it emits.
-  // This way, we save the server from having to lookup the sender's profile information
-  // every time they send a privmsg.
+  var chat = chats[chatIndex(chats, data.server, data.from)];
   if (chat === undefined) {
+    chat = joinChat(data.server, data.from);
+    chat.users.push(new User(usernicks[data.server], profilepic, data.server));
+    chat.users.push(new User(data.from, '/images/defaultusericon.jpg', data.server));
+    console.log('Created a new chat for privmsg');
     socket.emit('dataRequest', {
       username : data.from,
-      server   : data.server,
-      message  : data.message
+      server   : data.server
     });
-  } else {
-    if ($activeDiv.data('server') != data.server || $activeDiv.data('channel') != data.channel) {
-      chat.gotHighPriorityMessage();
-    }
-    chat.users[userIndex(chat.users, data.from)].gotNewMessage();
-    addMessage({
-      from    : data.from,
-      server  : data.server,
-      channel : data.from,
-      message : data.message
-    });
-    if (windowFocused === false && intervalID === undefined) {
-      intervalID = setInterval(titleBlinker('aIRChat', '[!!] aIRChat [!!]'), 1000);
-    }
+    console.log('Emitted dataRequest');
+  }
+  if ($activeDiv.data('server') != data.server || $activeDiv.data('channel') != data.channel) {
+    chat.gotHighPriorityMessage();
+  }
+  chat.users[userIndex(chat.users, data.from)].gotNewMessage();
+  addMessage({
+    from    : data.from,
+    server  : data.server,
+    channel : data.from,
+    message : data.message
+  });
+  console.log('Got privmsg');
+  if (windowFocused === false && intervalID === undefined) {
+    intervalID = setInterval(titleBlinker('aIRChat', '[!!] aIRChat [!!]'), 1000);
   }
 });
 
 socket.on('dataResponse', function (data) {
-  joinChat(data.server, data.nick);
-  var chat = chats[chatIndex(chats, data.server, data.channel)];
-  var $ad = $('div.active');
-  chat.users.push(new User(usernicks[data.server], profilepic, data.server));
-  chat.users.push(new User(data.nick, data.picture, data.server));
-  if ($ad.data('server') != data.server || $ad.data('channel') != data.nick) {
-    chat.gotHighPriorityMessage();
-  }
-  chat.users[chat.users.length - 1].gotNewMessage();
-  addMessage({
-    channel : data.nick,
-    server  : data.server,
-    from    : data.nick,
-    message : data.message
-  });
-  if (windowFocused === false && intervalID === undefined) {
-    intervalID = setInterval(titleBlinker('aIRChat', '[!!] aIRChat [!!]'), 1000);
-  }
+  console.log('Got dataResponse');
+  var chat = chats[chatIndex(chats, data.server, data.nick)];
+  var user = chat.users[userIndex(chat.users, data.nick)];
+  var query = '' +
+    'div.content[data-server="' + data.server + '"][data-channel="' + data.nick + '"] ' +
+    'img[data-nick="' + data.nick + '"]';
+  console.log('Created picture query: ' + query);
+  user.picture = data.picture;
+  $(query).attr('src', user.picture);
+  console.log('Updated user pictures');
 });
 
 socket.on('connected', function (server, channel) {
@@ -275,7 +259,6 @@ socket.on('connected', function (server, channel) {
 // The list will not be rendered until the channel is the active one.
 socket.on('nickList', function (data) {
   var chat = chats[chatIndex(chats, data.server, data.channel)];
-  console.log('Got nicklist for ' + data.channel);
   for (var i = data.users.length - 1; i >= 0; i--) {
     chat.users.push(new User(
       data.users[i].nick, 
@@ -430,9 +413,35 @@ $('a#sendPrivMsg').click(function (evt) {
   var msg = $('#privMsgContents').val();
   var nick = $('#privMsgNick').val();
   var server = $('div.active').first().data('server');
+  if (chatElement('div', server, nick) /* exists */) {
+    Notifier.warning(
+      'You already have a private chat open with this user.',
+      'Chat Already Exists'
+    );
+    return;
+  }
   var chat = joinChat(server, nick);
-  addMessage({server: server, channel: nick, from: usernicks[server], message: msg});
-  socket.emit('writeChat', {server: server, destination: nick, message: msg, sid: sid});
+  chat.users.push(new User(usernicks[server], profilepic, server));
+  chat.users.push(new User(nick, '/images/defaultusericon.jpg', server));
+  console.log('Created new chat for privmsg');
+  addMessage({
+    server  : server, 
+    channel : nick, 
+    from    : usernicks[server], 
+    message : msg
+  });
+  socket.emit('writeChat', {
+    server      : server, 
+    destination : nick, 
+    message     : msg,
+    sid         : sid
+  });
+  console.log('Emitted writeChat');
+  socket.emit('dataRequest', {
+    username : nick,
+    server   : server
+  });
+  console.log('Emitted dataRequest');
 });
 
 $('a[data-reveal-id=partChannel]').click(function (evt) {
@@ -457,7 +466,6 @@ $('a#confirmPartChannel').click(function (evt) {
   $('dd.active').first().remove();
   $('div.active').first().remove();
   if (channel[0] === '#') { // Channel, not a private chat
-    console.log('Parting from ' + channel);
     socket.emit('part', {
       server: server, 
       channel: channel, 

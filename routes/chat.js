@@ -226,7 +226,6 @@ exports.newClient = function (socket, userProvider) {
       } else {
         var result = users[0];
         result.server = data.server;
-        result.message = data.message;
         socket.emit('dataResponse', result); 
       }
     });
