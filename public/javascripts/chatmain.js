@@ -211,12 +211,10 @@ socket.on('notifyHigh', function (data) {
     chat = joinChat(data.server, data.from);
     chat.users.push(new User(usernicks[data.server], profilepic, data.server));
     chat.users.push(new User(data.from, '/images/defaultusericon.jpg', data.server));
-    console.log('Created a new chat for privmsg');
     socket.emit('dataRequest', {
       username : data.from,
       server   : data.server
     });
-    console.log('Emitted dataRequest');
   }
   if ($activeDiv.data('server') != data.server || $activeDiv.data('channel') != data.channel) {
     chat.gotHighPriorityMessage();
@@ -228,23 +226,19 @@ socket.on('notifyHigh', function (data) {
     channel : data.from,
     message : data.message
   });
-  console.log('Got privmsg');
   if (windowFocused === false && intervalID === undefined) {
     intervalID = setInterval(titleBlinker('aIRChat', '[!!] aIRChat [!!]'), 1000);
   }
 });
 
 socket.on('dataResponse', function (data) {
-  console.log('Got dataResponse');
   var chat = chats[chatIndex(chats, data.server, data.nick)];
   var user = chat.users[userIndex(chat.users, data.nick)];
   var query = '' +
     'div.content[data-server="' + data.server + '"][data-channel="' + data.nick + '"] ' +
     'img[data-nick="' + data.nick + '"]';
-  console.log('Created picture query: ' + query);
   user.picture = data.picture;
   $(query).attr('src', user.picture);
-  console.log('Updated user pictures');
 });
 
 socket.on('connected', function (server, channel) {
@@ -423,7 +417,6 @@ $('a#sendPrivMsg').click(function (evt) {
   var chat = joinChat(server, nick);
   chat.users.push(new User(usernicks[server], profilepic, server));
   chat.users.push(new User(nick, '/images/defaultusericon.jpg', server));
-  console.log('Created new chat for privmsg');
   addMessage({
     server  : server, 
     channel : nick, 
@@ -436,12 +429,10 @@ $('a#sendPrivMsg').click(function (evt) {
     message     : msg,
     sid         : sid
   });
-  console.log('Emitted writeChat');
   socket.emit('dataRequest', {
     username : nick,
     server   : server
   });
-  console.log('Emitted dataRequest');
 });
 
 $('a[data-reveal-id=partChannel]').click(function (evt) {
