@@ -118,7 +118,7 @@ var addChatSection = function (server, chanOrNick) {
     '  <a href="#panel_' + label(server, chanOrNick) + '">' +
     '    <span class="notifyLow">0</span>' +
     '    <span class="notifyHigh">0</span>' +
-    '    ' + chanOrNick +
+    '    <span>'+ chanOrNick + '</span>' +
     '  </a>' +
     '</dd>'
   );
@@ -303,6 +303,20 @@ socket.on('newNick', function (data) {
     usernicks[data.server] = data.new;
   } else {
     chat.getUser(data.old).changeNick(data.new);
+  }
+  // Rename the tab of an affected private chat
+  if (chatElement('dd', data.server, data.old) /* exists */) {
+    var label = $(
+      'dd[data-server="' + data.server + '"][data-channel="' + data.old + '"] a span'
+    ).last();
+    var newLabel = label.text().replace(data.old, data.new);
+    channelNotification('changedNick', data.server, data.old, data.old, data.new);
+    label.text(newLabel);
+    var pchat = chats[chatIndex(chats, data.server, data.old)];
+    pchat.getUser(data.old).changeNick(data.new);
+    pchat.channel = data.new;
+    chatElement('dd', data.server, data.old).data('channel', data.new);
+    chatElement('div', data.server, data.old).data('channel', data.new);
   }
   channelNotification('changedNick', data.server, data.channel, data.old, data.new);
 });
