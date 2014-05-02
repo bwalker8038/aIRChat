@@ -536,6 +536,61 @@ $('a#confirmPartChannel').click(function (evt) {
   }
 });
 
+$('a#toggleFave').click(function (evt) {
+  var server = $('dd.active').first().data('server');
+  var channel = $('dd.active').first().data('channel');
+  if (server === undefined || channel === undefined) {
+    Notifier.warning(
+      'No channel is selected to be favorited.',
+      'Missing Selection'
+    );
+  } else {
+    var favorites = stash.get('favorites');
+    if (favorites[server] != undefined && favorites[server].indexOf(channel) >= 0) {
+      $('p#faveText').text(
+        'Are you sure you would like to remove ' + channel + ' on ' +
+        server + ' from your favorites?'
+      );
+    } else {
+      $('p#faveText').text(
+        'Would you like to add ' + channel + ' on ' + server +
+        ' to your favorites?'
+      );
+    }
+  }
+});
+
+$('a#confirmToggleFave').click(function (evt) {
+  var server = $('dd.active').first().data('server');
+  var channel = $('dd.active').first().data('channel');
+  if (server === undefined || channel === undefined) {
+    Notifier.warning(
+      'No channel is selected to be favorited.',
+      'Missing Selection'
+    );
+  } else {
+    var favorites = stash.get('favorites');
+    if (favorites[server] != undefined) {
+      var fchannels = favorites[server];
+      var index = fchannels.indexOf(channel);
+      if (index >= 0) {
+        fchannels.remove(index);
+        if (fchannels.length === 0) {
+          delete favorites[server];
+        }
+      } else {
+        fchannels.push(channel);
+        favorites[server] = fchannels;
+      }
+      stash.set('favorites', favorites);
+    } else {
+      favorites[server] = [channel];
+      stash.set('favorites', favorites);
+    }
+    Notifier.success('Your favorites were updated successfully!', 'Favorites Updated');
+  }
+});
+
 $('a#changeNickConfirm').click(function (evt) {
   var newNick = $('input#newNickInput').val();
   var server = $('dd.active').first().data('server');
