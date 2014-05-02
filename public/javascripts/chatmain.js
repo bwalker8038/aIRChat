@@ -183,8 +183,15 @@ socket.on('action', function (data) {
   channelNotification('action', data.server, data.channel, data.nick, data.message);
 });
 
-socket.on('gotError', function (error) {
-  Notifier.error(error.args.join(' '), 'Server Error');
+socket.on('serverNotification', function (data) {
+  { 'error'   : Notifier.error,
+    'info'    : Notifier.info,
+    'warning' : Notifier.warning,
+    'success' : Notifier.success
+  }[data.type](
+    data.message,
+    'Server Notification'
+  );
 });
 
 socket.on('notifyLow', function (data) {

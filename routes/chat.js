@@ -14,6 +14,12 @@ var intervalIDs = {};
 // point that the user's last heartbeat response was received.
 var responseTimes = {};
 
+// Server notification types.
+const SN_ERROR = 'error';
+const SN_WARN = 'warning';
+const SN_INFO = 'info';
+const SN_SUCCESS = 'success';
+
 // Array remove - By John Resig (MIT LICENSED)
 Array.prototype.remove = function (start, end) {
   var tail = this.slice((end || start) + 1 || this.length);
@@ -103,7 +109,11 @@ var createIRCClient = function (socket, params, userProvider) {
           channel : channel,
           users   : userdata
         });
-      }
+      } else {
+        socket.emit('serverNotification', {
+          message : 'Failed to retrieve information about the users on ' + channel + '.',
+          type    : SN_ERROR
+        });
     });
   });
 
@@ -165,6 +175,9 @@ var createIRCClient = function (socket, params, userProvider) {
     });
   });
 
+  // TODO
+  // Change this to send one message with the array of channels instead of multiple
+  // messages. Involves changing chatmain as well.
   newClient.addListener('quit', function (nick, reason, channels, msg) {
     for (var i = channels.length - 1; i >= 0; i--) {
       socket.emit('userLeft', {
@@ -177,7 +190,10 @@ var createIRCClient = function (socket, params, userProvider) {
   });
 
   newClient.addListener('error', function (error) {
-    socket.emit('gotError', error);
+    socket.emit('serverNotification', {
+      message: error,
+      type   : SN_ERROR
+    });
   });
 
   return newClient;
@@ -220,9 +236,15 @@ exports.newClient = function (socket, userProvider) {
   socket.on('dataRequest', function (data) {
     userProvider.profileInfo([data.username], function (error, users) {
       if (error) {
-        return; // Raplce with a notification
+        socket.emit('serverNotification', {
+          type    : SN_ERROR,
+          message : 'Could not retrieve user data for ' + data.username + '.'
+        });
       } else if (users.length === 0) {
-        return; // Replace with a notification
+        socket.emit('serverNotification', {
+          type    : SN_INFO,
+          message : 'No information about ' + data.username + ' was found.'
+        });
       } else {
         var result = users[0];
         result.server = data.server;
