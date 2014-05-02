@@ -299,7 +299,11 @@ socket.on('kicked', function (data) {
 
 socket.on('newNick', function (data) {
   var chat = chats[chatIndex(chats, data.server, data.channel)];
-  chat.getUser(data.old).changeNick(data.new);
+  if (data.old === usernicks[data.server]) {
+    usernicks[data.server] = data.new;
+  } else {
+    chat.getUser(data.old).changeNick(data.new);
+  }
   channelNotification('changedNick', data.server, data.channel, data.old, data.new);
 });
 
@@ -482,7 +486,6 @@ $('a#changeNickConfirm').click(function (evt) {
     return;
   }
   socket.emit('changeNick', {server: server, sid: sid, nick: newNick});
-  usernicks[server] = newNick;
 });
 
 $('#submitProfile').click(function (evt) {
