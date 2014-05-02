@@ -114,6 +114,7 @@ var createIRCClient = function (socket, params, userProvider) {
           message : 'Failed to retrieve information about the users on ' + channel + '.',
           type    : SN_ERROR
         });
+      }
     });
   });
 
@@ -138,6 +139,11 @@ var createIRCClient = function (socket, params, userProvider) {
             server  : params.server
           });
         }
+      } else {
+        socket.emit('serverNotification', {
+          message : 'Could not obtain information for ' + nick + '.',
+          type    : SN_ERROR
+        });
       }
     });
   });
@@ -191,13 +197,13 @@ var createIRCClient = function (socket, params, userProvider) {
 
   newClient.addListener('error', function (error) {
     socket.emit('serverNotification', {
-      message: error,
+      message: error.args.join(' '),
       type   : SN_ERROR
     });
   });
 
   return newClient;
- };
+};
 
 var disconnectClients = function (sid) {
   var servers = Object.keys(clients[sid]);
@@ -296,7 +302,14 @@ exports.newClient = function (socket, userProvider) {
 
   socket.on('changeNick', function (data) {
     if (clients[data.sid] === undefined) return;
-    clients[data.sid][data.server].send('nick', data.nick);
+    if (clients[data.sid][data.server] === undefined) {
+      socket.emit('serverNotification', {
+        message : 'Not connected to ' + data.server + '.',
+        type    : SN_ERROR
+      });
+    } else {
+      clients[data.sid][data.server].send('nick', data.nick);
+    }
   });
 
   socket.on('leaving', function (data) {

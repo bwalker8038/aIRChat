@@ -184,14 +184,19 @@ socket.on('action', function (data) {
 });
 
 socket.on('serverNotification', function (data) {
-  { 'error'   : Notifier.error,
-    'info'    : Notifier.info,
-    'warning' : Notifier.warning,
-    'success' : Notifier.success
-  }[data.type](
-    data.message,
-    'Server Notification'
-  );
+  var fn;
+  if (data.type === 'error') {
+    fn = Notifier.error;
+  } else if (data.type === 'info') {
+    fn = Notifier.info;
+  } else if (data.type === 'warning') {
+    fn = Notifier.warning;
+  } else if (data.type === 'success') {
+    fn = Notifier.success;
+  } else {
+    fn = Notifier.info;
+  }
+  fn(data.message, 'Server Notification');
 });
 
 socket.on('notifyLow', function (data) {
@@ -386,19 +391,44 @@ $('a#joinNewChannel').click(function (evt) {
       'same server the channel you wish to join is in.',
       'Missing Selection'
     );
+  } else if (chanName === '') {
+    Notifier.warning(
+      'You must provide a channel name (eg: #aIRChat) to join.',
+      'Missing Input'
+    );
+  } else if (chanName[0] !== '#') {
+    // This is a less-than-perfect quick check that will catch the most obvious mistake
+    // a user might make by writing 'aIRChat' instead of '#aIRChat', but could be better.
+    Notifier.warning(
+      chanName + ' is not a valid channel name. Did you mean #' + chanName + '?',
+      'Invalid Input'
+    );
+  } else {
+    socket.emit('joinChannel', {
+      server  : server, 
+      channel : chanName, 
+      sid     : sid
+    });
   }
-  socket.emit('joinChannel', {server: server, channel: chanName, sid: sid});
 });
 
 $('a#connectToNewServer').click(function (evt) {
   var serverName = $('#newServerAddr').val();
   var firstChannel = $('#newServerChannel').val();
-  socket.emit('serverJoin', {
-    server: serverName,
-    nick: username,
-    firstchannel: firstChannel,
-    sid: sid
-  });
+  if (serverName === '' || firstChannel === '') {
+    Notifier.warning(
+      'You must specify both the server address and a channel to join to ' +
+      'connect to a new server.',
+      'Missing Input'
+    );
+  } else {
+    socket.emit('serverJoin', {
+      server       : serverName,
+      nick         : username,
+      firstchannel : firstChannel,
+      sid          : sid
+    });
+  }
 });
 
 $('a[data-reveal-id=getNickList]').click(function (evt) {
@@ -437,40 +467,55 @@ $('a#sendPrivMsg').click(function (evt) {
       'You already have a private chat open with this user.',
       'Chat Already Exists'
     );
-    return;
+  } else if (msg === '' || nick === '') {
+    Notifier.warning(
+      'You must specify the nick of the user to send your message to ' +
+      'as well as a message to send.',
+      'Missing Input'
+    );
+  } else if (server === undefined) {
+    Notifier.warning(
+      'You must select a chat tab for a channel on the server that the user ' +
+      'you wish to send your message to is on.',
+      'Missing Selection'
+    );
+  } else {
+    var chat = joinChat(server, nick);
+    chat.users.push(new User(usernicks[server], profilepic, server));
+    chat.users.push(new User(nick, '/images/defaultusericon.jpg', server));
+    addMessage({
+      server  : server, 
+      channel : nick, 
+      from    : usernicks[server], 
+      message : msg
+    });
+    socket.emit('writeChat', {
+      server      : server, 
+      destination : nick, 
+      message     : msg,
+      sid         : sid
+    });
+    socket.emit('dataRequest', {
+      username : nick,
+      server   : server
+    });
   }
-  var chat = joinChat(server, nick);
-  chat.users.push(new User(usernicks[server], profilepic, server));
-  chat.users.push(new User(nick, '/images/defaultusericon.jpg', server));
-  addMessage({
-    server  : server, 
-    channel : nick, 
-    from    : usernicks[server], 
-    message : msg
-  });
-  socket.emit('writeChat', {
-    server      : server, 
-    destination : nick, 
-    message     : msg,
-    sid         : sid
-  });
-  socket.emit('dataRequest', {
-    username : nick,
-    server   : server
-  });
 });
 
 $('a[data-reveal-id=partChannel]').click(function (evt) {
   var channel = $('div.active').first().data('channel');
-  $('div#partChannel div.row div.columns p').text(
-    'Are you sure you want to leave ' + channel + '?'
-  );
+  var $modalTextSection = $('div#partChannel div.row div.columns p');
+  if (channel === undefined) {
+    $modalTextSection.text('No channel was selected to part from.');
+  } else {
+    $modalTextSection.text('Are you sure you want to leave ' + channel + '?');
+  }
 });
 
 $('a#confirmPartChannel').click(function (evt) {
   var channel = $('div.active').first().data('channel');
   var server = $('div.active').first().data('server');
-  if (!channel || !server) {
+  if (channel === undefined || server === undefined) {
     Notifier.warning(
       'You have not selected a channel to leave.',
       'Missing Selection'
@@ -493,20 +538,22 @@ $('a#confirmPartChannel').click(function (evt) {
 
 $('a#changeNickConfirm').click(function (evt) {
   var newNick = $('input#newNickInput').val();
+  var server = $('dd.active').first().data('server');
   if (newNick.length === 0) {
     Notifier.error('You have not provided a new nick.', 'Missing Field');
-    return;
-  }
-  var server = $('dd.active').first().data('server');
-  if (!server) {
+  } else if (server === undefined) {
     Notifier.warning(
       'To change your nick on a server, you must first select ' +
       'a chat tab for a channel on that server.',
       'Missing Selection'
     );
-    return;
+  } else {
+    socket.emit('changeNick', {
+      server : server, 
+      sid    : sid, 
+      nick   : newNick
+    });
   }
-  socket.emit('changeNick', {server: server, sid: sid, nick: newNick});
 });
 
 $('#submitProfile').click(function (evt) {
@@ -535,7 +582,7 @@ $('#submitProfile').click(function (evt) {
         $('#ownProfilePic').attr('src', pp);
         profilepic = pp;
       } else {
-        Notifier.error(
+        Notifier.warning(
           'Please ensure that you have entered the correct password and try again.',
           'Invalid Password'
         );
