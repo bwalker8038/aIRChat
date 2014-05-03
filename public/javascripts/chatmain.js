@@ -536,7 +536,7 @@ $('a#confirmPartChannel').click(function (evt) {
   }
 });
 
-$('a#toggleFave').click(function (evt) {
+$('a[data-reveal-id="toggleFave"]').click(function (evt) {
   var server = $('dd.active').first().data('server');
   var channel = $('dd.active').first().data('channel');
   if (server === undefined || channel === undefined) {
@@ -544,6 +544,7 @@ $('a#toggleFave').click(function (evt) {
       'No channel is selected to be favorited.',
       'Missing Selection'
     );
+    $('p#faveText').text('There is no channel selected to favorite.');
   } else {
     var favorites = stash.get('favorites');
     if (favorites[server] != undefined && favorites[server].indexOf(channel) >= 0) {
@@ -658,6 +659,38 @@ $(document).ready(function () {
   // It doesn't make sense to set any chat content areas' height here
   // because none exist yet!
   $('div#nickListPane').height(($(window).height() - 250) + 'px');
+
+  // Connect to the user's favorite servers and channels
+  var favorites = stash.get('favorites');
+  if (!favorites) { // None set yet
+    stash.set('favorites', {});
+    return;
+  }
+  var servers = Object.keys(favorites);
+  for (var sindex = 0, slen = servers.length; sindex < slen; sindex++) {
+    var server = servers[sindex];
+    var channels = favorites[server];
+    var channel = channels[0];
+    socket.emit('serverJoin', {
+      sid          : sid,
+      server       : server,
+      firstchannel : channel,
+      nick         : username
+    });
+    for (var cindex = 1, clen = channels.length; cindex < clen; cindex++) {
+      channel = channels[cindex];
+      socket.emit('joinChannel', {
+        channel : channel,
+        sid     : sid,
+        server  : server
+      });
+    }
+    Notifier.info(
+      'Sent requests to join the following channels on ' + 
+      server + ': ' + channels.join(', '),
+      'Favorite Server Connection'
+    );
+  }
 });
 
 $(window).focus(function (evt) {
