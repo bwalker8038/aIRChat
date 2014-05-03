@@ -435,11 +435,11 @@ $('a[data-reveal-id=getNickList]').click(function (evt) {
   var channel = $('div.active').first().data('channel');
   var server = $('div.active').first().data('server');
   if (channel === undefined || server === undefined) {
-    $('div#getNickList > h1').text('No channel selected');
+    $('div#getNickList div.row div.columns h1').text('No channel selected');
     return;
   }
   var users = chats[chatIndex(chats, server, channel)].users;
-  $('div#getNickList > h1').text('Users in ' + channel);
+  $('div#getNickList div.row div.columns h1').text('Users in ' + channel);
   var $list = $('table#listOfNicks tbody');
   $list.html(''); // Clear out the table before filling it
   for (var i = users.length - 1; i >= 0; i--) {

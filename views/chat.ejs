@@ -1,7 +1,11 @@
 <% include head %>
 <!-- Dialog for connecting to a new server -->
 <div class="reveal-modal" id="newServer" data-reveal>
-  <h1>Connect to a server</h1>
+  <div class="row">
+    <div class="small-12 columns">
+      <h1>Connect to a server</h1>
+    </div>
+  </div>
   <div class="row">
     <div class="small-8 columns">
       <input type="text" placeholder="irc.example.com" id="newServerAddr" />
@@ -21,7 +25,11 @@
 </div>
 <!-- Dialog for joining a new channel -->
 <div class="reveal-modal" id="newChannel" data-reveal>
-  <h1>Join a channel</h1>
+  <div class="row">
+    <div class="small-12 columns">
+      <h1>Join a channel</h1>
+    </div>
+  </div>
   <div class="row">
     <div class="small-8 columns">
       <input type="text" placeholder="#channelName" id="newChannelName" />
@@ -36,7 +44,11 @@
 </div>
 <!-- Dialog for setting or removing a channel as a favorite -->
 <div class="reveal-modal" id="toggleFave" data-reveal>
-  <h1>Manage favorites</h1>
+  <div class="row">
+    <div class="small-12 columns">
+      <h1>Manage favorites</h1>
+    </div>
+  </div>
   <div class="row">
     <div class="small-8 columns">
       <p>
@@ -64,7 +76,11 @@
 </div>
 <!-- Dialog asking for confirmation to part from channel -->
 <div class="reveal-modal" id="partChannel" data-reveal>
-  <h1>Leave channel</h1>
+  <div class="row">
+    <div class="small-12 columns">
+      <h1>Leave channel</h1>
+    </div>
+  </div>
   <div class="row">
     <div class="small-8 columns">
       <p><!-- Filled by JS --></p>
@@ -82,7 +98,11 @@
 </div>
 <!-- Dialog for changing the user's nick -->
 <div class="reveal-modal" id="changeNickModal" data-reveal>
-  <h1>Change your nick</h1>
+  <div class="row">
+    <div class="small-12 columns">
+      <h1>Change your nick</h1>
+    </div>
+  </div>
   <div class="row">
     <div class="small-8 columns">
       <p>
@@ -105,25 +125,37 @@
 </div>
 <!-- Dialog for seeing a list of nicks of users in the active channel. -->
 <div class="reveal-modal" id="getNickList" data-reveal>
-  <h1><!-- Filled by JS --></h1>
-  <div id="nickListPane">
-    <table id="listOfNicks">
-      <thead>
-        <tr>
-          <th>Nick</th>
-          <th>Last Message</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Filled by JS -->
-      </tbody>
-    </table>
+  <div class="row">
+    <div class="small-12 columns">
+      <h1><!-- Filled by JS --></h1>
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-12 columns">
+      <div id="nickListPane">
+        <table id="listOfNicks">
+          <thead>
+            <tr>
+              <th>Nick</th>
+              <th>Last Message</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Filled by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
   <a class="close-reveal-modal">&#215;</a>
 </div>
 <!-- Dialog for sending a new private message -->
 <div class="reveal-modal" id="privMsg" data-reveal>
-  <h1>Send a private message</h1>
+  <div class="row">
+    <div class="small-12 columns">
+      <h1>Send a private message</h1>
+    </div>
+  </div>
   <div class="row">
     <div class="small-8 columns">
       <input type="text" placeholder="nickname" id="privMsgNick" />
@@ -141,43 +173,13 @@
   </div>
   <a class="close-reveal-modal">&#215;</a>
 </div>
-<!-- Dialog for seeing another user's profile information -->
-<div class="reveal-modal" id="showOtherProfile" data-reveal>
-  <h1><!-- Filled by JS --></h1>
-  <div class="row">
-    <div class="small-12 columns">
-      <!-- Source attribute filled by JS -->
-      <img src="" class="thumbnail" id="otherPicture" />
-    </div>
-  </div>
-  <div class="row">
-    <div class="small-8 columns">
-      <h2>Bio</h2>
-    </div>
-  </div>
-  <div class="row">
-    <div class="small-8 columns">
-      <p id="otherBio">
-        <!-- Filled by JS -->
-      </p>
-    </div>
-  </div>
-  <div class="row">
-    <div class="small-8 columns">
-      <h2>Contact Information</h2>
-    </div>
-  </div>
-  <div class="row">
-    <div class="small-8 columns">
-      <p id="otherContact">
-        <!-- Filled by JS -->
-      </p>
-    </div>
-  </div>
-</div>
 <!-- Dialog for setting profile information -->
 <div class="reveal-modal" id="profileSettings" data-reveal>
-  <h1>Profile settings</h1>
+  <div class="row">
+    <div class="small-12 columns">
+      <h1>Profile settings</h1>
+    </div>
+  </div>
   <div class="row">
     <div class="small-12 small-centered columns">
       <h2><%= username %></h2>
