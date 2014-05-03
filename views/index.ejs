@@ -229,4 +229,13 @@
     <a name="donations"></a>
   <% } %>
 </div>
+<script src="/javascripts/notifier.js"></script>
+<script src="/javascripts/stash.min.js"></script>
+<script>
+  <% if (autoJoinServer && autoJoinChannel) {%>
+    var autoJoinServer = '<%= autoJoinServer %>';
+    var autoJoinChannel = '<%= autoJoinChannel %>';
+  <% } %>
+</script>
+<script src="/javascripts/autojoin.js"></script>
 <% include foot %>
