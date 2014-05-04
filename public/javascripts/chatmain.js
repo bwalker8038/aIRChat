@@ -16,6 +16,52 @@ var usernicks = {};
 var lastPulse = undefined;
 var lastPulseDiff = 0;
 
+// A table of commands that can be parsed by aIRChat and sent to IRC.
+// When a user enters a message like `/<name> <arg1> <arg2>`, the name is looked up,
+// arguments separated into an array and matched against the different combinations
+// of tokens to determine which command format should be used.
+// This approach for finding the correct format is used for future cases where
+// command formats need to augment the user's input (with pre/suffixing characters, e.g.).
+const COMMANDS = [
+//---------------------------------------------------------------------------------------------------------------------------
+// NAME     | FORMAT           |  INPUT-MATCHING TOKENS                               |  HELP STRINGS
+//----------|------------------|------------------------------------------------------|--------------------------------------
+  ['away',    'AWAY {0}',         [/.+/],                                                'AWAY <message>'                    ],
+  ['away',    'AWAY',             [],                                                    'AWAY'                              ],
+  ['info',    'INFO {0}',         [/\w+\.\w+\.\w+/],                                     'INFO <target server>'              ],
+  ['info',    'INFO',             [],                                                    'INFO'                              ],
+  ['invite',  'INVITE {0} {1}',   [/\S+/, /^##?(\w|\d|-)+/],                             'INVITE <nickname> <channel>'       ],
+  ['ison',    'ISON {0}',         [/(\S+,)*\S+$/],                                       'ISON <nicknames>'                  ],
+  ['kick',    'KICK {0} {1} {2}', [/^##?(\w|\d|-)+/, /\S+/, /.+/],                       'KICK <channel> <client> <message>' ],
+  ['kick',    'KICK {0} {1}',     [/^##?(\w|\d|-)+/, /\S+/],                             'KICK <channel> <client>'           ],
+  ['mode',    'MODE {0} {1}',     [/^##?(\w|\d|-)+/, /([\+-]\w,)*[\+-]\w$/],             'MODE <channel> <flags>'            ],
+  ['mode',    'MODE {0} {1}',     [/\S+/, /([\+-]\w,)*[\+-]\w$/],                        'MODE <nickname> <flags>'           ],
+  ['motd',    'MOTD {0}',         [/\w+\.\w+\.\w+/],                                     'MOTD <server>'                     ],
+  ['motd',    'MOTD',             [],                                                    'MOTD'                              ],
+  ['names',   'NAMES {0} {1}',    [/^(##?(\w|\d|-)+,)*##?(\w|\d|-)+$/, /\w+\.\w+\.\w+/], 'NAMES <channels> <server>'         ],
+  ['names',   'NAMES {0}',        [/^(##?(\w|\d|-)+,)*##?(\w|\d|-)+$/],                  'NAMES <channels>'                  ],
+  ['names',   'NAMES',            [],                                                    'NAMES'                             ],
+  ['nick',    'NICK {0}',         [/\S+/],                                               'NICK <nickname>'                   ],
+  ['op',      'OPER {0} {1}',     [/\S+/, /.+/],                                         'OPER <username> <password>'        ],
+  ['part',    'PART {0}',         [/^(##?(\w|\d|-)+,)*##?(\w|\d|-)+$/],                  'PART <channels>'                   ],
+  ['whois',   'WHOIS {0} {1}',    [/\w+\.\w+\.\w+/, /(\S+,)*\S+$/],                      'WHOIS <server> <nicknames>'        ],
+  ['whois',   'WHOIS {1}',        [/(\S+,)*\S+$/],                                       'WHOIS <nicknames>'                 ]
+];
+
+// String.format method from `fearphage` on stackoverflow:
+// https://stackoverflow.com/questions/610406/javascript-equivalent-to-printf-string-format
+if (!String.prototype.format) {
+  String.prototype.format = function () {
+    var args = arguments;
+    return this.replace(/{(\d+)}/g, function(match, number) {
+      return typeof args[number] != 'undefined'
+        ? args[number]
+        : match
+      ;
+    });
+  };
+}
+
 var checkHeartbeatIntervalID = setInterval(
   function () {
     if (lastPulseDiff > heartbeat_timeout) {
