@@ -22,6 +22,9 @@ var lastPulseDiff = 0;
 // of tokens to determine which command format should be used.
 // This approach for finding the correct format is used for future cases where
 // command formats need to augment the user's input (with pre/suffixing characters, e.g.).
+// Commands such as `connect` and `join` will not be supported since there are already
+// buttons in the UI to handle such actions, and rewriting or reorganizing much of the code
+// needed to affect the UI upon such events occurring would likely lead to a lot of clutter.
 const COMMANDS = [
 //---------------------------------------------------------------------------------------------------------------------------
 // NAME     | FORMAT           |  INPUT-MATCHING TOKENS                               |  HELP STRINGS
@@ -41,12 +44,26 @@ const COMMANDS = [
   ['names',   'NAMES {0} {1}',    [/^(##?(\w|\d|-)+,)*##?(\w|\d|-)+$/, /\w+\.\w+\.\w+/], 'NAMES <channels> <server>'         ],
   ['names',   'NAMES {0}',        [/^(##?(\w|\d|-)+,)*##?(\w|\d|-)+$/],                  'NAMES <channels>'                  ],
   ['names',   'NAMES',            [],                                                    'NAMES'                             ],
-  ['nick',    'NICK {0}',         [/\S+/],                                               'NICK <nickname>'                   ],
   ['op',      'OPER {0} {1}',     [/\S+/, /.+/],                                         'OPER <username> <password>'        ],
-  ['part',    'PART {0}',         [/^(##?(\w|\d|-)+,)*##?(\w|\d|-)+$/],                  'PART <channels>'                   ],
   ['whois',   'WHOIS {0} {1}',    [/\w+\.\w+\.\w+/, /(\S+,)*\S+$/],                      'WHOIS <server> <nicknames>'        ],
   ['whois',   'WHOIS {1}',        [/(\S+,)*\S+$/],                                       'WHOIS <nicknames>'                 ]
 ];
+
+// More helpful explanations about what a command does.
+const EXPLANATIONS = {
+  'away'   : 'If the message argument is provided, instructs the server to respond to private messages ' +
+             'with that message. If no message is provided, toggles the autoresponse feature off.',
+  'info'   : 'Retrieves information about the server specified, or the current server otherwise.',
+  'invite' : 'Invites a user with a given nickname to a specific channel on the current server.',
+  'ison'   : 'Queries the server to see which of the users whose nicks are listed as an argument are online.',
+  'kick'   : 'A command for channel authorities to use to kick a user out of a channel with an optional message.',
+  'mode'   : 'Allows channel authorities to set modes on the channel, such as whether it is invite only.',
+  'motd'   : 'Retrieves the current Message Of The Day of the current or provided server.',
+  'names'  : 'Retrieves a list of all the users on the current or provided channel on the current or ' +
+             'provided server.',
+  'op'     : 'Authenticates a user as an IRC operator on the current server.',
+  'whois'  : 'Retrieves information about a list of users on an optionally provided server (current otherwise).'
+};
 
 // String.format method from `fearphage` on stackoverflow:
 // https://stackoverflow.com/questions/610406/javascript-equivalent-to-printf-string-format
@@ -61,6 +78,55 @@ if (!String.prototype.format) {
     });
   };
 }
+
+// Find the appropriate format to use for the given command and produce the proper raw command.
+// cmdStr should be of the form `<name> [<arg1>] [<arg2>] [<arg3>]`
+// which is to say the leading '/' should be removed.
+var buildCommand = function (cmdStr) {
+  var tokensMatch = function (tokens, input) {
+    if (tokens.length !== input.length) {
+      return false;
+    }
+    for (var i = 0; i < tokens.length; i++) { 
+      if (!input[i].match(tokens[i])) {
+        return false;
+      }
+    }
+    return true;
+  };
+  var parts = cmdStr.split(' ');
+  var name = parts[0];
+  var args = parts.slice(1);
+  for (var i = 0; i < COMMANDS.length; i++) {
+    if (name === COMMANDS[i][0] && tokensMatch(COMMANDS[i][2], args)) {
+      return COMMANDS[i][1].format(args);
+    }
+  }
+  return undefined;
+};
+
+// Retrieve information about a given command or otherwise a list of supported commands
+var getHelp = function (name) {
+  var extraInfo = '\nLists of values such as "channels" should be comma-separated. ' +
+    'For example, a list of channels might look like: #aIRChat,#internet,#open-chat\n' +
+    'You can also use the command "/help <name>" to get more information about a ' +
+    'specific command, such as "away" or "motd".';
+  if (name === undefined) {
+    var help = '';
+    for (var i = 0; i < COMMANDS.length; i++) {
+      help += COMMANDS[i][3] + '\n';
+    }
+    return help + extraInfo;
+  } else {
+    var help = EXPLANATIONS[name]
+    if (help === undefined) {
+      return 'aIRChat does not support a command called ' + name + '.\n'+
+        'To see a list of supported commands, enter the command "/help"';
+    } else {
+      return help;
+    }
+  }
+};
 
 var checkHeartbeatIntervalID = setInterval(
   function () {
