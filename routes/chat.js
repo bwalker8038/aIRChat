@@ -152,6 +152,7 @@ var createIRCClient = function (socket, params, userProvider) {
     socket.emit('kicked', {
       server  : params.server, 
       channel : channel, 
+      nick    : nick,
       by      : by, 
       reason  : reason
     });

@@ -314,17 +314,26 @@ socket.on('joined', function (data) {
 
 // Display a message telling the user they were kicked from the channel.
 // Also deactivate the send mechanism for this channel.
+// TODO
+// Block the user from trying to send messages to the channel
+// that they were kicked from.
+// Might want to use an alert or something and close the tab automatically.
 socket.on('kicked', function (data) {
-  addMessage({
-    from: 'System',
-    server: data.server,
-    channel: data.channel,
-    message: 'You were kicked by ' + data.by + '. Reason provided: ' + data.reason
-  });
-  // TODO
-  // Block the user from trying to send messages to the channel
-  // that they were kicked from.
-  // Might want to use an alert or something and close the tab automatically.
+  if (data.nick === usernicks[data.server]) {
+    addMessage({
+      from    : 'System',
+      server  : data.server,
+      channel : data.channel,
+      message : 'You were kicked by ' + data.by + '. Reason provided: ' + data.reason
+    });
+  } else {
+    addMessage({
+      from    : 'System',
+      server  : data.server,
+      channel : data.channel,
+      message : data.nick + ' was kicked by ' + data.by + ', reason: ' + data.reason
+    });
+  }
 });
 
 socket.on('newNick', function (data) {
