@@ -236,7 +236,7 @@ exports.newClient = function (socket, userProvider) {
   socket.on('rawCommand', function (data) {
     if (data.sid === undefined || clients[data.sid] === undefined) return;
     var client = clients[data.sid][data.server];
-    client.send.apply(client, data.args);
+    client.send.apply(client, data.command.split(' '));
   });
 
   socket.on('dataRequest', function (data) {
