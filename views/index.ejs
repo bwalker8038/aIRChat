@@ -232,9 +232,12 @@
 <script src="/javascripts/notifier.js"></script>
 <script src="/javascripts/stash.min.js"></script>
 <script>
-  <% if (autoJoinServer && autoJoinChannel) {%>
+  <% if (autoJoinServer && autoJoinChannel) { %>
     var autoJoinServer = '<%= autoJoinServer %>';
     var autoJoinChannel = '<%= autoJoinChannel %>';
+  <% } %>
+  <% else { %>
+    var autoJoinServer = autoJoinChannel = undefined;
   <% } %>
 </script>
 <script src="/javascripts/autojoin.js"></script>
