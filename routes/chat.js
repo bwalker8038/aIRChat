@@ -225,7 +225,7 @@ var heartbeat = function (sid, socket) {
   var newTime = secondsSinceEpoch();
   if ( intervalIDs[sid] != undefined
     && responseTimes[sid] != undefined
-    && newTime - responseTimes[sid] > config.heartbeat_timeout )
+    && newTime - responseTimes[sid] > (config.heartbeat_timeout * 1000) )
   {
     disconnectClients(sid);
     clearInterval(intervalIDs[sid]);
@@ -367,8 +367,8 @@ exports.main = function (req, res, userProvider) {
         username           : req.session.username,
         sessionID          : uid,
         host               : config.host,
-        heartbeat_timeout  : config.heartbeat_timeout,
-        heartbeat_interval : config.heartbeat_interval,
+        heartbeat_timeout  : config.heartbeat_timeout * 1000,
+        heartbeat_interval : config.heartbeat_interval * 1000,
         title              : 'aIRChat'
       });
     } else {
