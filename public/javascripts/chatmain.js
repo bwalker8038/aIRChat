@@ -461,6 +461,7 @@ $('a#joinNewChannel').click(function (evt) {
 $('a#connectToNewServer').click(function (evt) {
   var serverName = $('#newServerAddr').val();
   var firstChannel = $('#newServerChannel').val();
+  var portno = parseInt($('#portNum').val());
   if (serverName === '' || firstChannel === '') {
     Notifier.warning(
       'You must specify both the server address and a channel to join to ' +
@@ -468,11 +469,19 @@ $('a#connectToNewServer').click(function (evt) {
       'Missing Input'
     );
   } else {
+    if (isNaN(portno) || portno === undefined) {
+      Notifier.warning(
+        'Not a valid port number ' + portno + '. Defaulting to 6667.',
+        'Invalid Input'
+      );
+      portno = 6667;
+    }
     socket.emit('serverJoin', {
       server  : serverName,
       nick    : username,
       channel : [firstChannel],
-      sid     : sid
+      sid     : sid,
+      portnum : portno
     });
   }
 });
