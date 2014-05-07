@@ -60,7 +60,7 @@ var sanitize = function (string) {
 
 var createIRCClient = function (socket, params, userProvider) {
   var newClient = new irc.Client(params.server, params.nick, {
-    channels   : [params.firstchannel],
+    channels   : params.channels,
     userName   : 'aIRChat_' + params.nick,
     realName   : 'Airchat User',
     autoRejoin : false,

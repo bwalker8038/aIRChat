@@ -469,10 +469,10 @@ $('a#connectToNewServer').click(function (evt) {
     );
   } else {
     socket.emit('serverJoin', {
-      server       : serverName,
-      nick         : username,
-      firstchannel : firstChannel,
-      sid          : sid
+      server  : serverName,
+      nick    : username,
+      channel : [firstChannel],
+      sid     : sid
     });
   }
 });
@@ -716,24 +716,14 @@ $(document).ready(function () {
   for (var sindex = 0, slen = servers.length; sindex < slen; sindex++) {
     var server = servers[sindex];
     var channels = favorites[server];
-    var channel = channels[0];
     socket.emit('serverJoin', {
-      sid          : sid,
-      server       : server,
-      firstchannel : channel,
-      nick         : username
+      sid      : sid,
+      server   : server,
+      channels : channels,
+      nick     : username
     });
-    for (var cindex = 1, clen = channels.length; cindex < clen; cindex++) {
-      channel = channels[cindex];
-      socket.emit('joinChannel', {
-        channel : channel,
-        sid     : sid,
-        server  : server
-      });
-    }
     Notifier.info(
-      'Sent requests to join the following channels on ' + 
-      server + ': ' + channels.join(', '),
+      'Sent requests to join the channels ' + channels.join(', ') + ' on ' + server + '.',
       'Favorite Server Connection'
     );
   }
