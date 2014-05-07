@@ -63,9 +63,10 @@ var createIRCClient = function (socket, params, userProvider) {
     channels   : params.channels,
     userName   : 'aIRChat_' + params.nick,
     realName   : 'Airchat User',
-    autoRejoin : false
-    //port       : params.portnum,
-    //secure     : params.portnum === 6697
+    autoRejoin : false,
+    secure     : true,
+    port       : 6697,
+    selfSigned : true // Some servers don't bother buying a cert but will encrypt.
   });
 
   newClient.addListener('message', function (from, to, msg) {
@@ -100,8 +101,6 @@ var createIRCClient = function (socket, params, userProvider) {
 
   newClient.addListener('registered', function (msg) {
     socket.emit('connected', params.server);
-    console.log('clients = ');
-    console.log(clients);
   });
 
   newClient.addListener('names', function (channel, nicks) {
@@ -201,8 +200,6 @@ var createIRCClient = function (socket, params, userProvider) {
   });
 
   newClient.addListener('error', function (error) {
-    console.log('Got error:');
-    console.log(error);
     socket.emit('serverNotification', {
       message: error.args.join(' '),
       type   : SN_ERROR
