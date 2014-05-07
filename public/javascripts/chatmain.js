@@ -469,10 +469,10 @@ $('a#connectToNewServer').click(function (evt) {
     );
   } else {
     socket.emit('serverJoin', {
-      server  : serverName,
-      nick    : username,
-      channel : [firstChannel],
-      sid     : sid
+      server   : serverName,
+      nick     : username,
+      channels : [firstChannel],
+      sid      : sid
     });
   }
 });

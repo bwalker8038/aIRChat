@@ -63,10 +63,7 @@ var createIRCClient = function (socket, params, userProvider) {
     channels   : params.channels,
     userName   : 'aIRChat_' + params.nick,
     realName   : 'Airchat User',
-    autoRejoin : false,
-    secure     : true,
-    port       : 6697,
-    selfSigned : true // Some servers don't bother buying a cert but will encrypt.
+    autoRejoin : false
   });
 
   newClient.addListener('message', function (from, to, msg) {
@@ -271,6 +268,8 @@ exports.newClient = function (socket, userProvider) {
   socket.on('serverJoin', function (data) {
     if (clients[data.sid] === undefined) return;
     if (!clients[data.sid][data.server]) {
+      console.log('Connecting to server. data =');
+      console.log(data);
       clients[data.sid][data.server] = createIRCClient(socket, data, userProvider);
     }
     // Once the user has joined a server, start issuing heartbeats to check connectivity.
