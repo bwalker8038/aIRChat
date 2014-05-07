@@ -76,6 +76,38 @@ Array.prototype.remove = function (start, end) {
   return this.push.apply(this, tail);
 };
 
+// Return the input string with urls wrapped in anchor tags
+// and images in a clearing lightbox at the end for inline viewing
+var htmlify = function (string) {
+  var isURL = /^https?:\/\/(www\.)?\S+$/;
+  var isImg = /^https?:\/\/(www\.)?\S+\/\S+\.(jpg|jpeg|gif|png|bmp)$/;
+  var tokens = string.split(' ');
+  var images = [];
+  var html = '';
+  for (var i = 0, len = tokens.length; i < len; i++) {
+    console.log('Investigating token "' + tokens[i] + '"');
+    if (isURL.test(tokens[i])) {
+      console.log('Found url');
+      if (isImg.test(tokens[i])) {
+        images.push(tokens[i]);
+        console.log('Found image');
+      }
+      html += '<a href="' + tokens[i] + '" target="_blank">' + tokens[i] + '</a> ';
+    } else {
+      html += tokens[i] + ' ';
+    }
+  }
+  if (images.length > 0) {
+    html += '<br /><br /><ul class="inline-list">';
+    for (var i = 0, len = images.length; i < len; i++) {
+      html += '<li><a target="_blank" href="' + images[i] + '">' +
+              '<img class="thumbnail" src="' + images[i] + '" /></a></li>';
+    }
+    html += '</ul>';
+  }
+  return html;
+};
+
 var addMessage = function (data) {
   var $msgDiv = chatElement('div', data.server, data.channel);
   var $tab = chatElement('dd', data.server, data.channel).children('a').first();
@@ -105,7 +137,7 @@ var addMessage = function (data) {
     '      <span>' + data.from + ' in ' + data.channel + time + '</span>' +
     '    </div>' +
     '    <div class="messageContent' + highlight + '">' +
-    '      <span>' + data.message + '</span>' +
+    '      <span>' + htmlify(data.message) + '</span>' +
     '    </div>' +
     '  </div>' +
     '</div>'

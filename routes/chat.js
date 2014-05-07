@@ -268,8 +268,6 @@ exports.newClient = function (socket, userProvider) {
   socket.on('serverJoin', function (data) {
     if (clients[data.sid] === undefined) return;
     if (!clients[data.sid][data.server]) {
-      console.log('Connecting to server. data =');
-      console.log(data);
       clients[data.sid][data.server] = createIRCClient(socket, data, userProvider);
     }
     // Once the user has joined a server, start issuing heartbeats to check connectivity.
