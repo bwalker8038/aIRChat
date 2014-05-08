@@ -363,7 +363,7 @@ socket.on('nickList', function (data) {
     ));
   }
   chat.users.push(new User(
-    'System', '/images/defaultusericon.jpg', data.server
+    'System', '/images/gear.png', data.server
   ));
 });
 
