@@ -540,6 +540,10 @@ $('a#connectToNewServer').click(function (evt) {
       channels : [firstChannel],
       sid      : sid
     });
+    Notifier.info(
+      'Submitted request to connect to ' + serverName + '. You should connect shortly.',
+      'Request Submitted'
+    );
   }
 });
 
