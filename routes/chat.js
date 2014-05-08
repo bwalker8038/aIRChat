@@ -27,6 +27,15 @@ Array.prototype.remove = function (start, end) {
   return this.push.apply(this, tail);
 };
 
+String.prototype.replaceAll = function (sub, newstr) {
+  var index = this.indexOf(sub);
+  while (index >= 0) {
+    this = this.replace(sub, newstr);
+    index = this.indexOf(sub);
+  }
+  return this;
+};
+
 var randString = function (bytes, source) {
   if (!source) {
     source = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -48,14 +57,14 @@ var userID = function (username, sid) {
 };
 
 var sanitize = function (string) {
-  string = string.replace('&', '&amp;').replace('=', '&#61;');
-  string = string.replace('<', '&lt;').replace('>', '&gt;');
-  string = string.replace('[', '&#91;').replace(']', '&#93;');
-  string = string.replace('{', '&#123;').replace('}', '&#125;');
-  string = string.replace('"', '&#34;').replace("'", '&#39;');
-  string = string.replace('(', '&#40;').replace(')', '&#41;');
-  string = string.replace('/', '&#47;').replace('\\', '&#92;');
-  return string.replace('%', '&#37;').replace(':', '&#58;');
+  string = string.replaceAll('&', '&amp;').replaceAll('=', '&#61;');
+  string = string.replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+  string = string.replaceAll('[', '&#91;').replaceAll(']', '&#93;');
+  string = string.replaceAll('{', '&#123;').replaceAll('}', '&#125;');
+  string = string.replaceAll('"', '&#34;').replaceAll("'", '&#39;');
+  string = string.replaceAll('(', '&#40;').replaceAll(')', '&#41;');
+  string = string.replaceAll('/', '&#47;').replaceAll('\\', '&#92;');
+  return string.replaceAll('%', '&#37;').replaceAll(':', '&#58;');
 };
 
 var createIRCClient = function (socket, params, userProvider) {
