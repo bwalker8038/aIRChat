@@ -218,10 +218,13 @@ var addChatSection = function (server, chanOrNick) {
 };
 
 var joinChat = function (server, channel) {
-  var newChat = new Chat(server, channel);
-  chats.push(newChat);
-  addChatSection(server, channel);
-  return newChat;
+  var chat = chats[chatIndex(chats, server, channel)];
+  if (chat === undefined) {
+    chat = new Chat(server, channel);
+    chats.push(chat);
+    addChatSection(server, channel);
+  }
+  return chat;
 };
 
 var titleBlinker = function (origTitle, altTitle) {
@@ -349,6 +352,9 @@ socket.on('connected', function (server, channel) {
 // The list will not be rendered until the channel is the active one.
 socket.on('nickList', function (data) {
   var chat = chats[chatIndex(chats, data.server, data.channel)];
+  if (chat === undefined) {
+    chat = joinChat(data.server, data.channel);
+  }
   for (var i = data.users.length - 1; i >= 0; i--) {
     chat.users.push(new User(
       data.users[i].nick, 
