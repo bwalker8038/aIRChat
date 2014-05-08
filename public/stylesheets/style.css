@@ -25,6 +25,12 @@ div#indexTitleBar h1 {
   color: #BB1F29 !important;
 }
 
+img#logo {
+  width: 125px;
+  height: 42px;
+  margin-left: 15px;
+}
+
 img.thumbnail {
   width: 125px;
   height: 125px;
