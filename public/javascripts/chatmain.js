@@ -34,6 +34,16 @@ if (!String.prototype.format) {
   };
 }
 
+String.prototype.replaceAll = function (sub, newstr) {
+  var index = this.indexOf(sub);
+  var tmp = this;
+  while (index >= 0) {
+    tmp = tmp.replace(sub, newstr);
+    index = tmp.indexOf(sub);
+  }
+  return tmp;
+};
+
 var checkHeartbeatIntervalID = setInterval(
   function () {
     if (lastPulseDiff > heartbeat_timeout) {
@@ -84,13 +94,25 @@ var htmlify = function (string) {
   var tokens = string.split(' ');
   var images = [];
   var html = '';
+  // Need a function to convert the sanitized input into its original desanitized form
+  // so that the regexes above will match both the user's input and incoming content.
+  var desanitize = function (string) {
+    string = string.replaceAll('&amp;', '&').replaceAll('&#61;', '=');
+    string = string.replaceAll('&lt;', '<').replaceAll('&gt;', '>');
+    string = string.replaceAll('&#91;', '[').replaceAll('&#93;', '[');
+    string = string.replaceAll('&#123;', '{').replaceAll('&#125;', '}');
+    string = string.replaceAll('&#34;', '"').replaceAll('&#39;', "'");
+    string = string.replaceAll('&#40;', '(').replaceAll('&#41;', ')');
+    string = string.replaceAll('&#47;', '/').replaceAll('&#92;', '\\');
+    string = string.replaceAll('&#37;', '%').replaceAll('&#58;', ':');
+    return string;
+  };
+
   for (var i = 0, len = tokens.length; i < len; i++) {
-    console.log('Investigating token "' + tokens[i] + '"');
-    if (isURL.test(tokens[i])) {
-      console.log('Found url');
-      if (isImg.test(tokens[i])) {
+    var token = desanitize(tokens[i]);
+    if (isURL.test(token)) {
+      if (isImg.test(token)) {
         images.push(tokens[i]);
-        console.log('Found image');
       }
       html += '<a href="' + tokens[i] + '" target="_blank">' + tokens[i] + '</a> ';
     } else {
