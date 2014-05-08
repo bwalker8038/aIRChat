@@ -29,11 +29,12 @@ Array.prototype.remove = function (start, end) {
 
 String.prototype.replaceAll = function (sub, newstr) {
   var index = this.indexOf(sub);
+  var tmp = this;
   while (index >= 0) {
-    this = this.replace(sub, newstr);
-    index = this.indexOf(sub);
+    tmp = tmp.replace(sub, newstr);
+    index = tmp.indexOf(sub);
   }
-  return this;
+  return tmp;
 };
 
 var randString = function (bytes, source) {
