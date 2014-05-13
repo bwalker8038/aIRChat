@@ -1,4 +1,4 @@
-var sessionExists = require('chat').userHasSession;
+var sessionExists = require('./chat').userHasSession;
 
 exports.login = function (req, res, userProvider) {
   if (req.route.method === 'get') {
