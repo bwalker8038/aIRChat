@@ -380,6 +380,12 @@ socket.on('joined', function (data) {
   }
   if (data.nick === usernicks[data.server] ) {
     joinChat(data.server, data.channel);
+    if ($('dd.active').length === 0) { // No active chats
+      // Disable the default active content section
+      $('div.active').first().attr('class', 'content');
+      chatElement('dd', data.server, data.channel).attr('class', 'active');
+      chatElement('div', data.server, data.channel).attr('class', 'content active');
+    }
   } else {
     var index = chatIndex(chats, data.server, data.channel);
     chats[index].users.push(new User(
