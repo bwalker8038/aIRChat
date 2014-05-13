@@ -1,3 +1,5 @@
+var sessionExists = require('chat').userHasSession;
+
 exports.login = function (req, res, userProvider) {
   if (req.route.method === 'get') {
     if (req.session.loggedIn === true) {
@@ -50,6 +52,10 @@ exports.register = function (req, res, userProvider) {
 
 exports.updateProfile = function (req, res, userProvider) {
   var data = req.body;
+  if (!sessionExists(req.session.sessionID)) {
+    res.send({success: false});
+    return;
+  }
   userProvider.authenticate(data.username, data.password, function (error, result) {
     var newPassword = undefined;
     if (data.newPassword === data.newPasswordRepeat && data.newPassword.length > 0) {

@@ -20,6 +20,11 @@ const SN_WARN = 'warning';
 const SN_INFO = 'info';
 const SN_SUCCESS = 'success';
 
+// Test to see that the user has a session to protect against CSRF.
+var userHasSession = function (sessionID) {
+  return typeof clients[sessionID] != 'undefined';
+};
+
 // Array remove - By John Resig (MIT LICENSED)
 Array.prototype.remove = function (start, end) {
   var tail = this.slice((end || start) + 1 || this.length);

@@ -20,6 +20,9 @@ var lastPulseDiff = 0;
 // to handle them as raw commands.
 const DISALLOWED = ['part', 'join', 'connect', 'msg', 'privmsg', 'nick'];
 
+// TODO
+// Create constants for all the different types of channel notifications
+
 // String.format method from `fearphage` on stackoverflow:
 // https://stackoverflow.com/questions/610406/javascript-equivalent-to-printf-string-format
 if (!String.prototype.format) {
@@ -350,6 +353,8 @@ socket.on('connected', function (server, channel) {
 
 // Create a listing of nicks for the appropriate channel.
 // The list will not be rendered until the channel is the active one.
+// TODO
+// Reduce network strain by not sending the server name with every user
 socket.on('nickList', function (data) {
   var chat = chats[chatIndex(chats, data.server, data.channel)];
   if (chat === undefined) {
