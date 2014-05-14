@@ -11,10 +11,11 @@ var chats = new Array();
 // Maps the name of a given server to the user's nick on that server.
 var usernicks = {};
 
-// The time since the epoch (in seconds) at which the last heartbeat packet was received
-// and the difference between the most recent and the previous pulse.
-var lastPulse = undefined;
-var lastPulseDiff = 0;
+// True when the socket to the aIRChat server is connected, false otherwise
+var connectedToServer = false;
+
+// The ID of the interval function set to check the connection to the server.
+var checkHeartbeatIntervalID = undefined;
 
 // A list of commands that are covered by the UI and shouldn't have to have extra code
 // to handle them as raw commands.
@@ -59,28 +60,6 @@ var sanitize = function (string) {
   return string.replaceAll('%', '&#37;').replaceAll(':', '&#58;');
 };
 
-var checkHeartbeatIntervalID = setInterval(
-  function () {
-    if (lastPulseDiff > heartbeat_timeout) {
-      clearInterval(checkHeartbeatIntervalID);
-      var msg = '' +
-        'It has been over ' + heartbeat_timeout + ' seconds since the server was heard from. ' +
-        'You may want to log out and then log in again to reestablish the connection.';
-      Notifier.info('The connection to the server was lost.', 'Connection Timeout');
-      var $tabs = $('dl#chatList dd');
-      for (var i = $tabs.length - 1; i >= 0; i--) {
-        var $tab = $($tabs[i]);
-        addMessage({
-          from    : 'System',
-          server  : $tab.data('server'),
-          channel : $tab.data('channel'),
-          message : msg
-        });
-      }
-    }
-  },
-  heartbeat_interval
-);
 
 var chatElement = function (type, server, channel) {
   var $elems = $(type + '[data-server="' + server + '"]');
@@ -264,9 +243,73 @@ var channelNotification = function (type, server, channel, data, newdata) {
   });
 };
 
-socket.on('pulseCheck', function (timeSent) {
-  socket.emit('pulseSignal', sid);
-  lastPulse = timeSent;
+var notifyConnectionLost = function () {
+  var msg = 'The connection to the aIRChat server was lost. Unless you are logging out, ' +
+            'aIRChat will attempt to reestablish the connection.';
+  Notifier.warning('The connection to the server was lost.', 'Connection Timeout');
+  var $tabs = $('dl#chatList dd');
+  for (var i = $tabs.length - 1; i >= 0; i--) {
+    var $tab = $($tabs[i]);
+    addMessage({
+      from    : 'System',
+      server  : $tab.data('server'),
+      channel : $tab.data('channel'),
+      message : msg
+    });
+  }
+};
+
+var reconnectCurrentChats = function () {
+  var $tabs = $('dl#chatList dd');
+  var servers = new Array();
+  var chanLists = new Array();
+  var nicks = new Array();
+  for (var i = 0, len = $tabs.length; i < len; i++) {
+    var server = $($tabs[i]).data('server');
+    if (servers.indexOf(server) === -1) {
+      servers.push(server);
+      nicks.push(usernicks[server]);
+    }
+  }
+  for (var i = 0, len = servers.length; i < len; i++) {
+    var channels = new Array();
+    var $chans = $('dd[data-server="' + servers[i] + '"]');
+    for (var j = 0, len2 = $chans.length; j < len2; j++) {
+      var channel = $($chans[j]).data('channel');
+      channels.push(channel);
+    }
+    chanLists.push(channels);
+  }
+  socket.emit('reconnectChats', {
+    servers  : servers,
+    channels : chanLists,
+    nicks    : nicks,
+    sid      : sid
+  });
+};
+
+socket.on('connect', function () {
+  connectedToServer = true;
+  Notifier.success(
+    'Your browser has successfully connected to the aIRChat server.',
+    'Connection Successful'
+  );
+});
+
+socket.on('disconnect', function () {
+  connectedToServer = false;
+  notifyConnectionLost();
+  checkHeartbeatIntervalID = setInterval(
+    function () {
+      if (connectedToServer) {
+        clearInterval(checkHeartbeatIntervalID);
+        reconnectCurrentChats();
+      } else {
+        socket.socket.connect(hostname);
+      }
+    },
+    heartbeat_interval
+  );
 });
 
 socket.on('action', function (data) {
@@ -343,10 +386,10 @@ socket.on('dataResponse', function (data) {
   $(query).attr('src', user.picture);
 });
 
-socket.on('connected', function (server, channel) {
+socket.on('serverConnected', function (server, channel) {
   usernicks[server] = username;
   Notifier.info(
-    'You have been connected to ' + server + '. A chat tab will appear momentarily.',
+    'You have been connected to ' + server + '.',
     'Connection Successful'
   );
 });

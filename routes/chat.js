@@ -6,14 +6,6 @@ var config = require('../config');
 // the user is connected to to an array of the names of channels they have joined.
 var clients = {};
 
-// Maps the user's session ID to the interval ID of the function being used
-// to check the health of a connection.
-var intervalIDs = {};
-
-// Maps the user's session ID to the number of seconds since the epoch at the
-// point that the user's last heartbeat response was received.
-var responseTimes = {};
-
 // Server notification types.
 const SN_ERROR = 'error';
 const SN_WARN = 'warning';
@@ -112,7 +104,7 @@ var createIRCClient = function (socket, params, userProvider) {
   });
 
   newClient.addListener('registered', function (msg) {
-    socket.emit('connected', params.server);
+    socket.emit('serverConnected', params.server);
   });
 
   newClient.addListener('names', function (channel, nicks) {
@@ -229,25 +221,6 @@ var disconnectClients = function (sid) {
   delete clients[sid];
 };
 
-var secondsSinceEpoch = function () {
-  return Math.round((new Date()).getTime() / 1000);
-};
-
-var heartbeat = function (sid, socket) {
-  var newTime = secondsSinceEpoch();
-  if ( intervalIDs[sid] != undefined
-    && responseTimes[sid] != undefined
-    && newTime - responseTimes[sid] > (config.heartbeat_timeout * 1000) )
-  {
-    disconnectClients(sid);
-    clearInterval(intervalIDs[sid]);
-    delete responseTimes[sid];
-    delete intervalIDs[sid];
-  } else {
-    socket.emit('pulseCheck', newTime);
-  }
-};
-
 exports.newClient = function (socket, userProvider) {
   socket.on('rawCommand', function (data) {
     if (data.sid === undefined || clients[data.sid] === undefined) return;
@@ -275,6 +248,21 @@ exports.newClient = function (socket, userProvider) {
     });
   });
 
+  socket.on('reconnectChats', function (data) {
+    if (clients[data.sid] === undefined) return;
+    disconnectClients(data.sid);
+    clients[data.sid] = {};
+    for (var i = 0, slen = data.servers.length; i < slen; i++) {
+      clients[data.sid][data.servers[i]] = createIRCClient(
+        socket,
+        { server   : data.servers[i],
+          channels : data.channels[i],
+          nick     : data.nicks[i] },
+        userProvider
+      );
+    }
+  });
+
   socket.on('part', function (data) {
     if (clients[data.sid] === undefined) return;
     clients[data.sid][data.server].part(data.channel, data.message);
@@ -285,23 +273,10 @@ exports.newClient = function (socket, userProvider) {
     if (!clients[data.sid][data.server]) {
       clients[data.sid][data.server] = createIRCClient(socket, data, userProvider);
     }
-    // Once the user has joined a server, start issuing heartbeats to check connectivity.
-    // This has to happen in a handler so that we have access to the user's SID.
-    if (intervalIDs[data.sid] != undefined) {
-      return;
-    }
-    intervalIDs[data.sid] = setInterval(
-      function () {
-        responseTimes[data.sid] = undefined;
-        heartbeat(data.sid, socket);
-      },
-      config.heartbeat_interval * 1000
-    );
   });
 
-  socket.on('pulseSignal', function (sid) {
-    if (intervalIDs[sid] === undefined) return;
-    responseTimes[sid] = secondsSinceEpoch();
+  socket.on('pulseCheck', function (sid) {
+    socket.emit('pulseSignal');
   });
 
   socket.on('joinChannel', function (data) {
@@ -358,8 +333,6 @@ exports.main = function (req, res, userProvider) {
   for (var i = sessions.length - 1; i >= 0; i--) {
     if (sessions[i].indexOf(req.session.username + '!') === 0) {
       disconnectClients(sessions[i]); 
-      intervalIDs[sessions[i]] = undefined;
-      responseTimes[sessions[i]] = undefined;
     }
   }
   var sessionID = randString(64);
@@ -369,7 +342,6 @@ exports.main = function (req, res, userProvider) {
   }
   var uid = userID(req.session.username, sessionID);
   clients[uid] = {};
-  intervalIDs[uid] = undefined;
   userProvider.profileInfo([req.session.username], function (error, info) {
     if (!error) {
       info = info[0];
@@ -380,7 +352,7 @@ exports.main = function (req, res, userProvider) {
         sessionID          : uid,
         host               : config.host,
         heartbeat_timeout  : config.heartbeat_timeout * 1000,
-        heartbeat_interval : config.heartbeat_interval * 1000,
+        heartbeat_interval : config.heartbeat_enterval * 1000,
         title              : 'aIRChat'
       });
     } else {
