@@ -47,8 +47,11 @@ function chatIndex(chatList, server, channel) {
 
 // Used for the anchors from chat tabs to the corresponding content div.
 function label(server, channel) {
-  while (server.indexOf('.') != -1) {
+  while (server.indexOf('.') !== -1) {
     server = server.replace('.', '_');
+  }
+  while (channel.indexOf('/') !== -1) {
+    channel = channel.replace('/', '_');
   }
   return server + '_' + channel.replace('#', '-');
 }
