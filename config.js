@@ -18,20 +18,6 @@ exports.dbURI = 'mongodb://localhost:27017/usersDb';
   */
 exports.secret = 'YOUR SECRET HERE';
 
-/** Heartbeat interval
-  * The aIRChat server will send a heartbeat signal to connected clients
-  * every number of seconds provided. This is to check that the connection
-  * is still strong and that messages should be being sent and received.
-  */
-exports.heartbeat_interval = 10;
-
-/** Heartbeat timeout
-  * If an aIRChat client fails te respond to a heartbeat signal after
-  * this number of seconds, all of its IRC connections will be
-  * disconnected to free the user's nick up for when (if) they reconnect.
-  */
-exports.heartbeat_timeout = 30;
-
 /** Bitcoint donations
   * If showDonationButton is true, a couple of buttons will be placed on the
   * index page linking users to where they can donate bitcoins to the site's

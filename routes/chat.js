@@ -275,10 +275,6 @@ exports.newClient = function (socket, userProvider) {
     }
   });
 
-  socket.on('pulseCheck', function (sid) {
-    socket.emit('pulseSignal');
-  });
-
   socket.on('joinChannel', function (data) {
     if (clients[data.sid] === undefined) return;
     if (clients[data.sid][data.server].opt.channels.indexOf(data.channel) === -1) {
@@ -351,8 +347,6 @@ exports.main = function (req, res, userProvider) {
         username           : req.session.username,
         sessionID          : uid,
         host               : config.host,
-        heartbeat_timeout  : config.heartbeat_timeout * 1000,
-        heartbeat_interval : config.heartbeat_enterval * 1000,
         title              : 'aIRChat'
       });
     } else {
