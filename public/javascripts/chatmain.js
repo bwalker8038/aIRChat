@@ -246,7 +246,7 @@ var channelNotification = function (type, server, channel, data, newdata) {
 var notifyConnectionLost = function () {
   var msg = 'The connection to the aIRChat server was lost. Unless you are logging out, ' +
             'aIRChat will attempt to reestablish the connection.';
-  Notifier.warning('The connection to the server was lost.', 'Connection Timeout');
+  Notifier.warning('The connection to the server was lost.', 'Connection Lost');
   var $tabs = $('dl#chatList dd');
   for (var i = $tabs.length - 1; i >= 0; i--) {
     var $tab = $($tabs[i]);
@@ -286,6 +286,7 @@ var reconnectCurrentChats = function () {
     nicks    : nicks,
     sid      : sid
   });
+  Notifier.info('Sent request to reconnect to all open channels.', 'Request Sent');
 };
 
 socket.on('connect', function () {
@@ -423,6 +424,7 @@ socket.on('joined', function (data) {
   }
   if (data.nick === usernicks[data.server] ) {
     joinChat(data.server, data.channel);
+    Notifier.info('Joined ' + data.channel + '.', 'Joined Channel');
     if ($('dd.active').length === 0) { // No active chats
       // Disable the default active content section
       $('div.active').first().attr('class', 'content');
@@ -873,8 +875,4 @@ $(window).blur(function (evt) {
 
 $(window).unload(function () {
   socket.emit('leaving', {sid: sid});
-  Notifier.info(
-    'You are being disconnected.',
-    'Disconnecting'
-  );
 });

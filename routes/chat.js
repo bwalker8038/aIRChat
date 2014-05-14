@@ -347,6 +347,7 @@ exports.main = function (req, res, userProvider) {
         username           : req.session.username,
         sessionID          : uid,
         host               : config.host,
+        heartbeat_interval : config.heartbeat_interval,
         title              : 'aIRChat'
       });
     } else {
