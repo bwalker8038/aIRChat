@@ -13,7 +13,7 @@ const SN_INFO = 'info';
 const SN_SUCCESS = 'success';
 
 // Test to see that the user has a session to protect against CSRF.
-var userHasSession = function (sessionID) {
+exports.userHasSession = function (sessionID) {
   return typeof clients[sessionID] != 'undefined';
 };
 
