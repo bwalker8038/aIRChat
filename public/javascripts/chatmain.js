@@ -310,6 +310,7 @@ socket.on('connect', function () {
         notifyConnectionLost();
         socket.disconnect();
         Notifier.info('Trying to reconnect to the aIRChat server.', 'Reconnecting');
+        lastPulse = undefined;
       } else {
         socket.emit('pulseCheck');
         console.log('Emitting pulseCheck');
