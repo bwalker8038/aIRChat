@@ -11,16 +11,6 @@ var chats = new Array();
 // Maps the name of a given server to the user's nick on that server.
 var usernicks = {};
 
-// True when the socket to the aIRChat server is connected, false otherwise
-var connectedToServer = false;
-
-// The time that the last pulseSignal was received from the aIRChat server.
-var lastPulse = undefined;
-
-// The IDs of the interval functions set to check the connection to the server.
-var checkHeartbeatIntervalID = undefined;
-var tryReconnectIntervalID = undefined;
-
 // A list of commands that are covered by the UI and shouldn't have to have extra code
 // to handle them as raw commands.
 const DISALLOWED = ['part', 'join', 'connect', 'msg', 'privmsg', 'nick'];
@@ -267,78 +257,15 @@ var notifyConnectionLost = function () {
   }
 };
 
-var reconnectCurrentChats = function () {
-  var $tabs = $('dl#chatList dd');
-  var servers = new Array();
-  var chanLists = new Array();
-  var nicks = new Array();
-  for (var i = 0, len = $tabs.length; i < len; i++) {
-    var server = $($tabs[i]).data('server');
-    if (servers.indexOf(server) === -1) {
-      servers.push(server);
-      nicks.push(usernicks[server]);
-    }
-  }
-  for (var i = 0, len = servers.length; i < len; i++) {
-    var channels = new Array();
-    var $chans = $('dd[data-server="' + servers[i] + '"]');
-    for (var j = 0, len2 = $chans.length; j < len2; j++) {
-      var channel = $($chans[j]).data('channel');
-      channels.push(channel);
-    }
-    chanLists.push(channels);
-  }
-  socket.emit('reconnectChats', {
-    servers  : servers,
-    channels : chanLists,
-    nicks    : nicks,
-    sid      : sid
-  });
-  Notifier.info('Sent request to reconnect to all open channels.', 'Request Sent');
-};
-
 socket.on('connect', function () {
-  connectedToServer = true;
   Notifier.success(
     'You have successfully connected to the aIRChat server.',
     'Connection Successful'
   );
-  checkHeartbeatIntervalID = setInterval(
-    function () {
-      if (lastPulse !== undefined && (secondsSinceEpoch() - lastPulse) > (heartbeat_timeout / 1000.0)) {
-        clearInterval(checkHeartbeatIntervalID);
-        notifyConnectionLost();
-        socket.disconnect();
-        Notifier.info('Trying to reconnect to the aIRChat server.', 'Reconnecting');
-        lastPulse = undefined;
-      } else {
-        socket.emit('pulseCheck');
-        console.log('Emitting pulseCheck');
-      }
-    },
-    heartbeat_interval
-  );
-});
-
-socket.on('pulseSignal', function () {
-  lastPulse = secondsSinceEpoch();
-  console.log('Received pulseSignal');
 });
 
 socket.on('disconnect', function () {
-  connectedToServer = false;
   notifyConnectionLost();
-  tryReconnectIntervalID = setInterval(
-    function () {
-      if (connectedToServer) {
-        clearInterval(tryReconnectIntervalID);
-        reconnectCurrentChats();
-      } else {
-        socket.socket.connect(hostname);
-      }
-    },
-    2000 // two seconds
-  );
 });
 
 socket.on('action', function (data) {

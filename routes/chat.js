@@ -222,10 +222,6 @@ var disconnectClients = function (sid) {
 };
 
 exports.newClient = function (socket, userProvider) {
-  socket.on('pulseCheck', function () {
-    socket.emit('pulseSignal');
-  });
-
   socket.on('rawCommand', function (data) {
     if (data.sid === undefined || clients[data.sid] === undefined) return;
     var client = clients[data.sid][data.server];
