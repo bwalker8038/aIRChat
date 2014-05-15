@@ -19,9 +19,15 @@ exports.dbURI = 'mongodb://localhost:27017/usersDb';
 exports.secret = 'YOUR SECRET HERE';
 
 /** Heartbeat interval
-  * The number of milliseconds to wait between attempts at reconnecting a broken socket
+  * The number of milliseconds between pulse checks sent to the aIRChat server.
   */
-exports.heartbeat_interval = 2000;
+exports.heartbeat_interval = 6000;
+
+/** Heartbeat timeout
+  * The longest delay allowed to wait for a pulse signal from teh aIRChat server
+  * before considering the connection dead.  Measured in milliseconds.
+  */
+exports.heartbeat_timeout = 24000;
 
 /** Bitcoint donations
   * If showDonationButton is true, a couple of buttons will be placed on the

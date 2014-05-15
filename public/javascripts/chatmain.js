@@ -14,8 +14,12 @@ var usernicks = {};
 // True when the socket to the aIRChat server is connected, false otherwise
 var connectedToServer = false;
 
-// The ID of the interval function set to check the connection to the server.
+// The time that the last pulseSignal was received from the aIRChat server.
+var lastPulse = undefined;
+
+// The IDs of the interval functions set to check the connection to the server.
 var checkHeartbeatIntervalID = undefined;
+var tryReconnectIntervalID = undefined;
 
 // A list of commands that are covered by the UI and shouldn't have to have extra code
 // to handle them as raw commands.
@@ -46,6 +50,10 @@ String.prototype.replaceAll = function (sub, newstr) {
     index = tmp.indexOf(sub);
   }
   return tmp;
+};
+
+var secondsSinceEpoch = function () {
+  return Math.round((new Date()).getTime() / 1000.0);
 };
 
 // Protect the user from themselves.
@@ -292,24 +300,43 @@ var reconnectCurrentChats = function () {
 socket.on('connect', function () {
   connectedToServer = true;
   Notifier.success(
-    'Your browser has successfully connected to the aIRChat server.',
+    'You have successfully connected to the aIRChat server.',
     'Connection Successful'
   );
+  checkHeartbeatIntervalID = setInterval(
+    function () {
+      if (lastPulse !== undefined && (secondsSinceEpoch() - lastPulse) > (heartbeat_timeout / 1000.0)) {
+        clearInterval(checkHeartbeatIntervalID);
+        notifyConnectionLost();
+        socket.disconnect();
+        Notifier.info('Trying to reconnect to the aIRChat server.', 'Reconnecting');
+      } else {
+        socket.emit('pulseCheck');
+        console.log('Emitting pulseCheck');
+      }
+    },
+    heartbeat_interval
+  );
+});
+
+socket.on('pulseSignal', function () {
+  lastPulse = secondsSinceEpoch();
+  console.log('Received pulseSignal');
 });
 
 socket.on('disconnect', function () {
   connectedToServer = false;
   notifyConnectionLost();
-  checkHeartbeatIntervalID = setInterval(
+  tryReconnectIntervalID = setInterval(
     function () {
       if (connectedToServer) {
-        clearInterval(checkHeartbeatIntervalID);
+        clearInterval(tryReconnectIntervalID);
         reconnectCurrentChats();
       } else {
         socket.socket.connect(hostname);
       }
     },
-    heartbeat_interval
+    2000 // two seconds
   );
 });
 

@@ -26,6 +26,10 @@ app.use(express.session({secret: config.secret}));
 app.use(express.bodyParser());
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(function (err, req, res, next) {
+  console.log('err = ');
+  console.log(err);
+});
 
 // development only
 if ('development' == app.get('env')) {
