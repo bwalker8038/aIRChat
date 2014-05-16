@@ -247,8 +247,8 @@ var channelNotification = function (type, server, channel, data, newdata) {
 };
 
 var notifyConnectionLost = function () {
-  var msg = 'The connection to the aIRChat server was lost. Unless you are logging out, ' +
-            'aIRChat will attempt to reestablish the connection.';
+  var msg = 'The connection to the aIRChat server was lost. You may want to try to log out ' +
+            'and then back in to reestablish the connection.';
   Notifier.warning('The connection to the server was lost.', 'Connection Lost');
   var $tabs = $('dl#chatList dd');
   for (var i = $tabs.length - 1; i >= 0; i--) {

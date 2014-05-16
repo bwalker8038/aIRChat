@@ -303,6 +303,10 @@ exports.newClient = function (socket, userProvider) {
     if (clients[data.sid] === undefined) return;
     disconnectClients(data.sid);
   });
+
+  socket.on('disconnect', function (data) {
+    if (clients[data.sid] === undefined) return;
+    disconnectClients(data.sid);
 };
 
 exports.logout = function (req, res) {
