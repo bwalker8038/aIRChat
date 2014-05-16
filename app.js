@@ -65,6 +65,11 @@ MongoClient.connect(config.dbURI, {w: 1}, function (error, db) {
     });
 
     var io = socketio.listen(server);
+    io.set('transports', ['websocket', 'flashsocket', 'htmlfile', 'xhr-polling', 'jsonp-polling']);
+    io.set('log level', 1);
+    io.set('heartbeat interval', 10);
+    io.set('heartbeat timeout', 30);
+    io.set('close timeout', 120);
     io.on('connection', function (socket) {
       chat.newClient(socket, userProvider); 
     });

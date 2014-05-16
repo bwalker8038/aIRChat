@@ -1,4 +1,9 @@
-var socket = io.connect(hostname);
+var socket = io.connect(hostname, {
+  'reconnection delay'        : 2000,
+  'reconnection limit'        : 5000,
+  'max reconnection attempts' : 5,
+  'sync disconnect on unload' : true
+});
 
 // Storage for the ID of the interval used to blink the title
 // when there is a message waiting for the user.
