@@ -173,70 +173,6 @@
   </div>
   <a class="close-reveal-modal">&#215;</a>
 </div>
-<!-- Dialog for setting profile information -->
-<div class="reveal-modal" id="profileSettings" data-reveal>
-  <div class="row">
-    <div class="small-12 columns">
-      <h1>Profile settings</h1>
-    </div>
-  </div>
-  <div class="row">
-    <div class="small-12 small-centered columns">
-      <h2><%= username %></h2>
-    </div>
-  </div>
-  <div class="row">
-    <div class="small-12 small-centered columns">
-      <img class="thumbnail" id="ownProfilePic" src="<%= profilepic %>" />
-    </div>
-  </div>
-  <div class="row">
-    <div class="small-12 medium-8 columns">
-      <p>
-        Your profile picture is set using a URL for the picture you want to use.
-        Leaving this field blank will result in no change to your current setting.
-      </p>
-    </div>
-  </div>
-  <div class="row">
-    <div class="small-12 medium-8 columns">
-      <input type="text" id="profilePicLocation" placeholder="Image URL" />
-     </div>
-  </div>
-  <div class="row">
-    <div class="small-12 medium-8 columns">
-      <p>
-        If you do not wish to change your password, ignore the following two fields.
-      </p>
-    </div>
-  </div>
-  <div class="row">
-    <div class="small-12 medium-8 columns">
-      <label for="newPassword">New Password</label>
-      <input type="password" id="newPassword" />
-    </div>
-  </div>
-  <div class="row">
-    <div class="small-12 medium-8 columns">
-      <label for="newPasswordRepeat">Confirm</label>
-      <input type="password" id="newPasswordRepeat" />
-    </div>
-  </div>
-  <div class="row">
-    <div class="small-12 medium-8 columns">
-      <p>
-        Enter your password to authorize this change to your profile.
-      </p>
-      <input type="password" id="passwordConfirm" />
-    </div>
-  </div>
-  <div class="row">
-    <div class="small-12 columns">
-      <a href="#" id="submitProfile" class="close-reveal-modal success button">Submit changes</a>
-    </div>
-  </div>
-  <a class="close-reveal-modal">&#215;</a>
-</div>
 <!-- Nav bar for chat management -->
 <nav class="top-bar" data-topbar>
   <ul class="title-area">
@@ -246,37 +182,27 @@
   </ul>
   <section class="top-bar-section">
     <ul class="right">
-      <li class="divider"></li>
-      <li class="has-dropdown">
-        <a href="#">Chat</a>
-        <ul class="dropdown">
-          <li><a href="#" data-reveal-id="newServer">
-            <img src="/images/icons/network.png" class="listicon" />Connect to server
-          </a></li>
-          <li><a href="#" data-reveal-id="newChannel">
-            <img src="/images/icons/plus.png" class="listicon" />Join a channel
-          </a></li>
-          <li><a href="#" data-reveal-id="partChannel">
-            <img src="/images/icons/minus.png" class="listicon" />Leave active channel
-          </a></li>
-          <li><a href="#" data-reveal-id="toggleFave">
-            <img src="/images/icons/heart.png" class="listicon" />Manage favorite
-          </a></li>
-          <li><a href="#" data-reveal-id="changeNickModal">
-            <img src="/images/icons/pencil.png" class="listicon" />Change your nickname
-          </a></li>
-          <li><a href="#" data-reveal-id="getNickList">
-            <img src="/images/icons/list.png" class="listicon" />List of users
-          </a></li>
-          <li><a href="#" data-reveal-id="privMsg">
-            <img src="/images/icons/chat.png" class="listicon" />Send a private message
-          </a></li>
-        </ul>
-      </li>
-      <li class="divider"></li>
-      <li><a href="#" data-reveal-id="profileSettings">Profile</a></li>
-      <li class="divider"></li>
-      <li><a href="/logout">Log out</a></li>
+      <li><a href="#" data-reveal-id="newServer">
+        <img src="/images/icons/network.png" class="listicon" />
+      </a></li>
+      <li><a href="#" data-reveal-id="newChannel">
+        <img src="/images/icons/plus.png" class="listicon" />
+      </a></li>
+      <li><a href="#" data-reveal-id="partChannel">
+        <img src="/images/icons/minus.png" class="listicon" />
+      </a></li>
+      <li><a href="#" data-reveal-id="toggleFave">
+        <img src="/images/icons/heart.png" class="listicon" />
+      </a></li>
+      <li><a href="#" data-reveal-id="changeNickModal">
+        <img src="/images/icons/pencil.png" class="listicon" />
+      </a></li>
+      <li><a href="#" data-reveal-id="getNickList">
+        <img src="/images/icons/list.png" class="listicon" />
+      </a></li>
+      <li><a href="#" data-reveal-id="privMsg">
+        <img src="/images/icons/chat.png" class="listicon" />
+      </a></li>
     </ul>
   </section>
 </nav>

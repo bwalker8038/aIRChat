@@ -137,7 +137,7 @@ var addMessage = function (data) {
   } else {
     var picture = user.picture;
   }
-  var time = formattedMessageTime() + ' - '; // From users.js
+  var time = formattedMessageTime(); // From users.js
 
   var highlight = '';
   if (data.from === usernicks[data.server]) {
@@ -149,7 +149,7 @@ var addMessage = function (data) {
   var $newMsg = $(
     '<div class="message">' +
     '  <div class="messageContent' + highlight + '">' +
-    '    <span class="bold">' + time + '\t' + data.from + '  : ' + '</span>' +
+    '    <span class="bold">' + time + '\t' + data.from + ' </span>' +
     '    <span>' + htmlify(data.message) + '</span>' +
     '  </div>' +
     '</div>'
