@@ -1,7 +1,7 @@
 var socket = io.connect(hostname, {
-  'reconnection delay'        : 2000,
-  'reconnection limit'        : 5000,
-  'max reconnection attempts' : 5,
+  'reconnection delay'        : 500,
+  'reconnection limit'        : 10000,
+  'max reconnection attempts' : 10,
   'sync disconnect on unload' : true
 });
 

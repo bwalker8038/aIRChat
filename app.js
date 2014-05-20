@@ -26,10 +26,6 @@ app.use(express.session({secret: config.secret}));
 app.use(express.bodyParser());
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(function (err, req, res, next) {
-  console.log('err = ');
-  console.log(err);
-});
 
 // development only
 if ('development' == app.get('env')) {
@@ -65,9 +61,8 @@ MongoClient.connect(config.dbURI, {w: 1}, function (error, db) {
     });
 
     var io = socketio.listen(server);
-    io.set('transports', ['websocket', 'flashsocket', 'htmlfile', 'xhr-polling', 'jsonp-polling']);
     io.set('log level', 1);
-    io.set('heartbeat interval', 10);
+    io.set('heartbeat interval', 6);
     io.set('heartbeat timeout', 30);
     io.set('close timeout', 120);
     io.on('connection', function (socket) {
