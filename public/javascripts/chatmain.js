@@ -137,7 +137,7 @@ var addMessage = function (data) {
   } else {
     var picture = user.picture;
   }
-  var time = ' at ' + formattedMessageTime(); // From users.js
+  var time = formattedMessageTime() + ' - '; // From users.js
 
   var highlight = '';
   if (data.from === usernicks[data.server]) {
@@ -148,22 +148,13 @@ var addMessage = function (data) {
 
   var $newMsg = $(
     '<div class="message">' +
-    '  <div class="left">' +
-    '    <img src="' + picture + '" data-nick="' + data.from + '" />' +
-    '  </div>' +
-    '  <div>' +
-    '    <div class="titlebar' + highlight + '">' +
-    '      <span>' + data.from + ' in ' + data.channel + time + '</span>' +
-    '    </div>' +
-    '    <div class="messageContent' + highlight + '">' +
-    '      <span>' + htmlify(data.message) + '</span>' +
-    '    </div>' +
+    '  <div class="messageContent' + highlight + '">' +
+    '    <span class="bold">' + time + '\t' + data.from + '  : ' + '</span>' +
+    '    <span>' + htmlify(data.message) + '</span>' +
     '  </div>' +
     '</div>'
   );
   $msgDiv.append($newMsg);
-  $tab.children('span.notifyLow').text(chat.lowPriorityNotifications());
-  $tab.children('span.notifyHigh').text(chat.highPriorityNotifications());
   var scrollDist = $msgDiv[0].scrollHeight - $msgDiv[0].offsetHeight - $msgDiv[0].scrollTop;
   if (scrollDist >= 40) {
     $msgDiv.scrollTop($msgDiv[0].scrollHeight);
@@ -175,8 +166,6 @@ var clearNotifications = function (evt) {
   var channel = $(evt.currentTarget).data('channel');
   var $anchor = $(evt.currentTarget).children('a');
   chats[chatIndex(chats, server, channel)].clearNotifications();
-  $anchor.children('span.notifyLow').text('0');
-  $anchor.children('span.notifyHigh').text('0');
 };
 
 // Add a new tab to the list of chat tabs and a content div to contain
@@ -185,8 +174,6 @@ var addChatSection = function (server, chanOrNick) {
   var $newTab = $(
     '<dd data-server="' + server + '" data-channel="' + chanOrNick + '">' +
     '  <a href="#panel_' + label(server, chanOrNick) + '">' +
-    '    <span class="notifyLow">0</span>' +
-    '    <span class="notifyHigh">0</span>' +
     '    <span>'+ chanOrNick + '</span>' +
     '  </a>' +
     '</dd>'

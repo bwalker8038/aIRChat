@@ -6,9 +6,9 @@
     notificationStyles: {
       padding: "12px 18px",
       margin: "0 0 6px 0",
-      backgroundColor: "#222",
+      backgroundColor: "#34495E",
       opacity: 1,
-      color: "#f2f2f2",
+      color: "#EEE",
       borderRadius: "3px",
       boxShadow: "#333 0 0 12px",
       width: "300px"
@@ -23,7 +23,7 @@
   $(function() {
     config.container.css("position", "fixed");
     config.container.css("z-index", 9999);
-    config.container.css(config.position[0], "12px");
+    config.container.css(config.position[0], "50px");
     config.container.css(config.position[1], "12px");
     config.container.appendTo(document.body);
   });

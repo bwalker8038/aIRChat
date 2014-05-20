@@ -1,23 +1,14 @@
 var formattedMessageTime = function () {
   var date = new Date();
-  var days = [
-    'Sunday',
-    'Monday', 
-    'Tuesday', 
-    'Wednesday', 
-    'Thursday', 
-    'Friday', 
-    'Saturday'
-  ];
-  var hours = date.getUTCHours() + '';
-  var mins = date.getUTCMinutes() + '';
+  var hours = date.getHours() + '';
+  var mins = date.getMinutes() + '';
   if (mins.length === 1) {
     mins = '0' + mins;
   }
   if (hours.length === 1) {
     hours = '0' + hours;
   }
-  return hours + ':' + mins + ' on ' + days[date.getUTCDay()] + ' (UTC)';
+  return hours + ':' + mins;
 };
 
 var User = function (nick, picture, server) {

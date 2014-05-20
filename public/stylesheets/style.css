@@ -5,6 +5,7 @@ body {
   font-size: 14px;
   font-family: Lato, sans-serif;
   height: 100%;
+  background-color: #FEFEFE !important;
 }
 a {
   color: #00B7FF;
@@ -31,6 +32,10 @@ img#logo {
   margin-left: 15px;
 }
 
+.bold {
+  font-weight: bold;
+}
+
 img.thumbnail {
   width: 125px;
   height: 125px;
@@ -52,23 +57,27 @@ div.infoSection h3 {
 }
 
 dl.tabs {
-  width: 15%;
   height: calc(100% - 45px);
-  background-color: #222;
+  background-color: #212F3E;
 }
 
 dl.tabs dd > a {
-  background-color: #222;
+  background-color: #212F3E;
   color: #eee;
 }
 
 dl.tabs dd.active > a {
   color: #eee;
-  background-color: #333;
+  background-color: #34495E;
 }
 
 dl.tabs dd > a:hover {
-  color: #222;
+  color: #BDC3C7;
+  background-color: #34495E;
+}
+
+div#chatContent {
+  margin-top: 5px;
 }
 
 div#chatContent div.content {
@@ -78,9 +87,7 @@ div#chatContent div.content {
 }
 
 div.message {
-  min-height: 40px;
   background-color: #fafafa;
-  margin-top: 10px;
 }
 
 div.titlebar {
@@ -90,8 +97,7 @@ div.titlebar {
 }
 
 div.messageContent {
-  padding: 5px;
-  width: calc(100% + 50px);
+  padding: 8px 5px;
 }
 
 div.titlebar > span {
@@ -125,7 +131,7 @@ div.messageContent.self {
 }
 
 div.messageContent.mention {
-  background-color: #fefef7;
+  background-color: #faeded;
 }
 
 span.notifyLow {
