@@ -146,10 +146,14 @@ var addMessage = function (data) {
     highlight = ' mention';
   }
 
+  var spaces = '&nbsp;';
+  for (var i = 16 - data.from.length; i >= 0; i--) {
+    spaces += '&nbsp;';
+  }
   var $newMsg = $(
     '<div class="message">' +
     '  <div class="messageContent' + highlight + '">' +
-    '    <span class="bold">' + time + '\t' + data.from + ' </span>' +
+    '    <span>' + time + '</span><span class="bold">' + spaces + data.from + ' </span>' +
     '    <span>' + htmlify(data.message) + '</span>' +
     '  </div>' +
     '</div>'

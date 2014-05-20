@@ -88,6 +88,8 @@ div#chatContent div.content {
 
 div.message {
   background-color: #fafafa;
+  font-family: Menlo, 'DejaVu Sans Mono', monospace;
+  font-size: 12px;
 }
 
 div.titlebar {
