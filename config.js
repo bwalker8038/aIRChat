@@ -4,14 +4,6 @@
   */
 exports.host = 'http://localhost';
 
-/** Database Configuration
-  * The URI used to create a connection to the database.
-  * 'localhost' should be changed to the address you are hosting aIRChat on
-  * '27017'     should be changed to the port you have the database using
-  * 'usersDb'   should be changed to the name of the database you have chosen
-  */
-exports.dbURI = 'mongodb://localhost:27017/usersDb';
-
 /** Session secret
   * Express' sessions use a secret key to provide security.
   * This should never be shared with anyone once set.

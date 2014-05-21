@@ -50,10 +50,6 @@ var randString = function (bytes, source) {
   }
 };
 
-var userID = function (username, sid) {
-  return username + '!' + sid;
-};
-
 var sanitize = function (string) {
   string = string.replaceAll('&', '&amp;').replaceAll('=', '&#61;');
   string = string.replaceAll('<', '&lt;').replaceAll('>', '&gt;');
@@ -221,31 +217,11 @@ var disconnectClients = function (sid) {
   delete clients[sid];
 };
 
-exports.newClient = function (socket, userProvider) {
+exports.newClient = function (socket) {
   socket.on('rawCommand', function (data) {
     if (data.sid === undefined || clients[data.sid] === undefined) return;
     var client = clients[data.sid][data.server];
     client.send.apply(client, data.command.split(' '));
-  });
-
-  socket.on('dataRequest', function (data) {
-    userProvider.profileInfo([data.username], function (error, users) {
-      if (error) {
-        socket.emit('serverNotification', {
-          type    : SN_ERROR,
-          message : 'Could not retrieve user data for ' + data.username + '.'
-        });
-      } else if (users.length === 0) {
-        socket.emit('serverNotification', {
-          type    : SN_INFO,
-          message : 'No information about ' + data.username + ' was found.'
-        });
-      } else {
-        var result = users[0];
-        result.server = data.server;
-        socket.emit('dataResponse', result); 
-      }
-    });
   });
 
   socket.on('reconnectChats', function (data) {
@@ -310,54 +286,19 @@ exports.newClient = function (socket, userProvider) {
   });
 };
 
-exports.logout = function (req, res) {
-  var sid = req.session.sessionID;
-  // Avoid causing a TypeError if a user tries to navigate to /logout without
-  // ever having had a collection of servers created for them.
-  if (!sid || !clients[sid]) {
-    res.redirect(400, '/');
-  } else {
-    disconnectClients(sid);
-    req.session = null;
-    res.redirect(303, '/');
-  }
-};
-
-exports.main = function (req, res, userProvider) {
-  if (req.session.loggedIn != true) {
-    res.redirect(401, '/');
-  }
-  // Disconnect and destroy any clients that may not have been gotten rid of
-  // under circumstances where the user disconnected but no signal of them
-  // doing so has already been received.
-  var sessions = Object.keys(clients);
-  for (var i = sessions.length - 1; i >= 0; i--) {
-    if (sessions[i].indexOf(req.session.username + '!') === 0) {
-      disconnectClients(sessions[i]); 
-    }
-  }
-  var sessionID = randString(64);
-  if (!sessionID) {
+exports.main = function (req, res) {
+  var uid = randString(64);
+  if (!uid) {
     res.redirect(500, '/');
     return;
   }
-  var uid = userID(req.session.username, sessionID);
   clients[uid] = {};
-  userProvider.profileInfo([req.session.username], function (error, info) {
-    if (!error) {
-      info = info[0];
-      req.session.sessionID = uid;
-      res.render('chat', {
-        profilepic         : info.picture,
-        username           : req.session.username,
-        sessionID          : uid,
-        host               : config.host,
-        heartbeat_interval : config.heartbeat_interval,
-        heartbeat_timeout  : config.heartbeat_timeout,
-        title              : 'aIRChat'
-      });
-    } else {
-      res.redirect(500, '/');
-    }
+  req.session.sessionID = uid;
+  res.render('chat', {
+    sessionID          : uid,
+    host               : config.host,
+    heartbeat_interval : config.heartbeat_interval,
+    heartbeat_timeout  : config.heartbeat_timeout,
+    title              : 'aIRChat'
   });
 };

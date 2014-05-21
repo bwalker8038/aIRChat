@@ -7,72 +7,13 @@
   </ul>
   <section class="top-bar-section">
     <ul class="right">
+      <li class="active"><a href="/chat">Start Chatting</a></li>
       <% if (showDonationButton) {%>
         <li><a href="#donations">Donate</a></li>
       <% } %>
-      <li class="active"><a href="#" data-reveal-id="login">Log in</a></li>
-      <li><a href="#" data-reveal-id="register">Register</a></li>
     </ul>
   </section>
 </nav>
-<!-- Register overlay -->
-<div class="reveal-modal" id="register" data-reveal>
-  <div class="row">
-    <div class="small-4 columns">
-      <h2>Register</h2>
-    </div>
-  </div>
-  <form action="/register" method="post">
-    <div class="row">
-      <div class="small-4 large-8 columns">
-        <input type="text" id="username" name="username"  placeholder="username" />
-      </div>
-    </div>
-    <div class="row">
-      <div class="small-4 large-8 columns">
-        <input type="password" id="password" name="password" placeholder="password" />
-      </div>
-    </div>
-    <div class="row">
-      <div class="small-4 large-8 columns">
-        <input type="password" id="passwordrepeat" name="passwordrepeat" placeholder="confirm password" />
-      </div>
-    </div>
-    <div class="row">
-      <div class="small-12 columns">
-        <input type="submit" class="button success" value="Register" />
-      </div>
-    </div>
-  </form>
-  <a href="#" class="close-reveal-modal">&#215;</a>
-</div>
-
-<!-- Login overlay -->
-<div class="reveal-modal" id="login" data-reveal>
-  <div class="row">
-    <div class="small-4 columns">
-      <h2>Log in</h2>
-    </div>
-  </div>
-  <form action="/login" method="post">
-    <div class="row">
-      <div class="small-4 large-8 columns">
-        <input type="text" id="username" name="username" placeholder="username" />
-      </div>
-    </div>
-    <div class="row">
-      <div class="small-4 large-8 columns">
-        <input type="password" id="password" name="password" placeholder="password" />
-      </div>
-    </div>
-    <div class="row">
-      <div class="small-12 columns">
-        <input type="submit" class="button success" value="Log in" />
-      </div>
-    </div>
-  </form>
-  <a href="#" class="close-reveal-modal">&#215;</a>
-</div>
 <div id="userActionArea">
   <div class="row">
     <div class="small-12 columns">
@@ -107,14 +48,6 @@
         <a href="https://en.wikipedia.org/wiki/IRC">Wikipedia article</a> on the
         subject should tell you everything you could ever want to know!
       </p>
-    </div>
-  </div>
-  <div class="row">
-    <div class="small-8 columns">
-      <ul class="button-group">
-        <li><a href="#" data-reveal-id="register" class="button">Register</a></li>
-        <li><a href="#" data-reveal-id="login" class="button">Log in</a></li>
-      </ul>
     </div>
   </div>
 </div>
