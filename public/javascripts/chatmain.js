@@ -51,6 +51,19 @@ var secondsSinceEpoch = function () {
   return Math.round((new Date()).getTime() / 1000.0);
 };
 
+var formattedMessageTime = function () {
+  var date = new Date();
+  var hours = date.getHours() + '';
+  var mins = date.getMinutes() + '';
+  if (mins.length === 1) {
+    mins = '0' + mins;
+  }
+  if (hours.length === 1) {
+    hours = '0' + hours;
+  }
+  return hours + ':' + mins;
+};
+
 // Protect the user from themselves.
 var sanitize = function (string) {
   string = string.replaceAll('&', '&amp;').replaceAll('=', '&#61;');
