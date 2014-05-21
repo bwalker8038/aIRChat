@@ -160,7 +160,7 @@ var addMessage = function (data) {
   var $newMsg = $(
     '<div class="message">' +
     '  <div class="messageContent' + highlight + '">' +
-    '    <span>' + time + '</span><span class="bold">' + spaces + data.from + ' </span>' +
+    '    <span>' + time + '</span><span class="bold">' + data.from + spaces + ' |</span>' +
     '    <span>' + htmlify(data.message) + '</span>' +
     '  </div>' +
     '</div>'
