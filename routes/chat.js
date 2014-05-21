@@ -100,12 +100,16 @@ var createIRCClient = function (socket, params) {
   });
 
   newClient.addListener('registered', function (msg) {
-    socket.emit('serverConnected', params.server);
+    socket.emit('serverConnected', {server : params.server, nick : msg.args[0]});
   });
 
   newClient.addListener('names', function (channel, nicks) {
     var nicknames = Object.keys(nicks);
-    socket.emit('nickList', nicks);
+    socket.emit('nickList', {
+      channel : channel,
+      server  : params.server,
+      nicks   : nicknames
+    });
   });
 
   newClient.addListener('join', function (channel, nick, msg) {

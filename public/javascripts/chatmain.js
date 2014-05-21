@@ -328,10 +328,10 @@ socket.on('notifyHigh', function (data) {
   }
 });
 
-socket.on('serverConnected', function (server, channel) {
-  usernicks[server] = username;
+socket.on('serverConnected', function (data) {
+  usernicks[data.server] = data.nick;
   Notifier.info(
-    'You have been connected to ' + server + '.',
+    'You have been connected to ' + data.server + '.',
     'Connection Successful'
   );
 });
@@ -340,12 +340,12 @@ socket.on('serverConnected', function (server, channel) {
 // The list will not be rendered until the channel is the active one.
 // TODO
 // Reduce network strain by not sending the server name with every user
-socket.on('nickList', function (nicks) {
+socket.on('nickList', function (data) {
   var chat = chats[chatIndex(chats, data.server, data.channel)];
   if (chat === undefined) {
     chat = joinChat(data.server, data.channel);
   }
-  chat.users = nicks;
+  chat.users = data.nicks;
   chat.users.push('System');
 });
 
@@ -363,7 +363,7 @@ socket.on('joined', function (data) {
     }
   } else {
     var index = chatIndex(chats, data.server, data.channel);
-    chats[idnex].users.push(data.nick);
+    chats[index].users.push(data.nick);
     channelNotification('joined', data.server, data.channel, data.nick);
   }
 });
@@ -534,7 +534,7 @@ $('a#connectToNewServer').click(function (evt) {
   }
 });
 
-$('a[data-reveal-id=getNickList]').click(function (evt) {
+$('a#showNickList').click(function (evt) {
   var channel = $('div.active').first().data('channel');
   var server = $('div.active').first().data('server');
   if (channel === undefined || server === undefined) {
@@ -549,7 +549,7 @@ $('a[data-reveal-id=getNickList]').click(function (evt) {
     server  : server,
     channel : channel,
     from    : 'System',
-    message : 'Users in ' + channel + ' on ' + server + '<br />' + chat.users.join(', ')
+    message : 'Users in ' + channel + ' on ' + server + ' : ' + chat.users.join(', ')
   });
 });
 
