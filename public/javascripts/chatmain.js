@@ -131,12 +131,6 @@ var addMessage = function (data) {
   var $msgDiv = chatElement('div', data.server, data.channel);
   var $tab = chatElement('dd', data.server, data.channel).children('a').first();
   var chat = chats[chatIndex(chats, data.server, data.channel)];
-  var user = chat.users[userIndex(chat.users, data.from)];
-  if (user === undefined) {
-    var picture = profilepic;
-  } else {
-    var picture = user.picture;
-  }
   var time = formattedMessageTime(); // From users.js
 
   var highlight = '';
@@ -297,7 +291,6 @@ socket.on('notifyLow', function (data) {
   if (windowFocused === false && intervalID === undefined) {
     intervalID = setInterval(titleBlinker('aIRChat', '[!!] aIRChat [!!]'), 1000);
   }
-  chat.users[userIndex(chat.users, data.from)].gotNewMessage();
   addMessage(data);
 });
 
@@ -306,17 +299,11 @@ socket.on('notifyHigh', function (data) {
   var chat = chats[chatIndex(chats, data.server, data.from)];
   if (chat === undefined) {
     chat = joinChat(data.server, data.from);
-    chat.users.push(new User(usernicks[data.server], profilepic, data.server));
-    chat.users.push(new User(data.from, '/images/defaultusericon.jpg', data.server));
-    socket.emit('dataRequest', {
-      username : data.from,
-      server   : data.server
-    });
+    chat.users = [usernicks[data.server], data.from, 'System'];
   }
   if ($activeDiv.data('server') != data.server || $activeDiv.data('channel') != data.channel) {
     chat.gotHighPriorityMessage();
   }
-  chat.users[userIndex(chat.users, data.from)].gotNewMessage();
   addMessage({
     from    : data.from,
     server  : data.server,
@@ -326,16 +313,6 @@ socket.on('notifyHigh', function (data) {
   if (windowFocused === false && intervalID === undefined) {
     intervalID = setInterval(titleBlinker('aIRChat', '[!!] aIRChat [!!]'), 1000);
   }
-});
-
-socket.on('dataResponse', function (data) {
-  var chat = chats[chatIndex(chats, data.server, data.nick)];
-  var user = chat.users[userIndex(chat.users, data.nick)];
-  var query = '' +
-    'div.content[data-server="' + data.server + '"][data-channel="' + data.nick + '"] ' +
-    'img[data-nick="' + data.nick + '"]';
-  user.picture = data.picture;
-  $(query).attr('src', user.picture);
 });
 
 socket.on('serverConnected', function (server, channel) {
@@ -350,29 +327,18 @@ socket.on('serverConnected', function (server, channel) {
 // The list will not be rendered until the channel is the active one.
 // TODO
 // Reduce network strain by not sending the server name with every user
-socket.on('nickList', function (data) {
+socket.on('nickList', function (nicks) {
   var chat = chats[chatIndex(chats, data.server, data.channel)];
   if (chat === undefined) {
     chat = joinChat(data.server, data.channel);
   }
-  for (var i = data.users.length - 1; i >= 0; i--) {
-    chat.users.push(new User(
-      data.users[i].nick, 
-      data.users[i].picture, 
-      data.users[i].server
-    ));
-  }
-  chat.users.push(new User(
-    'System', '/images/gear.png', data.server
-  ));
+  chat.users = nicks;
+  chat.users.push('System');
 });
 
 // Add a new nick to the list of nicks for the provided channel. 
 // Create a new chat tab if the aIRChat user is the one joining.
 socket.on('joined', function (data) {
-  if (chatIndex(chats, data.server, data.channel) === -1) { 
-    usernicks[data.server] = data.nick;
-  }
   if (data.nick === usernicks[data.server] ) {
     joinChat(data.server, data.channel);
     Notifier.info('Joined ' + data.channel + '.', 'Joined Channel');
@@ -384,19 +350,13 @@ socket.on('joined', function (data) {
     }
   } else {
     var index = chatIndex(chats, data.server, data.channel);
-    chats[index].users.push(new User(
-      data.nick, data.picture, data.server
-    ));
+    chats[idnex].users.push(data.nick);
     channelNotification('joined', data.server, data.channel, data.nick);
   }
 });
 
 // Display a message telling the user they were kicked from the channel.
 // Also deactivate the send mechanism for this channel.
-// TODO
-// Block the user from trying to send messages to the channel
-// that they were kicked from.
-// Might want to use an alert or something and close the tab automatically.
 socket.on('kicked', function (data) {
   if (data.nick === usernicks[data.server]) {
     addMessage({
@@ -412,6 +372,8 @@ socket.on('kicked', function (data) {
       channel : data.channel,
       message : data.nick + ' was kicked by ' + data.by + ', reason: ' + data.reason
     });
+    var index = chats.users.indexOf(data.nick);
+    chats.users.remove(index);
   }
 });
 
@@ -420,7 +382,9 @@ socket.on('newNick', function (data) {
   if (data.old === usernicks[data.server]) {
     usernicks[data.server] = data.new;
   } else {
-    chat.getUser(data.old).changeNick(data.new);
+    var index = chat.users.indexOf(data.old);
+    chat.users.remove(index);
+    chat.users.push(data.new);
   }
   // Rename the tab of an affected private chat
   if (chatElement('dd', data.server, data.old) /* exists */) {
@@ -431,7 +395,6 @@ socket.on('newNick', function (data) {
     channelNotification('changedNick', data.server, data.old, data.old, data.new);
     label.text(newLabel);
     var pchat = chats[chatIndex(chats, data.server, data.old)];
-    pchat.getUser(data.old).changeNick(data.new);
     pchat.channel = data.new;
     chatElement('dd', data.server, data.old).data('channel', data.new);
     chatElement('div', data.server, data.old).data('channel', data.new);
@@ -453,8 +416,7 @@ socket.on('userLeft', function (data) {
   if (cindex === -1) { // The user is the one who left, and the chat has been deleted
     return;
   }
-  var users = chats[cindex].users;
-  users.remove(userIndex(users, data.nick));
+  chats[cindex].users.remove(chats[cindex].users.indexOf(data.nick));
   channelNotification('departed', data.server, data.from, data.nick);
 });
 
@@ -474,12 +436,10 @@ $('#messageInput').keypress(function (evt) {
       var command = $ta.val().slice(1);
       var name = command.split(' ')[0].toLowerCase();
       if (DISALLOWED.indexOf(name) >= 0) {
-        addMessage({
-          server  : server,
-          channel : dest,
-          from    : 'System',
-          message : name + ' is imlpemented through the UI and not accepted as a raw command.'
-        });
+        Notifier.error(
+          name + ' is implemented through the UI and not accepted as a raw command.',
+          'Disallowed Command'
+        );
       } else {
         socket.emit('rawCommand', {
           command : command,
@@ -540,7 +500,8 @@ $('a#joinNewChannel').click(function (evt) {
 $('a#connectToNewServer').click(function (evt) {
   var serverName = $('#newServerAddr').val();
   var firstChannel = $('#newServerChannel').val();
-  if (serverName === '' || firstChannel === '') {
+  var username = $('#serverNick').val();
+  if (serverName === '' || firstChannel === '' || username === '') {
     Notifier.warning(
       'You must specify both the server address and a channel to join to ' +
       'connect to a new server.',
@@ -564,27 +525,19 @@ $('a[data-reveal-id=getNickList]').click(function (evt) {
   var channel = $('div.active').first().data('channel');
   var server = $('div.active').first().data('server');
   if (channel === undefined || server === undefined) {
-    $('div#getNickList div.row div.columns h1').text('No channel selected');
+    Notifier.warning(
+      'No channel was selected to get the list of users for.',
+      'Missing Selection'
+    );
     return;
   }
-  var users = chats[chatIndex(chats, server, channel)].users;
-  $('div#getNickList div.row div.columns h1').text('Users in ' + channel);
-  var $list = $('table#listOfNicks tbody');
-  $list.html(''); // Clear out the table before filling it
-  for (var i = users.length - 1; i >= 0; i--) {
-    if (users[i].nick === usernicks[server]) {
-      continue;
-    }
-    var lastMsg = (users[i].lastMessage === undefined) ? 'No messages received yet' : users[i].lastMessage;
-    // The two buttons here will open their respective modals from within their
-    // respective event handlers rather than using the data-reveal-id attribute.
-    $list.prepend($(
-      '<tr>' +
-      '  <td>' + users[i].nick + '</td>' +
-      '  <td>' + lastMsg + '</td>' + 
-      '</tr>'
-    ));
-  }
+  var chat = chats[chatIndex(chats, server, channel)];
+  addMessage({
+    server  : server,
+    channel : channel,
+    from    : 'System',
+    message : 'Users in ' + channel + ' on ' + server + '<br />' + chat.users.join(', ')
+  });
 });
 
 $('a#sendPrivMsg').click(function (evt) {
@@ -610,8 +563,7 @@ $('a#sendPrivMsg').click(function (evt) {
     );
   } else {
     var chat = joinChat(server, nick);
-    chat.users.push(new User(usernicks[server], profilepic, server));
-    chat.users.push(new User(nick, '/images/defaultusericon.jpg', server));
+    chat.users = [usernicks[server], nick, 'System'];
     addMessage({
       server  : server, 
       channel : nick, 
@@ -623,10 +575,6 @@ $('a#sendPrivMsg').click(function (evt) {
       destination : nick, 
       message     : msg,
       sid         : sid
-    });
-    socket.emit('dataRequest', {
-      username : nick,
-      server   : server
     });
   }
 });
@@ -739,44 +687,6 @@ $('a#changeNickConfirm').click(function (evt) {
       nick   : newNick
     });
   }
-});
-
-$('#submitProfile').click(function (evt) {
-  var pp = $('#profilePicLocation').val();
-  if (pp.length === 0) {
-    pp = profilepic;
-  }
-  $.ajax('/profileupdate', {
-    type    : 'POST',
-    data    : {
-      username          : username,
-      newPassword       : $('#newPassword').val(),
-      newPasswordRepeat : $('#newPasswordRepeat').val(),
-      password          : $('#passwordConfirm').val(),
-      picture           : pp
-    },
-    error   : function (obj, status, errorThrown) {
-      Notifier.error(
-        status,
-        'Update Failure'
-      );
-    },
-    success : function (data, status, obj) {
-      if (data.success) {
-        Notifier.success('Your profile information was updated successfully.', 'Update Successful');
-        $('#ownProfilePic').attr('src', pp);
-        profilepic = pp;
-      } else {
-        Notifier.warning(
-          'Please ensure that you have entered the correct password and try again.',
-          'Invalid Password'
-        );
-      }
-    }
-  });
-  $('#passwordConfirm').val('');
-  $('#newPassword').val('');
-  $('#newPasswordRepeat').val('');
 });
 
 $(window).on('resize', function (evt) {

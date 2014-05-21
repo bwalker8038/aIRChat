@@ -61,7 +61,7 @@ var sanitize = function (string) {
   return string.replaceAll('%', '&#37;').replaceAll(':', '&#58;');
 };
 
-var createIRCClient = function (socket, params, userProvider) {
+var createIRCClient = function (socket, params) {
   var newClient = new irc.Client(params.server, params.nick, {
     channels   : params.channels,
     userName   : 'aIRChat_' + params.nick,
@@ -105,49 +105,14 @@ var createIRCClient = function (socket, params, userProvider) {
 
   newClient.addListener('names', function (channel, nicks) {
     var nicknames = Object.keys(nicks);
-    userProvider.profileInfo(nicknames, function (error, userdata) {
-      if (!error) {
-        socket.emit('nickList', {
-          server  : params.server,
-          channel : channel,
-          users   : userdata
-        });
-      } else {
-        socket.emit('serverNotification', {
-          message : 'Failed to retrieve information about the users on ' + channel + '.',
-          type    : SN_ERROR
-        });
-      }
-    });
+    socket.emit('nickList', nicks);
   });
 
   newClient.addListener('join', function (channel, nick, msg) {
-    // Information for the default fields here will be filled with
-    // stored user info when accounts are implemented.
-    userProvider.profileInfo([nick], function (error, info) {
-      if (!error) {
-        if (info.length > 0) {
-          info = info[0];
-          socket.emit('joined', {
-            channel : channel,
-            nick    : nick,
-            picture : info.picture,
-            server  : params.server
-          });
-        } else {
-          socket.emit('joined', {
-            channel : channel,
-            nick    : nick,
-            picture : '/images/defaultusericon.jpg',
-            server  : params.server
-          });
-        }
-      } else {
-        socket.emit('serverNotification', {
-          message : 'Could not obtain information for ' + nick + '.',
-          type    : SN_ERROR
-        });
-      }
+    socket.emit('joined', {
+      channel : channel,
+      nick    : nick,
+      server  : params.server
     });
   });
 
@@ -229,13 +194,11 @@ exports.newClient = function (socket) {
     disconnectClients(data.sid);
     clients[data.sid] = {};
     for (var i = 0, slen = data.servers.length; i < slen; i++) {
-      clients[data.sid][data.servers[i]] = createIRCClient(
-        socket,
-        { server   : data.servers[i],
-          channels : data.channels[i],
-          nick     : data.nicks[i] },
-        userProvider
-      );
+      clients[data.sid][data.servers[i]] = createIRCClient(socket, {
+        server   : data.servers[i],
+        channels : data.channels[i],
+        nick     : data.nicks[i] 
+      });
     }
   });
 
@@ -247,7 +210,7 @@ exports.newClient = function (socket) {
   socket.on('serverJoin', function (data) {
     if (clients[data.sid] === undefined) return;
     if (!clients[data.sid][data.server]) {
-      clients[data.sid][data.server] = createIRCClient(socket, data, userProvider);
+      clients[data.sid][data.server] = createIRCClient(socket, data);
     }
   });
 

@@ -18,6 +18,11 @@
   </div>
   <div class="row">
     <div class="small-8 columns">
+      <input type="text" placeholder="nickname" id="serverNick" />
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-8 columns">
       <a href="#" class="success button close-reveal-modal" id="connectToNewServer">Connect</a>
     </div>
   </div>
@@ -119,32 +124,6 @@
   <div class="row">
     <div class="small-12 columns">
       <a href="#" class="success button close-reveal-modal" id="changeNickConfirm">Confirm</a>
-    </div>
-  </div>
-  <a class="close-reveal-modal">&#215;</a>
-</div>
-<!-- Dialog for seeing a list of nicks of users in the active channel. -->
-<div class="reveal-modal" id="getNickList" data-reveal>
-  <div class="row">
-    <div class="small-12 columns">
-      <h1><!-- Filled by JS --></h1>
-    </div>
-  </div>
-  <div class="row">
-    <div class="small-12 columns">
-      <div id="nickListPane">
-        <table id="listOfNicks">
-          <thead>
-            <tr>
-              <th>Nick</th>
-              <th>Last Message</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Filled by JS -->
-          </tbody>
-        </table>
-      </div>
     </div>
   </div>
   <a class="close-reveal-modal">&#215;</a>
