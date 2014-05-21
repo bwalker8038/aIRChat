@@ -678,6 +678,7 @@ $('a#confirmToggleFave').click(function (evt) {
       favorites[server] = [channel];
       stash.set('favorites', favorites);
     }
+    stash.set('nicks', usernicks);
     Notifier.success('Your favorites were updated successfully!', 'Favorites Updated');
   }
 });
@@ -714,19 +715,33 @@ $(document).ready(function () {
 
   // Connect to the user's favorite servers and channels
   var favorites = stash.get('favorites');
+  var nicks = stash.get('nicks');
   if (!favorites) { // None set yet
     stash.set('favorites', {});
+    if (!nicks) {
+      stash.set('nicks', {});
+    }
+    return;
+  } else if (!nicks) {
+    stash.set('nicks', {});
     return;
   }
   var servers = Object.keys(favorites);
   for (var sindex = 0, slen = servers.length; sindex < slen; sindex++) {
     var server = servers[sindex];
     var channels = favorites[server];
+    var nick = nicks[server];
+    if (!nick) {
+      nick = 'Guest';
+      for (var i = 0; i < 6; i++) {
+        nick += '' + Math.floor(Math.random() * 1000 % 10);
+      }
+    }
     socket.emit('serverJoin', {
       sid      : sid,
       server   : server,
       channels : channels,
-      nick     : username
+      nick     : nick
     });
     Notifier.info(
       'Sent requests to join the channels ' + channels.join(', ') + ' on ' + server + '.',
@@ -748,5 +763,6 @@ $(window).blur(function (evt) {
 });
 
 $(window).unload(function () {
+  stash.set('nicks', usernicks);
   socket.emit('leaving', {sid: sid});
 });
