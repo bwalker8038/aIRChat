@@ -1,8 +1,8 @@
 var socket = io.connect(hostname, {
   'reconnection delay'        : 500,
   'reconnection limit'        : 10000,
-  'max reconnection attempts' : 10,
-  'sync disconnect on unload' : true
+  'max reconnection attempts' : 10
+  //'sync disconnect on unload' : true
 });
 
 // Storage for the ID of the interval used to blink the title
@@ -12,6 +12,10 @@ var windowFocused = true;
  
 // Array of chat objects
 var chats = new Array();
+
+// Mapping of server_channel -> length of the longest nick amongst users in the channel.
+// Used to space nicks and messages evenly.
+var longestNickInChannel = {};
  
 // Maps the name of a given server to the user's nick on that server.
 var usernicks = {};
@@ -19,6 +23,10 @@ var usernicks = {};
 // A list of commands that are covered by the UI and shouldn't have to have extra code
 // to handle them as raw commands.
 const DISALLOWED = ['part', 'join', 'connect', 'msg', 'privmsg', 'nick'];
+
+// Send the server the user's SessionID to be stored in its socket session so that
+// the user's active clients can be stopped when the user disconnects.
+socket.emit('setIdentity', sid);
 
 // TODO
 // Create constants for all the different types of channel notifications
@@ -45,6 +53,25 @@ String.prototype.replaceAll = function (sub, newstr) {
     index = tmp.indexOf(sub);
   }
   return tmp;
+};
+
+var maximum = function (ls, fn) {
+  var max = ls[0];
+  var maxval = fn(ls[0]);
+  for (var i = ls.length - 1; i >= 0; i--) {
+    var val = fn(ls[i]);
+    if (val > maxval) {
+      max = ls[i];
+    }
+  }
+  return max;
+};
+
+var longestNick = function (nicks) {
+  return maximum(nicks, function (nick) {
+    return nick.length;
+  })
+  .length;
 };
 
 var secondsSinceEpoch = function () {
@@ -154,13 +181,14 @@ var addMessage = function (data) {
   }
 
   var spaces = '&nbsp;';
-  for (var i = 16 - data.from.length; i >= 0; i--) {
+  var maxSpaces = longestNickInChannel[data.server + data.channel];
+  for (var i = maxSpaces - data.from.length - 1; i >= 0; i--) {
     spaces += '&nbsp;';
   }
   var $newMsg = $(
     '<div class="message">' +
     '  <div class="messageContent' + highlight + '">' +
-    '    <span>' + time + '</span><span class="bold">' + data.from + spaces + ' |</span>' +
+    '    <span>' + time + spaces + '</span><span class="bold">' + data.from + ' </span>' +
     '    <span>' + htmlify(data.message) + '</span>' +
     '  </div>' +
     '</div>'
@@ -345,6 +373,7 @@ socket.on('nickList', function (data) {
   if (chat === undefined) {
     chat = joinChat(data.server, data.channel);
   }
+  longestNickInChannel[data.server + data.channel] = longestNick(data.nicks);
   chat.users = data.nicks;
   chat.users.push('System');
 });
@@ -366,6 +395,9 @@ socket.on('joined', function (data) {
     chats[index].users.push(data.nick);
     channelNotification('joined', data.server, data.channel, data.nick);
   }
+  if (data.nick.length > longestNickInChannel[data.server + data.channel]) {
+    longestNickInChannel[data.server + data.channel] = data.nick.length;
+  }
 });
 
 // Display a message telling the user they were kicked from the channel.
@@ -385,8 +417,10 @@ socket.on('kicked', function (data) {
       channel : data.channel,
       message : data.nick + ' was kicked by ' + data.by + ', reason: ' + data.reason
     });
-    var index = chats.users.indexOf(data.nick);
-    chats.users.remove(index);
+    var chat = chats[chatIndex(chats, data.server, data.channel)];
+    var index = chat.users.indexOf(data.nick);
+    chat.users.remove(index);
+    longestNickInChannel[data.server + data.channel] = longestNick(chat.users);
   }
 });
 
@@ -431,6 +465,7 @@ socket.on('userLeft', function (data) {
   }
   chats[cindex].users.remove(chats[cindex].users.indexOf(data.nick));
   channelNotification('departed', data.server, data.from, data.nick);
+  longestNickInChannel[data.server + data.channel] = longestNick(chats[cindex].users);
 });
 
 $('#messageInput').keypress(function (evt) {
@@ -764,5 +799,5 @@ $(window).blur(function (evt) {
 
 $(window).unload(function () {
   stash.set('nicks', usernicks);
-  socket.emit('leaving', {sid: sid});
+  socket.disconnect();
 });

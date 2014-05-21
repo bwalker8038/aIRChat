@@ -14,8 +14,11 @@ const SN_SUCCESS = 'success';
 
 // Test to see that the user has a session to protect against CSRF.
 exports.userHasSession = function (sessionID) {
-  return typeof clients[sessionID] != 'undefined';
+  return typeof sessionID != 'undefined' && typeof clients[sessionID] != 'undefined';
 };
+var userHasSession = exports.userHasSession;
+
+// Send the user
 
 // Array remove - By John Resig (MIT LICENSED)
 Array.prototype.remove = function (start, end) {
@@ -187,14 +190,27 @@ var disconnectClients = function (sid) {
 };
 
 exports.newClient = function (socket) {
+  // Report to the user that they do not have a session
+  var reportNoSession = function () {
+    socket.emit('serverNotification', {
+      message : 'You do not appear to have a session and thus cannot interact with aIRChat.',
+      type    : 'error'
+    });
+    return null;
+  };
+
+  socket.on('setIdentity', function (sid) {
+    socket.sid = sid;
+  });
+
   socket.on('rawCommand', function (data) {
-    if (data.sid === undefined || clients[data.sid] === undefined) return;
+    if (!userHasSession(data.sid)) return reportNoSession();
     var client = clients[data.sid][data.server];
     client.send.apply(client, data.command.split(' '));
   });
 
   socket.on('reconnectChats', function (data) {
-    if (clients[data.sid] === undefined) return;
+    if (!userHasSession(data.sid)) return reportNoSession();
     disconnectClients(data.sid);
     clients[data.sid] = {};
     for (var i = 0, slen = data.servers.length; i < slen; i++) {
@@ -207,31 +223,31 @@ exports.newClient = function (socket) {
   });
 
   socket.on('part', function (data) {
-    if (clients[data.sid] === undefined) return;
+    if (!userHasSession(data.sid)) return reportNoSession();
     clients[data.sid][data.server].part(data.channel, data.message);
   });
   
   socket.on('serverJoin', function (data) {
-    if (clients[data.sid] === undefined) return;
+    if (!userHasSession(data.sid)) return reportNoSession();
     if (!clients[data.sid][data.server]) {
       clients[data.sid][data.server] = createIRCClient(socket, data);
     }
   });
 
   socket.on('joinChannel', function (data) {
-    if (clients[data.sid] === undefined) return;
+    if (!userHasSession(data.sid)) return reportNoSession();
     if (clients[data.sid][data.server].opt.channels.indexOf(data.channel) === -1) {
       clients[data.sid][data.server].join(data.channel);
     }
   });
 
   socket.on('writeChat', function (data) {
-    if (clients[data.sid] === undefined) return;
+    if (!userHasSession(data.sid)) return reportNoSession();
     clients[data.sid][data.server].say(data.destination, data.message);
   });
 
   socket.on('changeNick', function (data) {
-    if (clients[data.sid] === undefined) return;
+    if (!userHasSession(data.sid)) return reportNoSession();
     if (clients[data.sid][data.server] === undefined) {
       socket.emit('serverNotification', {
         message : 'Not connected to ' + data.server + '.',
@@ -242,14 +258,9 @@ exports.newClient = function (socket) {
     }
   });
 
-  socket.on('leaving', function (data) {
-    if (clients[data.sid] === undefined) return;
-    disconnectClients(data.sid);
-  });
-
-  socket.on('disconnect', function (data) {
-    if (clients[data.sid] === undefined) return;
-    disconnectClients(data.sid);
+  socket.on('disconnect', function () {
+    if (!userHasSession(socket.sid)) return reportNoSession();
+    disconnectClients(socket.sid);
   });
 };
 
