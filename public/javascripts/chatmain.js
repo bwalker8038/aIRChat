@@ -1,8 +1,6 @@
 var socket = io.connect(hostname, {
-  'reconnection delay'        : 500,
-  'reconnection limit'        : 10000,
-  'max reconnection attempts' : 10
-  //'sync disconnect on unload' : true
+  'sync disconnect on unload' : true,
+  'reconnect' : false
 });
 
 // Storage for the ID of the interval used to blink the title
@@ -31,7 +29,9 @@ const HP_MSG_ICON = '/images/icons/reddot.png';
 
 // Send the server the user's SessionID to be stored in its socket session so that
 // the user's active clients can be stopped when the user disconnects.
-socket.emit('setIdentity', sid);
+socket.on('connect', function () {
+  socket.emit('setIdentity', sid);
+});
 
 // TODO
 // Create constants for all the different types of channel notifications
