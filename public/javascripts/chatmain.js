@@ -24,6 +24,11 @@ var usernicks = {};
 // to handle them as raw commands.
 const DISALLOWED = ['part', 'join', 'connect', 'msg', 'privmsg', 'nick'];
 
+// Message status icons for no message, low and high priority message statuses.
+const NO_MSG_ICON = '/images/icons/graydot.png';
+const LP_MSG_ICON = '/images/icons/greendot.png';
+const HP_MSG_ICON = '/images/icons/reddot.png';
+
 // Send the server the user's SessionID to be stored in its socket session so that
 // the user's active clients can be stopped when the user disconnects.
 socket.emit('setIdentity', sid);
@@ -200,11 +205,25 @@ var addMessage = function (data) {
   }
 };
 
+var setStatusIcon = function (server, channel, type) {
+  console.log('server = ' + server);
+  console.log('channel = ' + channel);
+  console.log('type = ' + type);
+  var icon = NO_MSG_ICON;
+  if (type === 'high') {
+    icon = HP_MSG_ICON;
+  } else if (type === 'low') {
+    icon = LP_MSG_ICON;
+  }
+  var ce = $('dd[data-server="' + server + '"][data-channel="' + channel + '"] img').first();
+  ce.attr('src', icon);
+};
+
 var clearNotifications = function (evt) {
   var server = $(evt.currentTarget).data('server');
   var channel = $(evt.currentTarget).data('channel');
-  var $anchor = $(evt.currentTarget).children('a');
-  chats[chatIndex(chats, server, channel)].clearNotifications();
+  setStatusIcon(server, channel, 'none');
+  chatElement('dd', server, channel).children('img').first().attr('src', NO_MSG_ICON);
 };
 
 // Add a new tab to the list of chat tabs and a content div to contain
@@ -213,6 +232,7 @@ var addChatSection = function (server, chanOrNick) {
   var $newTab = $(
     '<dd data-server="' + server + '" data-channel="' + chanOrNick + '">' +
     '  <a href="#panel_' + label(server, chanOrNick) + '">' +
+    '    <img class="statusIcon" src="' + NO_MSG_ICON + '" />' +
     '    <span>'+ chanOrNick + '</span>' +
     '  </a>' +
     '</dd>'
@@ -324,9 +344,9 @@ socket.on('notifyLow', function (data) {
   var chat = chats[chatIndex(chats, data.server, data.channel)];
   if ($ad.data('server') != data.server || $ad.data('channel') != data.channel) {
     if (data.message.indexOf(usernicks[data.server]) != -1) {
-      chat.gotHighPriorityMessage();
+      setStatusIcon(data.server, data.channel, 'high');
     } else {
-      chat.gotLowPriorityMessage(); 
+      setStatusIcon(data.server, data.channel, 'low');
     }
   }
   if (windowFocused === false && intervalID === undefined) {
@@ -343,7 +363,7 @@ socket.on('notifyHigh', function (data) {
     chat.users = [usernicks[data.server], data.from, 'System'];
   }
   if ($activeDiv.data('server') != data.server || $activeDiv.data('channel') != data.channel) {
-    chat.gotHighPriorityMessage();
+    setStatusIcon(data.server, data.channel, 'high');
   }
   addMessage({
     from    : data.from,
