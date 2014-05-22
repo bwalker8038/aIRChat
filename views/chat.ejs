@@ -47,38 +47,6 @@
   </div>
   <a class="close-reveal-modal">&#215;</a>
 </div>
-<!-- Dialog for setting or removing a channel as a favorite -->
-<div class="reveal-modal" id="toggleFave" data-reveal>
-  <div class="row">
-    <div class="small-12 columns">
-      <h1>Manage favorites</h1>
-    </div>
-  </div>
-  <div class="row">
-    <div class="small-8 columns">
-      <p>
-        Your favorites are a collection of servers and channels that you will be
-        automatically connected to every time you log in to aIRChat.
-      </p>
-    </div>
-  </div>
-  <div class="row">
-    <div class="small-8 columns">
-      <p id="faveText">
-        <!-- Set by JS -->
-      </p>
-    </div>
-  </div>
-  <div class="row">
-    <div class="small-12 columns">
-      <ul class="button-group">
-        <li><a href="#" class="success button close-reveal-modal" id="confirmToggleFave">Confirm</a></li>
-        <li><a href="#" class="button close-reveal-modal">Cancel</a></li>
-      </ul>
-    </div>
-  </div>
-  <a class="close-reveal-modal">&#215;</a>
-</div>
 <!-- Dialog asking for confirmation to part from channel -->
 <div class="reveal-modal" id="partChannel" data-reveal>
   <div class="row">
@@ -169,9 +137,6 @@
       </a></li>
       <li><a href="#" data-reveal-id="partChannel">
         <img src="/images/icons/minus.png" class="listicon" />
-      </a></li>
-      <li><a href="#" data-reveal-id="toggleFave">
-        <img src="/images/icons/heart.png" class="listicon" />
       </a></li>
       <li><a href="#" data-reveal-id="changeNickModal">
         <img src="/images/icons/pencil.png" class="listicon" />
