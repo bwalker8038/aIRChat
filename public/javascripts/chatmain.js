@@ -740,14 +740,9 @@ $('a#changeNickConfirm').click(function (evt) {
 
 $(window).on('resize', function (evt) {
   $('div.content').height(($(window).height() - 130) + 'px');
-  $('div#nickListPane').height(($(window).height() - 250) + 'px');
 });
 
 $(document).ready(function () {
-  // It doesn't make sense to set any chat content areas' height here
-  // because none exist yet!
-  $('div#nickListPane').height(($(window).height() - 250) + 'px');
-
   // Connect to the user's favorite servers and channels
   var favorites = stash.get('favorites');
   var nicks = stash.get('nicks');
