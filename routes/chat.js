@@ -69,7 +69,9 @@ var createIRCClient = function (socket, params) {
     channels   : params.channels,
     userName   : 'aIRChat_' + params.nick,
     realName   : 'Airchat User',
-    autoRejoin : false
+    autoRejoin : false,
+    secure     : params.port === 6697,
+    port       : params.port
   });
 
   newClient.addListener('message', function (from, to, msg) {
