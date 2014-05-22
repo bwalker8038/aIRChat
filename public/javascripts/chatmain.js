@@ -547,7 +547,6 @@ $('a#joinNewChannel').click(function (evt) {
 
 $('a#connectToNewServer').click(function (evt) {
   var serverName = $('#newServerAddr').val();
-  var portnum = parseInt($('#portNum').val());
   var firstChannel = $('#newServerChannel').val();
   var username = $('#serverNick').val();
   if (serverName === '' || firstChannel === '' || username === '') {
@@ -557,15 +556,11 @@ $('a#connectToNewServer').click(function (evt) {
       'Missing Input'
     );
   } else {
-    if (isNaN(portnum)) {
-      portnum = 6667;
-    }
     socket.emit('serverJoin', {
       server   : serverName,
       nick     : username,
       channels : [firstChannel],
-      sid      : sid,
-      port     : portnum
+      sid      : sid
     });
     Notifier.info(
       'Submitted request to connect to ' + serverName + '. You should connect shortly.',
@@ -776,8 +771,7 @@ $(document).ready(function () {
       sid      : sid,
       server   : server,
       channels : channels,
-      nick     : nick,
-      port     : 6667
+      nick     : nick
     });
     Notifier.info(
       'Sent requests to join the channels ' + channels.join(', ') + ' on ' + server + '.',
