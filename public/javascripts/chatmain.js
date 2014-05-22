@@ -206,9 +206,6 @@ var addMessage = function (data) {
 };
 
 var setStatusIcon = function (server, channel, type) {
-  console.log('server = ' + server);
-  console.log('channel = ' + channel);
-  console.log('type = ' + type);
   var icon = NO_MSG_ICON;
   if (type === 'high') {
     icon = HP_MSG_ICON;
