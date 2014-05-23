@@ -13,9 +13,12 @@ Chat.prototype.sameChat = function (server, channel) {
 };
 
 function chatIndex(chatList, server, channel) {
-  return chatList.findIndex(function (e, i, a) {
-    return e.sameChat(server, channel);
-  });
+  for (var index = 0, len = chatList.length; index < len; index++) {
+    if (chatList[index].sameChat(server, channel)) {
+      return index;
+    }
+  }
+  return -1;
 }
 
 // Used for the anchors from chat tabs to the corresponding content div.
