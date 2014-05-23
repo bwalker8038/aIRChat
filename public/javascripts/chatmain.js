@@ -813,12 +813,10 @@ var getCurrentChats = function () {
   for (var i = chats.length - 1; i >= 0; i--) {
     var server = chats[i].server;
     var channel = chats[i].channel;
-    if (typeof chatdata[server] !== 'undefined') {
-      if (chatdata[server].indexOf(channel) === -1) {
-        chatdata[server].push(channel);
-      }
-    } else {
+    if (typeof chatdata[server] === 'undefined') {
       chatdata[server] = [channel];
+    } else {
+      chatdata[server].push(channel);
     }
   }
   return chatdata;
