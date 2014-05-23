@@ -651,11 +651,12 @@ $('a#showNickList').click(function (evt) {
     return;
   }
   var chat = chats[chatIndex(chats, server, channel)];
+  var users = chat.users.sort().join(', ');
   addMessage({
     server  : server,
     channel : channel,
     from    : 'System',
-    message : 'Users in ' + channel + ' on ' + server + ' : ' + chat.users.join(', ')
+    message : 'Users in ' + channel + ' on ' + server + ' : ' + users
   });
 });
 
