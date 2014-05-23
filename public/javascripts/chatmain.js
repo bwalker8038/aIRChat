@@ -56,23 +56,13 @@ String.prototype.replaceAll = function (sub, newstr) {
   return tmp;
 };
 
-var maximum = function (ls, fn) {
-  var max = ls[0];
-  var maxval = fn(ls[0]);
-  for (var i = ls.length - 1; i >= 0; i--) {
-    var val = fn(ls[i]);
-    if (val > maxval) {
-      max = ls[i];
+var longestNick = function (nicks) {
+  var max = 0;
+  for (var i = 0, len = nicks.length; i < len; i++) {
+    if (nicks[i].length > max) {
+      max = nicks[i].length;
     }
   }
-  return max;
-};
-
-var longestNick = function (nicks) {
-  return maximum(nicks, function (nick) {
-    return nick.length;
-  })
-  .length;
 };
 
 var secondsSinceEpoch = function () {
