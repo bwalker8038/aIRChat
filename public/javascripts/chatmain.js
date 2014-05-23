@@ -63,6 +63,7 @@ var longestNick = function (nicks) {
       max = nicks[i].length;
     }
   }
+  return max;
 };
 
 var secondsSinceEpoch = function () {
