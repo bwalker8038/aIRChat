@@ -412,15 +412,18 @@ socket.on('serverNotification', function (data) {
 socket.on('notifyLow', function (data) {
   var $ad = $('div.active');
   var chat = chats[chatIndex(chats, data.server, data.channel)];
+  var title;
   if ($ad.data('server') != data.server || $ad.data('channel') != data.channel) {
     if (data.message.indexOf(usernicks[data.server]) != -1) {
       setStatusIcon(data.server, data.channel, 'high');
+      title = '[!] aIRChat';
     } else {
       setStatusIcon(data.server, data.channel, 'low');
+      title = '[*] aIRChat';
     }
   }
   if (windowFocused === false && intervalID === undefined) {
-    intervalID = setInterval(titleBlinker('aIRChat', '[!!] aIRChat [!!]'), 1000);
+    intervalID = setInterval(titleBlinker('aIRChat', title), 1000);
   }
   addMessage(data);
 });
@@ -442,7 +445,7 @@ socket.on('notifyHigh', function (data) {
     message : data.message
   });
   if (windowFocused === false && intervalID === undefined) {
-    intervalID = setInterval(titleBlinker('aIRChat', '[!!] aIRChat [!!]'), 1000);
+    intervalID = setInterval(titleBlinker('aIRChat', '[!] aIRChat'), 1000);
   }
 });
 
