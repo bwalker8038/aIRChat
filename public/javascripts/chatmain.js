@@ -117,10 +117,10 @@ Array.prototype.remove = function (start, end) {
 const COMMAND_HELP = '' +
   'Any commands not in this list must be sent using the format specified by the IRC standard.<br />' +
   'part - Leave the currently selected channel.<br />' +
-  'join <channel> - Join "channel" on the server hosting the currently selected channel.<br />' +
-  'connect <server> <channel1,channel2,...> - Connect to the specified channels on "server".<br />' +
-  'msg/privmsg <nick> <msg> - Send "msg" to "nick" on the server hosting the currently selected channel.<br />' +
-  'nick <newnick> - Sets your nick on the server hosting the currently selected channel to "newnick".<br />';
+  'join &lt;channel&gt; - Join "channel" on the server hosting the currently selected channel.<br />' +
+  'connect %lt;server&gt; &lt;channel1,channel2,...&gt; - Connect to the specified channels on "server".<br />' +
+  'msg/privmsg &lt;nick&gt; &lt;msg&gt; - Send "msg" to "nick" on the server hosting the currently selected channel.<br />' +
+  'nick &lt;newnick&gt; - Sets your nick on the server hosting the currently selected channel to "newnick".<br />';
 var handleCommand = function (cmdstr) {
   var haveUISupport = ['part', 'join', 'connect', 'msg', 'privmsg', 'nick', 'help'];
   var activeServer = $('dd.active').first().data('server');
