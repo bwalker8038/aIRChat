@@ -269,7 +269,7 @@ var addMessage = function (data) {
   );
   $msgDiv.append($newMsg);
   var scrollDist = $msgDiv[0].scrollHeight - $msgDiv[0].offsetHeight - $msgDiv[0].scrollTop;
-  if (scrollDist >= 40) {
+  if (scrollDist >= 20) {
     $msgDiv.scrollTop($msgDiv[0].scrollHeight);
   }
 };
