@@ -18,10 +18,6 @@ var longestNickInChannel = {};
 // Maps the name of a given server to the user's nick on that server.
 var usernicks = {};
 
-// A list of commands that are covered by the UI and shouldn't have to have extra code
-// to handle them as raw commands.
-const DISALLOWED = ['part', 'join', 'connect', 'msg', 'privmsg', 'nick'];
-
 // Message status icons for no message, low and high priority message statuses.
 const NO_MSG_ICON = '/images/icons/graydot.png';
 const LP_MSG_ICON = '/images/icons/greendot.png';
@@ -128,6 +124,79 @@ Array.prototype.remove = function (start, end) {
   return this.push.apply(this, tail);
 };
 
+const COMMAND_HELP = '' +
+  'Any commands not in this list must be sent using the format specified by the IRC standard.<br />' +
+  'part - Leave the currently selected channel.<br />' +
+  'join <channel> - Join "channel" on the server hosting the currently selected channel.<br />' +
+  'connect <server> <channel1,channel2,...> - Connect to the specified channels on "server".<br />' +
+  'msg/privmsg <nick> <msg> - Send "msg" to "nick" on the server hosting the currently selected channel.<br />' +
+  'nick <newnick> - Sets your nick on the server hosting the currently selected channel to "newnick".<br />';
+var handleCommand = function (cmdstr) {
+  var haveUISupport = ['part', 'join', 'connect', 'msg', 'privmsg', 'nick', 'help'];
+  var activeServer = $('dd.active').first().data('server');
+  var activeChannel = $('dd.active').first().data('channel');
+  var parts = cmdstr.split(' ');
+  if (haveUISupport.indexOf(parts[0]) === -1) {
+    socket.emit('rawCommand', {
+      command : cmdstr,
+      server  : activeServer,
+      sid     : sid
+    });
+  } else if (parts[0] === 'part') {
+    socket.emit('part', {
+      server  : activeServer,
+      channel : activeChannel,
+      message : 'aIRChat user parted.',
+      sid     : sid
+    });
+    $('dd.active').first().remove();
+    $('div.active').first().remove();
+    chats.remove(chatIndex(chats, activeServer, activeChannel));
+  } else if (parts[0] === 'join') {
+    socket.emit('joinChannel', {
+      server  : activeServer,
+      channel : parts[1],
+      sid     : sid
+    });
+  } else if (parts[0] === 'connect') {
+    socket.emit('serverJoin', {
+      channels : parts[2].split(','),
+      server   : parts[1],
+      nick     : usernicks[activeServer],
+      sid      : sid
+    });
+  } else if (parts[0] === 'msg' || parts[0] === 'privmsg') {
+    var msg = parts.slice(2).join(' ');
+    socket.emit('writeChat', {
+      destination : parts[1],
+      server      : activeServer,
+      message     : msg,
+      sid         : sid
+    });
+    var chat = joinChat(activeServer, parts[1]);
+    chat.users = [usernicks[activeServer], parts[1], 'System'];
+    addMessage({
+      server  : activeServer,
+      channel : parts[1],
+      from    : usernicks[activeServer],
+      message : msg
+    });
+  } else if (parts[0] === 'nick') {
+    socket.emit('changeNick', {
+      server : activeServer,
+      nick   : parts[1],
+      sid    : sid
+    });
+  } else if (parts[0] === 'help') {
+    addMessage({
+      server  : activeServer,
+      channel : activeChannel,
+      from    : 'System',
+      message : COMMAND_HELP
+    });
+  }
+};
+
 // Return the input string with urls wrapped in anchor tags
 // and images in a clearing lightbox at the end for inline viewing
 var htmlify = function (string) {
@@ -213,7 +282,11 @@ var setStatusIcon = function (server, channel, type) {
     icon = LP_MSG_ICON;
   }
   var ce = $('dd[data-server="' + server + '"][data-channel="' + channel + '"] img').first();
-  ce.attr('src', icon);
+  // Only update the orb color if we are either clearing the notification or the
+  // incoming message priority is higher than that which the current status represents.
+  if (icon === NO_MSG_ICON || ce.attr('src') !== HP_MSG_ICON) {
+    ce.attr('src', icon);
+  }
 };
 
 var clearNotifications = function (evt) {
@@ -499,19 +572,7 @@ $('#messageInput').keypress(function (evt) {
     var $ta = $('#messageInput');
     if ($ta.val()[0] === '/') {
       var command = $ta.val().slice(1);
-      var name = command.split(' ')[0].toLowerCase();
-      if (DISALLOWED.indexOf(name) >= 0) {
-        Notifier.error(
-          name + ' is implemented through the UI and not accepted as a raw command.',
-          'Disallowed Command'
-        );
-      } else {
-        socket.emit('rawCommand', {
-          command : command,
-          server  : server,
-          sid     : sid
-        });
-      }
+      handleCommand(command);
     } else {
       addMessage({
         server  : server,
