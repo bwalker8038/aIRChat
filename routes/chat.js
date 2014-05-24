@@ -153,7 +153,8 @@ var createIRCClient = function (socket, params) {
       server : params.server, 
       from   : channel, 
       nick   : nick, 
-      reason : reason
+      reason : reason,
+      msg    : msg
     });
   });
 

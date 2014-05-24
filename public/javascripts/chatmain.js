@@ -134,10 +134,14 @@ var handleCommand = function (cmdstr) {
       sid     : sid
     });
   } else if (parts[0] === 'part') {
+    var message = parts.slice(1).join(' ');
+    if (message.length === 0) {
+      message = 'aIRChat user parted.';
+    }
     socket.emit('part', {
       server  : activeServer,
       channel : activeChannel,
-      message : 'aIRChat user parted.',
+      message : message,
       sid     : sid
     });
     $('dd.active').first().remove();
@@ -336,7 +340,7 @@ var channelNotification = function (type, server, channel, data, newdata) {
   if (type === 'joined') {
     message = data + ' has joined this channel.';
   } else if (type === 'departed') {
-    message = data + ' has parted from this channel.';
+    message = data + ' has parted from this channel. ' + newdata;
   } else if (type === 'changedNick') {
     message = data + ' has changed their nick to ' + newdata + '.';
   } else if (type === 'action') {
@@ -548,7 +552,8 @@ socket.on('userLeft', function (data) {
     return;
   }
   chats[cindex].users.remove(chats[cindex].users.indexOf(data.nick));
-  channelNotification('departed', data.server, data.from, data.nick);
+  var partmsg = data.reason + ' - ' + data.msg;
+  channelNotification('departed', data.server, data.from, data.nick, partmsg);
   longestNickInChannel[data.server + data.channel] = longestNick(chats[cindex].users);
 });
 
