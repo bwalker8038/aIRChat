@@ -302,7 +302,7 @@ var addChatSection = function (server, chanOrNick) {
 
 var joinChat = function (server, channel) {
   var chat = chats[chatIndex(chats, server, channel)];
-  if (chat === undefined) {
+  if (typeof chat === 'undefined') {
     chat = new Chat(server, channel);
     chats.push(chat);
     addChatSection(server, channel);
@@ -404,7 +404,7 @@ socket.on('notifyLow', function (data) {
       title = '[*] aIRChat';
     }
   }
-  if (windowFocused === false && intervalID === undefined) {
+  if (windowFocused === false && typeof intervalID === 'undefined') {
     intervalID = setInterval(titleBlinker('aIRChat', title), 1000);
   }
   addMessage(data);
@@ -413,7 +413,7 @@ socket.on('notifyLow', function (data) {
 socket.on('notifyHigh', function (data) {
   var $activeDiv = $('div.active');
   var chat = chats[chatIndex(chats, data.server, data.from)];
-  if (chat === undefined) {
+  if (typeof chat === 'undefined') {
     chat = joinChat(data.server, data.from);
     chat.users = [usernicks[data.server], data.from, 'System'];
   }
@@ -426,7 +426,7 @@ socket.on('notifyHigh', function (data) {
     channel : data.from,
     message : data.message
   });
-  if (windowFocused === false && intervalID === undefined) {
+  if (windowFocused === false && typeof intervalID === 'undefined') {
     intervalID = setInterval(titleBlinker('aIRChat', '[!] aIRChat'), 1000);
   }
 });
@@ -443,7 +443,7 @@ socket.on('serverConnected', function (data) {
 // The list will not be rendered until the channel is the active one.
 socket.on('nickList', function (data) {
   var chat = chats[chatIndex(chats, data.server, data.channel)];
-  if (chat === undefined) {
+  if (typeof chat === 'undefined') {
     chat = joinChat(data.server, data.channel);
   }
   longestNickInChannel[data.server + data.channel] = longestNick(data.nicks);
@@ -579,7 +579,7 @@ $('#messageInput').keypress(function (evt) {
 $('a#joinNewChannel').click(function (evt) {
   var server = $('div.active').data('server');
   var chanName = $('#newChannelName').val();
-  if (server === undefined) {
+  if (typeof server === 'undefined') {
     Notifier.warning(
       'You must select a chat tab for a channel belonging to the ' +
       'same server the channel you wish to join is in.',
@@ -631,7 +631,7 @@ $('a#connectToNewServer').click(function (evt) {
 $('a#showNickList').click(function (evt) {
   var channel = $('div.active').first().data('channel');
   var server = $('div.active').first().data('server');
-  if (channel === undefined || server === undefined) {
+  if (typeof channel === 'undefined' || typeof server === 'undefined') {
     Notifier.warning(
       'No channel was selected to get the list of users for.',
       'Missing Selection'
@@ -663,7 +663,7 @@ $('a#sendPrivMsg').click(function (evt) {
       'as well as a message to send.',
       'Missing Input'
     );
-  } else if (server === undefined) {
+  } else if (typeof server === 'undefined') {
     Notifier.warning(
       'You must select a chat tab for a channel on the server that the user ' +
       'you wish to send your message to is on.',
@@ -689,7 +689,7 @@ $('a#sendPrivMsg').click(function (evt) {
 $('a[data-reveal-id=partChannel]').click(function (evt) {
   var channel = $('div.active').first().data('channel');
   var $modalTextSection = $('div#partChannel div.row div.columns p');
-  if (channel === undefined) {
+  if (typeof channel === 'undefined') {
     $modalTextSection.text('No channel was selected to part from.');
   } else {
     $modalTextSection.text('Are you sure you want to leave ' + channel + '?');
@@ -699,7 +699,7 @@ $('a[data-reveal-id=partChannel]').click(function (evt) {
 $('a#confirmPartChannel').click(function (evt) {
   var channel = $('div.active').first().data('channel');
   var server = $('div.active').first().data('server');
-  if (channel === undefined || server === undefined) {
+  if (typeof channel === 'undefined' || typeof server === 'undefined') {
     Notifier.warning(
       'You have not selected a channel to leave.',
       'Missing Selection'
@@ -724,7 +724,7 @@ $('a#changeNickConfirm').click(function (evt) {
   var server = $('dd.active').first().data('server');
   if (newNick.length === 0) {
     Notifier.error('You have not provided a new nick.', 'Missing Field');
-  } else if (server === undefined) {
+  } else if (typeof server === 'undefined') {
     Notifier.warning(
       'To change your nick on a server, you must first select ' +
       'a chat tab for a channel on that server.',

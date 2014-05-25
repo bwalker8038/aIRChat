@@ -205,7 +205,7 @@ exports.newClient = function (socket) {
   });
 
   socket.on('changeNick', function (data) {
-    if (clients[data.server] === undefined) {
+    if (typeof clients[data.server] === 'undefined') {
       socket.emit('serverNotification', {
         message : 'Not connected to ' + data.server + '.',
         type    : SN_ERROR
