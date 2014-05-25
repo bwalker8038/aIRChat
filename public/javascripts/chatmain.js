@@ -23,12 +23,6 @@ const NO_MSG_ICON = '/images/icons/graydot.png';
 const LP_MSG_ICON = '/images/icons/greendot.png';
 const HP_MSG_ICON = '/images/icons/reddot.png';
 
-// Send the server the user's SessionID to be stored in its socket session so that
-// the user's active clients can be stopped when the user disconnects.
-socket.on('connect', function () {
-  socket.emit('setIdentity', sid);
-});
-
 // TODO
 // Create constants for all the different types of channel notifications
 
@@ -130,8 +124,7 @@ var handleCommand = function (cmdstr) {
   if (haveUISupport.indexOf(parts[0]) === -1) {
     socket.emit('rawCommand', {
       command : cmdstr,
-      server  : activeServer,
-      sid     : sid
+      server  : activeServer
     });
   } else if (parts[0] === 'part') {
     var message = parts.slice(1).join(' ');
@@ -141,8 +134,7 @@ var handleCommand = function (cmdstr) {
     socket.emit('part', {
       server  : activeServer,
       channel : activeChannel,
-      message : message,
-      sid     : sid
+      message : message
     });
     $('dd.active').first().remove();
     $('div.active').first().remove();
@@ -150,37 +142,32 @@ var handleCommand = function (cmdstr) {
   } else if (parts[0] === 'join') {
     socket.emit('joinChannel', {
       server  : activeServer,
-      channel : parts[1],
-      sid     : sid
+      channel : parts[1]
     });
   } else if (parts[0] === 'connect') {
     socket.emit('serverJoin', {
       channels : parts[2].split(','),
       server   : parts[1],
-      nick     : usernicks[activeServer],
-      sid      : sid
+      nick     : usernicks[activeServer]
     });
   } else if (parts[0] === 'msg' || parts[0] === 'privmsg') {
     var msg = parts.slice(2).join(' ');
     socket.emit('writeChat', {
       destination : parts[1],
       server      : activeServer,
-      message     : msg,
-      sid         : sid
+      message     : msg
     });
     var chat = joinChat(activeServer, parts[1]);
     chat.users = [usernicks[activeServer], parts[1], 'System'];
     addMessage({
       server  : activeServer,
       channel : parts[1],
-      from    : usernicks[activeServer],
-      message : msg
+      from    : usernicks[activeServer]
     });
   } else if (parts[0] === 'nick') {
     socket.emit('changeNick', {
       server : activeServer,
-      nick   : parts[1],
-      sid    : sid
+      nick   : parts[1]
     });
   } else if (parts[0] === 'help') {
     addMessage({
@@ -264,7 +251,7 @@ var addMessage = function (data) {
   );
   $msgDiv.append($newMsg);
   var scrollDist = $msgDiv[0].scrollHeight - $msgDiv[0].offsetHeight - $msgDiv[0].scrollTop;
-  if (scrollDist >= 20) {
+  if (scrollDist <= 25) {
     $msgDiv.scrollTop($msgDiv[0].scrollHeight);
   }
 };
@@ -329,7 +316,7 @@ var titleBlinker = function (origTitle, altTitle) {
     setTimeout(function () {
       document.title = origTitle;
     }, 500);
-    });
+  });
 };
 
 // Display a message about some occurrence in the channel.
@@ -375,7 +362,7 @@ var notifyConnectionLost = function () {
 
 socket.on('connect', function () {
   Notifier.success(
-    'You have successfully connected to the aIRChat server.',
+    'You have successfully connected to your aIRChat server.',
     'Connection Successful'
   );
 });
@@ -454,8 +441,6 @@ socket.on('serverConnected', function (data) {
 
 // Create a listing of nicks for the appropriate channel.
 // The list will not be rendered until the channel is the active one.
-// TODO
-// Reduce network strain by not sending the server name with every user
 socket.on('nickList', function (data) {
   var chat = chats[chatIndex(chats, data.server, data.channel)];
   if (chat === undefined) {
@@ -542,7 +527,7 @@ socket.on('invited', function (data) {
   msg += ' on ' + data.server + ' by ' + data.by + '\n';
   msg += 'Would you like to join this channel now?';
   if (confirm(msg)) {
-    socket.emit('joinChannel', {server: data.server, channel: data.to, sid: sid});
+    socket.emit('joinChannel', {server: data.server, channel: data.to});
   }
 });
 
@@ -582,8 +567,7 @@ $('#messageInput').keypress(function (evt) {
       socket.emit('writeChat', {
         server      : server, 
         destination : dest, 
-        message     : $ta.val(),
-        sid         : sid
+        message     : $ta.val()
       });
     }
     $ta.val('');
@@ -616,8 +600,7 @@ $('a#joinNewChannel').click(function (evt) {
   } else {
     socket.emit('joinChannel', {
       server  : server, 
-      channel : chanName, 
-      sid     : sid
+      channel : chanName
     });
   }
 });
@@ -636,8 +619,7 @@ $('a#connectToNewServer').click(function (evt) {
     socket.emit('serverJoin', {
       server   : serverName,
       nick     : username,
-      channels : [firstChannel],
-      sid      : sid
+      channels : [firstChannel]
     });
     Notifier.info(
       'Submitted request to connect to ' + serverName + '. You should connect shortly.',
@@ -699,8 +681,7 @@ $('a#sendPrivMsg').click(function (evt) {
     socket.emit('writeChat', {
       server      : server, 
       destination : nick, 
-      message     : msg,
-      sid         : sid
+      message     : msg
     });
   }
 });
@@ -733,8 +714,7 @@ $('a#confirmPartChannel').click(function (evt) {
     socket.emit('part', {
       server: server, 
       channel: channel, 
-      message: 'aIRChat client parted.',
-      sid: sid
+      message: 'aIRChat client parted.'
     });
   }
 });
@@ -752,8 +732,7 @@ $('a#changeNickConfirm').click(function (evt) {
     );
   } else {
     socket.emit('changeNick', {
-      server : server, 
-      sid    : sid, 
+      server : server,
       nick   : newNick
     });
   }
@@ -789,7 +768,6 @@ $(document).ready(function () {
       }
     }
     socket.emit('serverJoin', {
-      sid      : sid,
       server   : server,
       channels : channels,
       nick     : nick

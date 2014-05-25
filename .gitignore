@@ -1,6 +1,6 @@
 # The user should run npm install locally to get dependancies
-ACChat/node_modules/*
-ACChat/node_modules
+node_modules/*
+node_modules
 
 # Don't host the index page anymore
 ACIndex/*

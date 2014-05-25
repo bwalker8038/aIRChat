@@ -1,9 +1,7 @@
-var crypto = require('crypto');
 var irc = require('../node-irc/lib/irc');
 var config = require('../config');
 
-// Maps the user's session ID to an object mapping the names of servers that
-// the user is connected to to an array of the names of channels they have joined.
+// Maps a network name (eg: irc.freenode.net) to the client connected to that network
 var clients = {};
 
 // Server notification types.
@@ -11,14 +9,6 @@ const SN_ERROR = 'error';
 const SN_WARN = 'warning';
 const SN_INFO = 'info';
 const SN_SUCCESS = 'success';
-
-// Test to see that the user has a session to protect against CSRF.
-exports.userHasSession = function (sessionID) {
-  return typeof sessionID != 'undefined' && typeof clients[sessionID] != 'undefined';
-};
-var userHasSession = exports.userHasSession;
-
-// Send the user
 
 // Array remove - By John Resig (MIT LICENSED)
 Array.prototype.remove = function (start, end) {
@@ -35,22 +25,6 @@ String.prototype.replaceAll = function (sub, newstr) {
     index = tmp.indexOf(sub);
   }
   return tmp;
-};
-
-var randString = function (bytes, source) {
-  if (!source) {
-    source = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  }
-  try {
-    var s = '';
-    var buf = crypto.randomBytes(bytes);
-    for (var i = buf.length - 1; i >= 0; i--) {
-      s += source[buf[i] % source.length];
-    }
-    return s;
-  } catch (ex) {
-    return null;
-  }
 };
 
 var sanitize = function (string) {
@@ -145,7 +119,11 @@ var createIRCClient = function (socket, params) {
   });
 
   newClient.addListener('invite', function (channel, from) {
-    socket.emit('invited', {server: params.server, to: channel, by: from});
+    socket.emit('invited', {
+      server : params.server, 
+      to     : channel, 
+      by     : from
+    });
   });
 
   newClient.addListener('part', function (channel, nick, reason, msg) {
@@ -182,102 +160,69 @@ var createIRCClient = function (socket, params) {
   return newClient;
 };
 
-var disconnectClients = function (sid) {
-  var servers = Object.keys(clients[sid]);
+var disconnectClients = function () {
+  var servers = Object.keys(clients);
   for (var i = servers.length - 1; i >= 0; i--) {
-    clients[sid][servers[i]].disconnect('Connection to server closed.');
+    clients[servers[i]].disconnect('Connection to server closed.');
   }
-  delete clients[sid];
+  clients = {};
 };
 
 exports.newClient = function (socket) {
-  // Report to the user that they do not have a session
-  var reportNoSession = function () {
-    socket.emit('serverNotification', {
-      message : 'You do not appear to have a session and thus cannot interact with aIRChat.',
-      type    : 'error'
-    });
-    return null;
-  };
-
-  socket.on('setIdentity', function (sid) {
-    socket.sid = sid;
-  });
-
   socket.on('rawCommand', function (data) {
-    if (!userHasSession(data.sid)) return reportNoSession();
-    var client = clients[data.sid][data.server];
+    var client = clients[data.server];
     client.send.apply(client, data.command.split(' '));
   });
 
-  socket.on('reconnectChats', function (data) {
-    if (!userHasSession(data.sid)) return reportNoSession();
-    disconnectClients(data.sid);
-    clients[data.sid] = {};
-    for (var i = 0, slen = data.servers.length; i < slen; i++) {
-      clients[data.sid][data.servers[i]] = createIRCClient(socket, {
-        server   : data.servers[i],
-        channels : data.channels[i],
-        nick     : data.nicks[i] 
+  socket.on('part', function (data) {
+    clients[data.server].part(data.channel, data.message);
+  });
+  
+  socket.on('serverJoin', function (data) {
+    if (!clients[data.server]) {
+      clients[data.server] = createIRCClient(socket, data);
+    } else {
+      socket.emit('serverNotification', {
+        message : 'You are already connected to ' + data.server + '.',
+        type    : SN_ERROR
       });
     }
   });
 
-  socket.on('part', function (data) {
-    if (!userHasSession(data.sid)) return reportNoSession();
-    clients[data.sid][data.server].part(data.channel, data.message);
-  });
-  
-  socket.on('serverJoin', function (data) {
-    if (!userHasSession(data.sid)) return reportNoSession();
-    if (!clients[data.sid][data.server]) {
-      clients[data.sid][data.server] = createIRCClient(socket, data);
-    }
-  });
-
   socket.on('joinChannel', function (data) {
-    if (!userHasSession(data.sid)) return reportNoSession();
-    if (clients[data.sid][data.server].opt.channels.indexOf(data.channel) === -1) {
-      clients[data.sid][data.server].join(data.channel);
+    if (clients[data.server].opt.channels.indexOf(data.channel) === -1) {
+      clients[data.server].join(data.channel);
+    } else {
+      socket.emit('serverNotification', {
+        message : 'You have already joined ' + data.channel + '.',
+        type    : SN_ERROR
+      });
     }
   });
 
   socket.on('writeChat', function (data) {
-    if (!userHasSession(data.sid)) return reportNoSession();
-    clients[data.sid][data.server].say(data.destination, data.message);
+    clients[data.server].say(data.destination, data.message);
   });
 
   socket.on('changeNick', function (data) {
-    if (!userHasSession(data.sid)) return reportNoSession();
-    if (clients[data.sid][data.server] === undefined) {
+    if (clients[data.server] === undefined) {
       socket.emit('serverNotification', {
         message : 'Not connected to ' + data.server + '.',
         type    : SN_ERROR
       });
     } else {
-      clients[data.sid][data.server].send('nick', data.nick);
+      clients[data.server].send('nick', data.nick);
     }
   });
 
   socket.on('disconnect', function () {
-    if (!userHasSession(socket.sid)) return reportNoSession();
-    disconnectClients(socket.sid);
+    disconnectClients();
   });
 };
 
 exports.main = function (req, res) {
-  var uid = randString(64);
-  if (!uid) {
-    res.redirect(500, '/');
-    return;
-  }
-  clients[uid] = {};
-  req.session.sessionID = uid;
   res.render('chat', {
-    sessionID          : uid,
-    host               : config.host,
-    heartbeat_interval : config.heartbeat_interval,
-    heartbeat_timeout  : config.heartbeat_timeout,
-    title              : 'aIRChat'
+    host  : config.host,
+    title : 'aIRChat'
   });
 };

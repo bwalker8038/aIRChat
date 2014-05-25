@@ -1,5 +1,4 @@
 var express = require('express');
-var routes = require('./routes');
 var chat = require('./routes/chat');
 var config = require('./config');
 var http = require('http');
