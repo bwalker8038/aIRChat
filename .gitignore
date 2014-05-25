@@ -1,8 +1,10 @@
 # The user should run npm install locally to get dependancies
-node_modules/*
+ACChat/node_modules/*
+ACChat/node_modules
+
+# Don't host the index page anymore
+ACIndex/*
+ACIndex
 
 # Vim temporary files
 *.swp
-
-# Database stuff
-data/db/*
