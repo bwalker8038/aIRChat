@@ -295,7 +295,6 @@ var joinChat = function (server, channel) {
     chat = new Chat(server, channel);
     chats.push(chat);
     addChatSection(server, channel);
-    longestNickInChannel[server + channel] = usernicks[server].length;
   }
   return chat;
 };
@@ -396,9 +395,6 @@ socket.on('notifyLow', function (data) {
   if (windowFocused === false && typeof intervalID === 'undefined') {
     intervalID = setInterval(titleBlinker('aIRChat', title), 1000);
   }
-  if (data.from.length > longestNickInChannel[data.server + data.channel]) {
-    longestNickInChannel[data.server + data.channel] = data.from.length;
-  }
   addMessage(data);
 });
 
@@ -421,9 +417,6 @@ socket.on('notifyHigh', function (data) {
   if (windowFocused === false && typeof intervalID === 'undefined') {
     intervalID = setInterval(titleBlinker('aIRChat', '[!] aIRChat'), 1000);
   }
-  if (data.from.length > longestNickInChannel[data.server + data.channel]) {
-    longestNickInChannel[data.server + data.channel] = data.from.length;
-  }
 });
 
 socket.on('serverConnected', function (data) {
@@ -441,6 +434,7 @@ socket.on('nickList', function (data) {
   if (typeof chat === 'undefined') {
     chat = joinChat(data.server, data.channel);
   }
+  longestNickInChannel[data.server + data.channel] = longestNick(data.nicks);
   chat.users = data.nicks;
   chat.users.push('System');
 });
@@ -461,6 +455,9 @@ socket.on('joined', function (data) {
     var index = chatIndex(chats, data.server, data.channel);
     chats[index].users.push(data.nick);
     channelNotification('joined', data.server, data.channel, data.nick);
+  }
+  if (data.nick.length > longestNickInChannel[data.server + data.channel]) {
+    longestNickInChannel[data.server + data.channel] = data.nick.length;
   }
 });
 
@@ -484,6 +481,7 @@ socket.on('kicked', function (data) {
     var chat = chats[chatIndex(chats, data.server, data.channel)];
     var index = chat.users.indexOf(data.nick);
     chat.users = chat.users.remove(index);
+    longestNickInChannel[data.server + data.channel] = longestNick(chat.users);
   }
 });
 
@@ -528,6 +526,7 @@ socket.on('userLeft', function (data) {
   }
   chat.users = chat.users.remove(chat.users.indexOf(data.nick));
   channelNotification('departed', data.server, data.from, data.nick, data.reason);
+  longestNickInChannel[data.server + data.channel] = longestNick(chat.users);
 });
 
 $('#messageInput').keypress(function (evt) {
