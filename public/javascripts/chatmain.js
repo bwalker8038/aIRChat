@@ -79,14 +79,9 @@ var formattedMessageTime = function () {
 
 // Protect the user from themselves.
 var sanitize = function (string) {
-  string = string.replaceAll('&', '&amp;').replaceAll('=', '&#61;');
-  string = string.replaceAll('<', '&lt;').replaceAll('>', '&gt;');
-  string = string.replaceAll('[', '&#91;').replaceAll(']', '&#93;');
-  string = string.replaceAll('{', '&#123;').replaceAll('}', '&#125;');
-  string = string.replaceAll('"', '&#34;').replaceAll("'", '&#39;');
-  string = string.replaceAll('(', '&#40;').replaceAll(')', '&#41;');
-  string = string.replaceAll('/', '&#47;').replaceAll('\\', '&#92;');
-  return string.replaceAll('%', '&#37;').replaceAll(':', '&#58;');
+  return string.replaceAll('"', '&#34;').replaceAll("'", '&#39;')
+               .replaceAll('>', '&gt;').replaceAll('<', '&lt;')
+               .replaceAll('/', '&#47;').replaceAll('\\', '&#92;');
 };
 
 
@@ -190,15 +185,9 @@ var htmlify = function (string) {
   // Need a function to convert the sanitized input into its original desanitized form
   // so that the regexes above will match both the user's input and incoming content.
   var desanitize = function (string) {
-    string = string.replaceAll('&amp;', '&').replaceAll('&#61;', '=');
-    string = string.replaceAll('&lt;', '<').replaceAll('&gt;', '>');
-    string = string.replaceAll('&#91;', '[').replaceAll('&#93;', '[');
-    string = string.replaceAll('&#123;', '{').replaceAll('&#125;', '}');
-    string = string.replaceAll('&#34;', '"').replaceAll('&#39;', "'");
-    string = string.replaceAll('&#40;', '(').replaceAll('&#41;', ')');
-    string = string.replaceAll('&#47;', '/').replaceAll('&#92;', '\\');
-    string = string.replaceAll('&#37;', '%').replaceAll('&#58;', ':');
-    return string;
+    return string.replaceAll('&#34;', '"').replaceAll('&#39;', "'")
+                 .replaceAll('&gt;', '>').replaceAll('&lt;', '<')
+                 .replaceAll('&#47;', '/').replaceAll('&#92;', '\\');
   };
 
   for (var i = 0, len = tokens.length; i < len; i++) {
