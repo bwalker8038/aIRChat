@@ -486,6 +486,9 @@ socket.on('kicked', function (data) {
 });
 
 socket.on('newNick', function (data) {
+  if (data.new.length > longestNickInChannel[data.server + data.channel]) {
+    longestNickInChannel[data.server + data.channel] = data.new.length;
+  }
   var chat = chats[chatIndex(chats, data.server, data.channel)];
   if (data.old === usernicks[data.server]) {
     usernicks[data.server] = data.new;
