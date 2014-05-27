@@ -117,6 +117,7 @@ var handleCommand = function (cmdstr) {
   var activeChannel = $('dd.active').first().data('channel');
   var parts = cmdstr.split(' ');
   if (haveUISupport.indexOf(parts[0]) === -1) {
+    console.log('Raw command: ' + cmdstr);
     socket.emit('rawCommand', {
       command : cmdstr,
       server  : activeServer
@@ -240,7 +241,7 @@ var addMessage = function (data) {
   );
   $msgDiv.append($newMsg);
   var scrollDist = $msgDiv[0].scrollHeight - $msgDiv[0].offsetHeight - $msgDiv[0].scrollTop;
-  if (scrollDist <= 25) {
+  if (scrollDist >= 25) {
     $msgDiv.scrollTop($msgDiv[0].scrollHeight);
   }
 };
