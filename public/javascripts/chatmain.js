@@ -134,7 +134,7 @@ var handleCommand = function (cmdstr) {
     });
     $('dd.active').first().remove();
     $('div.active').first().remove();
-    chats = chats.remove(chatIndex(chats, activeServer, activeChannel));
+    chats.remove(chatIndex(chats, activeServer, activeChannel));
   } else if (parts[0] === 'join') {
     socket.emit('joinChannel', {
       server  : activeServer,
@@ -453,8 +453,8 @@ socket.on('joined', function (data) {
       chatElement('div', data.server, data.channel).attr('class', 'content active');
     }
   } else {
-    var index = chatIndex(chats, data.server, data.channel);
-    chats[index].users.push(data.nick);
+    var chat = chats[chatIndex(chats, data.server, data.channel)];
+    chat.users.push(data.nick);
     channelNotification('joined', data.server, data.channel, data.nick);
   }
   if (data.nick.length > longestNickInChannel[data.server + data.channel]) {
@@ -481,7 +481,7 @@ socket.on('kicked', function (data) {
     });
     var chat = chats[chatIndex(chats, data.server, data.channel)];
     var index = chat.users.indexOf(data.nick);
-    chat.users = chat.users.remove(index);
+    chat.users.remove(index);
     longestNickInChannel[data.server + data.channel] = longestNick(chat.users);
   }
 });
@@ -495,7 +495,7 @@ socket.on('newNick', function (data) {
     usernicks[data.server] = data.new;
   } else {
     var index = chat.users.indexOf(data.old);
-    chat.users = chat.users.remove(index);
+    chat.users.remove(index);
     chat.users.push(data.new);
   }
   // Rename the tab of an affected private chat
@@ -528,7 +528,7 @@ socket.on('userLeft', function (data) {
   if (typeof chat === 'undefined') {
     return;
   }
-  chat.users = chat.users.remove(chat.users.indexOf(data.nick));
+  chat.users.remove(chat.users.indexOf(data.nick));
   channelNotification('departed', data.server, data.from, data.nick, data.reason);
   longestNickInChannel[data.server + data.channel] = longestNick(chat.users);
 });
@@ -698,7 +698,7 @@ $('a#confirmPartChannel').click(function (evt) {
     return;
   }
   var index = chatIndex(chats, server, channel);
-  chats = chats.remove(index);
+  chats.remove(index);
   $('dd.active').first().remove();
   $('div.active').first().remove();
   if (channel[0] === '#') { // Channel, not a private chat
