@@ -118,7 +118,6 @@ var handleCommand = function (cmdstr) {
   var parts = cmdstr.split(' ');
   parts[0] = parts[0].toLowerCase();
   if (haveUISupport.indexOf(parts[0]) === -1) {
-    console.log('Raw command: ' + cmdstr);
     socket.emit('rawCommand', {
       command : cmdstr,
       server  : activeServer
