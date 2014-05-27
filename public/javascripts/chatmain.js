@@ -116,6 +116,7 @@ var handleCommand = function (cmdstr) {
   var activeServer = $('dd.active').first().data('server');
   var activeChannel = $('dd.active').first().data('channel');
   var parts = cmdstr.split(' ');
+  parts[0] = parts[0].toLowerCase();
   if (haveUISupport.indexOf(parts[0]) === -1) {
     console.log('Raw command: ' + cmdstr);
     socket.emit('rawCommand', {
@@ -136,17 +137,29 @@ var handleCommand = function (cmdstr) {
     $('div.active').first().remove();
     chats.remove(chatIndex(chats, activeServer, activeChannel));
   } else if (parts[0] === 'join') {
+    if (parts.length < 2) {
+      Notifier.error('No channel argument supplied to JOIN', 'Missing Arguments');
+      return;
+    }
     socket.emit('joinChannel', {
       server  : activeServer,
       channel : parts[1]
     });
   } else if (parts[0] === 'connect') {
+    if (parts.length < 3) {
+      Notifier.error('Not enough arguments to CONNECT.', 'Missing Arguments');
+      return;
+    }
     socket.emit('serverJoin', {
       channels : parts[2].split(','),
       server   : parts[1],
       nick     : usernicks[activeServer]
     });
   } else if (parts[0] === 'msg' || parts[0] === 'privmsg') {
+    if (parts.length < 3) {
+      Notifier.error('Not enough arguments to (PRIV)MSG.', 'Missing Arguments');
+      return;
+    }
     var msg = parts.slice(2).join(' ');
     socket.emit('writeChat', {
       destination : parts[1],
@@ -158,9 +171,14 @@ var handleCommand = function (cmdstr) {
     addMessage({
       server  : activeServer,
       channel : parts[1],
-      from    : usernicks[activeServer]
+      from    : usernicks[activeServer],
+      message : msg
     });
   } else if (parts[0] === 'nick') {
+    if (parts.length < 2) {
+      Notifier.error('No new nick supplied to NICK command.', 'Missing Arguments');
+      return;
+    }
     socket.emit('changeNick', {
       server : activeServer,
       nick   : parts[1]
