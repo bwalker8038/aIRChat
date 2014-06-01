@@ -25,6 +25,14 @@ const HP_MSG_ICON = '/images/icons/reddot.png';
 
 // TODO
 // Create constants for all the different types of channel notifications
+const CN_JOIN = 'joined';
+const CN_PART = 'departed';
+const CN_NICK = 'changedNick';
+const CN_ACTN = 'action';
+const CN_MODE = 'setMode';
+const CN_WHOI = 'whois';
+const CN_TOPC = 'chanTopic';
+const CN_CTCP = 'ctcp';
 
 // String.format method from `fearphage` on stackoverflow:
 // https://stackoverflow.com/questions/610406/javascript-equivalent-to-printf-string-format
@@ -331,17 +339,27 @@ var titleBlinker = function (origTitle, altTitle) {
 // This could be a user's nick being changed, or something else.
 var channelNotification = function (type, server, channel, data, newdata) {
   var message;
-  if (type === 'joined') {
-    message = data + ' has joined this channel.';
-  } else if (type === 'departed') {
-    message = data + ' has parted from this channel. ' + newdata;
-  } else if (type === 'changedNick') {
-    message = data + ' has changed their nick to ' + newdata + '.';
-  } else if (type === 'action') {
-    message = 'Action :: ' + data + ' ' + newdata; // data = nick, newdata = message 
+  if (type === CN_JOIN) {
+    message = data.nick + ' has joined ' + channel + '.';
+  } else if (type === CN_PART) {
+    message = data.nick + ' has parted from ' + channel + '. ';
+    if (typeof data.reason !== 'undefined') {
+      message += 'Reason: ' + data.reason;
+    }
+  } else if (type === CN_NICK) {
+    message = data.old + ' has changed their nick to ' + data.new + '.';
+  } else if (type === CN_ACTN) {
+    message = 'Action: ' + data.nick + ' ' + data.action;
+  } else if (type === CN_MODE) {
+    message = data.nick + ' set ' + data.plusminus + data.modeid + ' in ' + channel + '.';
+  } else if (type === CN_WHOI) {
+    message = 'Whois info: ' + data.info;
+  } else if (type === CN_TOPC) {
+    message = 'Topic for ' + channel + ': ' + data.topic;
+  } else if (type === CN_CTCP) {
+    message = 'CTCP info: ' + data.info;
   } else {
-    message = 'Received unknown notification event of type ' + type + ' on ' + 
-              server + '/' + channel + ' from ' + data;
+    message = 'Unknown notification type: ' + type;
   }
   addMessage({
     from    : 'System',
@@ -379,7 +397,8 @@ socket.on('disconnect', function () {
 });
 
 socket.on('action', function (data) {
-  channelNotification('action', data.server, data.channel, data.nick, data.message);
+  var actData = {nick: data.nick, action: data.message};
+  channelNotification(CN_ACTN, data.server, data.channel, actData);
 });
 
 socket.on('serverNotification', function (data) {
@@ -472,7 +491,7 @@ socket.on('joined', function (data) {
   } else {
     var chat = chats[chatIndex(chats, data.server, data.channel)];
     chat.users.push(data.nick);
-    channelNotification('joined', data.server, data.channel, data.nick);
+    channelNotification(CN_JOIN, data.server, data.channel, {nick: data.nick});
   }
   if (data.nick.length > longestNickInChannel[data.server + data.channel]) {
     longestNickInChannel[data.server + data.channel] = data.nick.length;
@@ -521,14 +540,14 @@ socket.on('newNick', function (data) {
       'dd[data-server="' + data.server + '"][data-channel="' + data.old + '"] a span'
     ).last();
     var newLabel = label.text().replace(data.old, data.new);
-    channelNotification('changedNick', data.server, data.old, data.old, data.new);
+    channelNotification(CN_NICK, data.server, data.old, {old: data.old, new: data.new});
     label.text(newLabel);
     var pchat = chats[chatIndex(chats, data.server, data.old)];
     pchat.channel = data.new;
     chatElement('dd', data.server, data.old).data('channel', data.new);
     chatElement('div', data.server, data.old).data('channel', data.new);
   }
-  channelNotification('changedNick', data.server, data.channel, data.old, data.new);
+  channelNotification(CN_NICK, data.server, data.channel, {old: data.old, new: data.new});
 });
 
 socket.on('invited', function (data) {
@@ -546,7 +565,7 @@ socket.on('userLeft', function (data) {
     return;
   }
   chat.users.remove(chat.users.indexOf(data.nick));
-  channelNotification('departed', data.server, data.from, data.nick, data.reason);
+  channelNotification(CN_PART, data.server, data.from, {nick: data.nick, reason: data.reason});
   longestNickInChannel[data.server + data.channel] = longestNick(chat.users);
 });
 
