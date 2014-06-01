@@ -23,8 +23,7 @@ const NO_MSG_ICON = '/images/icons/graydot.png';
 const LP_MSG_ICON = '/images/icons/greendot.png';
 const HP_MSG_ICON = '/images/icons/reddot.png';
 
-// TODO
-// Create constants for all the different types of channel notifications
+// Constant identifiers for different types of channel notifications.
 const CN_JOIN = 'joined';
 const CN_PART = 'departed';
 const CN_NICK = 'changedNick';
@@ -116,21 +115,16 @@ const COMMAND_HELP = '' +
   'Any commands not in this list must be sent using the format specified by the IRC standard.<br />' +
   'part - Leave the currently selected channel.<br />' +
   'join &lt;channel&gt; - Join "channel" on the server hosting the currently selected channel.<br />' +
-  'connect %lt;server&gt; &lt;channel1,channel2,...&gt; - Connect to the specified channels on "server".<br />' +
+  'connect &lt;server&gt; &lt;channel1,channel2,...&gt; - Connect to the specified channels on "server".<br />' +
   'msg/privmsg &lt;nick&gt; &lt;msg&gt; - Send "msg" to "nick" on the server hosting the currently selected channel.<br />' +
-  'nick &lt;newnick&gt; - Sets your nick on the server hosting the currently selected channel to "newnick".<br />';
+  'nick &lt;newnick&gt; - Sets your nick on the server hosting the currently selected channel to "newnick".<br />' +
+  'me/action &lt;action&gt; - Send an ACTION event that will appear as &lt;your nick&gt; &lt;action&gt;';
 var handleCommand = function (cmdstr) {
-  var haveUISupport = ['part', 'join', 'connect', 'msg', 'privmsg', 'nick', 'help'];
   var activeServer = $('dd.active').first().data('server');
   var activeChannel = $('dd.active').first().data('channel');
   var parts = cmdstr.split(' ');
   parts[0] = parts[0].toLowerCase();
-  if (haveUISupport.indexOf(parts[0]) === -1) {
-    socket.emit('rawCommand', {
-      command : cmdstr,
-      server  : activeServer
-    });
-  } else if (parts[0] === 'part') {
+  if (parts[0] === 'part') {
     var message = parts.slice(1).join(' ');
     if (message.length === 0) {
       message = 'aIRChat user parted.';
@@ -197,7 +191,23 @@ var handleCommand = function (cmdstr) {
       from    : 'System',
       message : COMMAND_HELP
     });
-  }
+  } else if (parts[0] === 'action' || parts[0] === 'me') {
+    if (parts.length < 2) {
+      Notifier.error('Not enough arguments to ACTION/ME.', 'Missing Arguments');
+      return;
+    }
+    var msg = parts.slice(1).join(' ');
+    socket.emit('writeChat', {
+      destination : channel,
+      server      : server,
+      message     : '\x01ACTION ' + msg + '\x01'
+    });
+    channelNotification(CN_ACTN, server, channel, {action: msg, nick: usernicks[server]});
+  } else {
+    socket.emit('rawCommand', {
+      command : cmdstr,
+      server  : activeServer
+    });
 };
 
 // Return the input string with urls wrapped in anchor tags
@@ -351,7 +361,7 @@ var channelNotification = function (type, server, channel, data, newdata) {
   } else if (type === CN_ACTN) {
     message = 'Action: ' + data.nick + ' ' + data.action;
   } else if (type === CN_MODE) {
-    message = data.nick + ' set ' + data.plusminus + data.modeid + ' in ' + channel + '.';
+    message = data.nick + ' set ' + data.plusminus + data.modeid + ' in ' + channel + ' ' + data.arg + '.';
   } else if (type === CN_WHOI) {
     message = 'Whois info: ' + data.info;
   } else if (type === CN_TOPC) {
@@ -399,6 +409,23 @@ socket.on('disconnect', function () {
 socket.on('action', function (data) {
   var actData = {nick: data.nick, action: data.message};
   channelNotification(CN_ACTN, data.server, data.channel, actData);
+});
+
+socket.on('topic', function (data) {
+  channelNotification(CN_TOPC, data.server, data.channel, {topic: data.topic});
+});
+
+socket.on('ctcp', function (data) {
+  channelNotification(CN_CTCP, data.server, data.channel, {info: data.info});
+});
+
+socket.on('setMode', function (data) {
+  var modeData = {plusminus: data.symbol, modeid: data.mode, arg: data.arg};
+  channelNotification(CN_MODE, data.server, data.channel, modeData);
+});
+
+socket.on('gotWhois', function (data) {
+  channelNotification(CN_WHOI, data.server, data.channel, {info: data.info});
 });
 
 socket.on('serverNotification', function (data) {

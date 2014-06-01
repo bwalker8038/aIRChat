@@ -75,6 +75,53 @@ var createIRCClient = function (socket, params) {
     socket.emit('serverConnected', {server : params.server, nick : msg.args[0]});
   });
 
+  newClient.addListener('topic', function (chan, topic, nick, msg) {
+    socket.emit('topic', {
+      channel : chan,
+      server  : params.server,
+      topic   : topic
+    });
+  });
+
+  newClient.addListener('ctcp', function (from, to, text, type, msg) {
+    if (type === 'privmsg') return;
+    socket.emit('ctcp', {
+      server  : params.server,
+      channel : 'System',
+      info    : 'Type ' + type + ': ' + text
+    });
+  });
+
+  newClient.addListener('+mode', function (channel, by, mode, argument, msg) {
+    socket.emit('setMode', {
+      channel : channel,
+      server  : params.server,
+      symbol  : '+',
+      modeid  : mode,
+      arg     : argument
+    });
+  });
+
+  newClient.addListener('-mode', function (channel, by, mode, argument, msg) {
+    socket.emit('setMode' {
+      channel : channel,
+      server  : params.server,
+      symbol  : '-',
+      modeid  : mode,
+      arg     : argument
+    });
+  });
+
+  newClient.addListener('whois', function (info) {
+    var infoMsg = info.nick + ', user ' + info.user + ', realname: ' + info.realname;
+    infoMsg += ' is on the channels ' + info.channels.join(', ') + '. ';
+    socket.emit('gotWhois', {
+      channel : 'System',
+      server  : params.server,
+      info    : infoMsg
+    });
+  });
+
   newClient.addListener('names', function (channel, nicks) {
     var nicknames = Object.keys(nicks);
     socket.emit('nickList', {
