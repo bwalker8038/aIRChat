@@ -104,6 +104,12 @@ var chatElement = function (type, server, channel) {
   return undefined;
 };
 
+var setActiveTab = function (server, channel) {
+  $('div.active').first().attr('class', 'content');
+  chatElement('dd', server, channel).attr('class', 'active');
+  chatElement('div', server, channel).attr('class', 'content active');
+};
+
 // Array remove - By John Resig
 Array.prototype.remove = function (start, end) {
   var tail = this.slice((end || start) + 1 || this.length);
@@ -136,7 +142,13 @@ var handleCommand = function (cmdstr) {
     });
     $('dd.active').first().remove();
     $('div.active').first().remove();
-    chats.remove(chatIndex(chats, activeServer, activeChannel));
+    var oldIndex = chatIndex(chats, activeServer, activeChannel);
+    chats.remove(oldIndex);
+    if (chats.length > 0) {
+      var newIndex = (oldIndex === chats.length) ? (oldIndex - 1) : oldIndex;
+      var chat = chats[newIndex];
+      setActiveTab(chat.server, chat.channel);
+    }
   } else if (parts[0] === 'join') {
     if (parts.length < 2) {
       Notifier.error('No channel argument supplied to JOIN', 'Missing Arguments');
@@ -521,10 +533,7 @@ socket.on('joined', function (data) {
     joinChat(data.server, data.channel);
     Notifier.info('Joined ' + data.channel + '.', 'Joined Channel');
     if ($('dd.active').length === 0) { // No active chats
-      // Disable the default active content section
-      $('div.active').first().attr('class', 'content');
-      chatElement('dd', data.server, data.channel).attr('class', 'active');
-      chatElement('div', data.server, data.channel).attr('class', 'content active');
+      setActiveTab(data.server, data.channel);
     }
   } else {
     var chat = chats[chatIndex(chats, data.server, data.channel)];
@@ -777,10 +786,15 @@ $('a#confirmPartChannel').click(function (evt) {
   $('div.active').first().remove();
   if (channel[0] === '#') { // Channel, not a private chat
     socket.emit('part', {
-      server: server, 
-      channel: channel, 
-      message: 'aIRChat client parted.'
+      server  : server, 
+      channel : channel, 
+      message : 'aIRChat client parted.'
     });
+  }
+  if (chats.length > 0) {
+    var newIndex = (index === chats.length) ? (index - 1) : index;
+    var chat = chats[newIndex];
+    setActiveTab(chat.server, chat.channel);
   }
 });
 
