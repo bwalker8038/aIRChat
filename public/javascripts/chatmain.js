@@ -198,16 +198,18 @@ var handleCommand = function (cmdstr) {
     }
     var msg = parts.slice(1).join(' ');
     socket.emit('writeChat', {
-      destination : channel,
-      server      : server,
+      destination : activeChannel,
+      server      : activeServer,
       message     : '\x01ACTION ' + msg + '\x01'
     });
-    channelNotification(CN_ACTN, server, channel, {action: msg, nick: usernicks[server]});
+    var actDat = {action: msg, nick: usernicks[activeServer]};
+    channelNotification(CN_ACTN, activeServer, activeChannel, actDat);
   } else {
     socket.emit('rawCommand', {
       command : cmdstr,
       server  : activeServer
     });
+  }
 };
 
 // Return the input string with urls wrapped in anchor tags
@@ -250,7 +252,7 @@ var htmlify = function (string) {
 
 var addMessage = function (data) {
   var $msgDiv = chatElement('div', data.server, data.channel);
-  var $tab = chatElement('dd', data.server, data.channel).children('a').first();
+  var $tab = chatElement('dd', data.server, data.channel).find('a').first();
   var chat = chats[chatIndex(chats, data.server, data.channel)];
   var time = formattedMessageTime(); // From users.js
 
@@ -300,7 +302,7 @@ var clearNotifications = function (evt) {
   var server = $(evt.currentTarget).data('server');
   var channel = $(evt.currentTarget).data('channel');
   setStatusIcon(server, channel, 'none');
-  chatElement('dd', server, channel).children('img').first().attr('src', NO_MSG_ICON);
+  chatElement('dd', server, channel).find('img').first().attr('src', NO_MSG_ICON);
 };
 
 // Add a new tab to the list of chat tabs and a content div to contain
@@ -361,7 +363,11 @@ var channelNotification = function (type, server, channel, data, newdata) {
   } else if (type === CN_ACTN) {
     message = 'Action: ' + data.nick + ' ' + data.action;
   } else if (type === CN_MODE) {
-    message = data.nick + ' set ' + data.plusminus + data.modeid + ' in ' + channel + ' ' + data.arg + '.';
+    if (typeof data.arg === 'undefined') {
+      message = data.nick + ' set ' + data.mode + ' in ' + channel + '.';
+    } else {
+      message = data.nick + ' set ' + data.mode + ' on ' + data.arg + ' in ' + channel + '.';
+    }
   } else if (type === CN_WHOI) {
     message = 'Whois info: ' + data.info;
   } else if (type === CN_TOPC) {
@@ -420,11 +426,13 @@ socket.on('ctcp', function (data) {
 });
 
 socket.on('setMode', function (data) {
-  var modeData = {plusminus: data.symbol, modeid: data.mode, arg: data.arg};
-  channelNotification(CN_MODE, data.server, data.channel, modeData);
+  channelNotification(CN_MODE, data.server, data.channel, {arg: data.on, nick: data.by, mode: data.mode});
 });
 
 socket.on('gotWhois', function (data) {
+  if (chatIndex(chats, data.server, data.channel) === -1) {
+    joinChat(data.server, data.channel);
+  }
   channelNotification(CN_WHOI, data.server, data.channel, {info: data.info});
 });
 

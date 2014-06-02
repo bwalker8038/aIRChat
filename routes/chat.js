@@ -93,27 +93,33 @@ var createIRCClient = function (socket, params) {
   });
 
   newClient.addListener('+mode', function (channel, by, mode, argument, msg) {
+    if (typeof by === 'undefined') {
+      by = 'ChanServ';
+    }
     socket.emit('setMode', {
       channel : channel,
       server  : params.server,
-      symbol  : '+',
-      modeid  : mode,
-      arg     : argument
+      mode    : '+' + mode,
+      by      : by,
+      on      : argument
     });
   });
 
   newClient.addListener('-mode', function (channel, by, mode, argument, msg) {
-    socket.emit('setMode' {
+    if (typeof by === 'undefined') {
+      by = 'ChanServ';
+    }
+    socket.emit('setMode', {
       channel : channel,
       server  : params.server,
-      symbol  : '-',
-      modeid  : mode,
-      arg     : argument
+      mode    : '-' + mode,
+      by      : by,
+      on      : argument
     });
   });
 
   newClient.addListener('whois', function (info) {
-    var infoMsg = info.nick + ', user ' + info.user + ', realname: ' + info.realname;
+    var infoMsg = info.nick + '@' + info.host + ', user ' + info.user + ', realname: ' + info.realname;
     infoMsg += ' is on the channels ' + info.channels.join(', ') + '. ';
     socket.emit('gotWhois', {
       channel : 'System',
