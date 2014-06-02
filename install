@@ -1,0 +1,14 @@
+#! /bin/bash
+
+DIR=/usr/lib/aIRChat/Content
+if [ -d "$DIR" ]; then
+  rm -r $DIR             # Clean out any existing content
+  echo "Removed old aIRChat installation."
+fi
+if [ ! -d "/usr/lib/aIRChat" ]; then
+  mkdir /usr/lib/aIRChat
+  echo "Created directory for aIRChat."
+fi
+mv ./Content $DIR        # Move the new content
+cp ./airchatNix /usr/bin # Copy *nix execution script to a place in PATH
+echo "Finished installing."

@@ -1,0 +1,7 @@
+#! /bin/bash
+
+if [ ! -d "/usr/lib/aIRChat/Content" ]; then
+  echo "Please run the install script first."
+  exit
+fi
+node /usr/lib/aIRChat/Content/app.js

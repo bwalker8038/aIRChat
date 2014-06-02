@@ -1,0 +1,176 @@
+<% include head %>
+<!-- Dialog for connecting to a new server -->
+<div class="reveal-modal" id="newServer" data-reveal>
+  <div class="row">
+    <div class="small-12 columns">
+      <h1>Connect to a server</h1>
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-8 columns">
+      <input type="text" placeholder="irc.example.com" id="newServerAddr" />
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-8 columns">
+      <input type="text" placeholder="#channelName" id="newServerChannel" />
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-8 columns">
+      <input type="text" placeholder="nickname" id="serverNick" />
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-8 columns">
+      <a href="#" class="success button close-reveal-modal" id="connectToNewServer">Connect</a>
+    </div>
+  </div>
+  <a class="close-reveal-modal">&#215;</a>
+</div>
+<!-- Dialog for joining a new channel -->
+<div class="reveal-modal" id="newChannel" data-reveal>
+  <div class="row">
+    <div class="small-12 columns">
+      <h1>Join a channel</h1>
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-8 columns">
+      <input type="text" placeholder="#channelName" id="newChannelName" />
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-8 columns">
+      <a href="#" class="success button close-reveal-modal" id="joinNewChannel">Join</a>
+    </div>
+  </div>
+  <a class="close-reveal-modal">&#215;</a>
+</div>
+<!-- Dialog asking for confirmation to part from channel -->
+<div class="reveal-modal" id="partChannel" data-reveal>
+  <div class="row">
+    <div class="small-12 columns">
+      <h1>Leave channel</h1>
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-8 columns">
+      <p><!-- Filled by JS --></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-12 columns">
+      <ul class="button-group">
+        <li><a href="#" class="success button close-reveal-modal" id="confirmPartChannel">Confirm</a></li>
+        <li><a href="#" class="button close-reveal-modal">Cancel</a></li>
+      </ul>
+    </div>
+  </div>
+  <a class="close-reveal-modal">&#215;</a>
+</div>
+<!-- Dialog for changing the user's nick -->
+<div class="reveal-modal" id="changeNickModal" data-reveal>
+  <div class="row">
+    <div class="small-12 columns">
+      <h1>Change your nick</h1>
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-8 columns">
+      <p>
+        Change the name that people will see alongside all of the messages you send
+        to channels or users on the currently selected server.
+      </p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-8 columns">
+      <input type="text" id="newNickInput" placeholder="New nick" />
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-12 columns">
+      <a href="#" class="success button close-reveal-modal" id="changeNickConfirm">Confirm</a>
+    </div>
+  </div>
+  <a class="close-reveal-modal">&#215;</a>
+</div>
+<!-- Dialog for sending a new private message -->
+<div class="reveal-modal" id="privMsg" data-reveal>
+  <div class="row">
+    <div class="small-12 columns">
+      <h1>Send a private message</h1>
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-8 columns">
+      <input type="text" placeholder="nickname" id="privMsgNick" />
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-8 columns">
+      <textarea id="privMsgContents" placeholder="message to user"></textarea>
+    </div>
+  </div>
+  <div class="row">
+    <div class="small-8 columns">
+      <a href="#" class="success button close-reveal-modal" id="sendPrivMsg">Send</a>
+    </div>
+  </div>
+  <a class="close-reveal-modal">&#215;</a>
+</div>
+<!-- Nav bar for chat management -->
+<nav class="top-bar" data-topbar>
+  <ul class="title-area">
+    <li class="name">
+      <a href="#"><img id="logo" src="/images/logoheader.png" /></a>
+    </li>
+  </ul>
+  <section class="top-bar-section">
+    <ul class="right">
+      <li><a href="#" data-reveal-id="newServer">
+        <img src="/images/icons/network.png" class="listicon" />
+      </a></li>
+      <li><a href="#" data-reveal-id="newChannel">
+        <img src="/images/icons/plus.png" class="listicon" />
+      </a></li>
+      <li><a href="#" data-reveal-id="partChannel">
+        <img src="/images/icons/minus.png" class="listicon" />
+      </a></li>
+      <li><a href="#" data-reveal-id="changeNickModal">
+        <img src="/images/icons/pencil.png" class="listicon" />
+      </a></li>
+      <li><a href="#" id="showNickList">
+        <img src="/images/icons/list.png" class="listicon" />
+      </a></li>
+      <li><a href="#" data-reveal-id="privMsg">
+        <img src="/images/icons/chat.png" class="listicon" />
+      </a></li>
+    </ul>
+  </section>
+</nav>
+<!-- Chat content -->
+<!-- Channel and private message chat listing -->
+<dl class="tabs vertical" id="chatList" data-tab>
+</dl>
+<!-- Content of chat -->
+<div class="tabs-content vertical" id="chatContent">
+  <div class="content active" id="helpSection">
+    <p>
+      You have not connected to a server yet. To get started, click the "Connect to Server" option
+      under the chat dropdown. If you don't know where to go first, connect to irc.freenode.net and
+      provide #aIRChat as the channel to talk to other aIRChat users!
+    </P>
+  </div>
+</div>
+<input type="text" id="messageInput" />
+<script src="/javascripts/chats.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/javascripts/notifier.js"></script>
+<script src="/javascripts/stash.min.js"></script>
+<script type="text/javascript">
+  var hostname = '<%= host %>';
+</script>
+<script src="/javascripts/chatmain.js"></script>
+<% include foot %>
