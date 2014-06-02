@@ -856,6 +856,9 @@ $(document).ready(function () {
       'Favorite Server Connection'
     );
   }
+  if (servers.length === 0) {
+    $('#newServer').foundation('reveal', 'open');    
+  }
 });
 
 $(window).focus(function (evt) {

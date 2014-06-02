@@ -35,7 +35,7 @@ server.listen(app.get('port'), function(){
 });
 
 var io = socketio.listen(server);
-io.set('log level', 1);
+io.set('log level', 3);
 io.set('heartbeat interval', 6);
 io.set('heartbeat timeout', 30);
 io.set('close timeout', 120);
