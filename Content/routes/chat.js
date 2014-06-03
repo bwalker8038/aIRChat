@@ -29,7 +29,7 @@ String.prototype.replaceAll = function (sub, newstr) {
 
 var sanitize = function (string) {
   return string.replaceAll('"', '&#34;').replaceAll("'", '&#39;')
-               .replaceAll('>', '&gt;').replaceAll('<', '&#lt;')
+               .replaceAll('>', '&gt;').replaceAll('<', '&lt;')
                .replaceAll('/', '&#47;').replaceAll('\\', '&#92;');
 };
 
