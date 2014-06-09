@@ -18,6 +18,16 @@ var longestNickInChannel = {};
 // Maps the name of a given server to the user's nick on that server.
 var usernicks = {};
 
+// Maps (server + nick) -> color class name
+var nickColors = {};
+const colors = ['red', 'green', 'yellow', 'blue', 'magenta', 'cyan'];
+var colorIndex = 0;
+
+function nextNickColor() {
+  var c = colors[colorIndex];
+  colorIndex = (colorIndex + 1) % colors.length;
+};
+
 // Message status icons for no message, low and high priority message statuses.
 const NO_MSG_ICON = '/images/icons/graydot.png';
 const LP_MSG_ICON = '/images/icons/greendot.png';
@@ -275,6 +285,14 @@ var addMessage = function (data) {
     highlight = ' mention';
   }
 
+  var color = 'self';
+  if (data.from !== usernicks[data.server] && data.from !== 'System') {
+    color = chat.colorForNick(data.from);
+  }
+  if (typeof color === 'undefined') {
+    color = 'self';
+  }
+
   var spaces = '&nbsp;';
   var maxSpaces = longestNickInChannel[data.server + data.channel];
   for (var i = maxSpaces - data.from.length - 1; i >= 0; i--) {
@@ -283,7 +301,8 @@ var addMessage = function (data) {
   var $newMsg = $(
     '<div class="message">' +
     '  <div class="messageContent' + highlight + '">' +
-    '    <span>' + time + spaces + '</span><span class="bold">' + data.from + ' </span>' +
+    '    <span>' + time + spaces + '</span>' +
+    '    <span class="nick-' + color + ' bold">' + data.from + '</span>' +
     '    <span>' + htmlify(data.message) + '</span>' +
     '  </div>' +
     '</div>'
@@ -522,8 +541,10 @@ socket.on('nickList', function (data) {
     chat = joinChat(data.server, data.channel);
   }
   longestNickInChannel[data.server + data.channel] = longestNick(data.nicks);
-  chat.users = data.nicks;
-  chat.users.push('System');
+  for (var i = 0, len = data.nicks.length; i < len; i++) {
+    chat.addUser(data.nicks[i]);
+  }
+  chat.addUser('System');
 });
 
 // Add a new nick to the list of nicks for the provided channel. 
@@ -537,7 +558,7 @@ socket.on('joined', function (data) {
     }
   } else {
     var chat = chats[chatIndex(chats, data.server, data.channel)];
-    chat.users.push(data.nick);
+    chat.addUser(data.nick);
     channelNotification(CN_JOIN, data.server, data.channel, {nick: data.nick});
   }
   if (data.nick.length > longestNickInChannel[data.server + data.channel]) {
@@ -563,8 +584,7 @@ socket.on('kicked', function (data) {
       message : data.nick + ' was kicked by ' + data.by + ', reason: ' + data.reason
     });
     var chat = chats[chatIndex(chats, data.server, data.channel)];
-    var index = chat.users.indexOf(data.nick);
-    chat.users.remove(index);
+    chat.removeUser(data.nick);
     longestNickInChannel[data.server + data.channel] = longestNick(chat.users);
   }
 });
@@ -577,9 +597,8 @@ socket.on('newNick', function (data) {
   if (data.old === usernicks[data.server]) {
     usernicks[data.server] = data.new;
   } else {
-    var index = chat.users.indexOf(data.old);
-    chat.users.remove(index);
-    chat.users.push(data.new);
+    chat.removeUser(data.old);
+    chat.addUser(data.new);
   }
   // Rename the tab of an affected private chat
   if (chatElement('dd', data.server, data.old) /* exists */) {
@@ -611,7 +630,7 @@ socket.on('userLeft', function (data) {
   if (typeof chat === 'undefined') {
     return;
   }
-  chat.users.remove(chat.users.indexOf(data.nick));
+  chat.removeUser(data.nick);
   channelNotification(CN_PART, data.server, data.from, {nick: data.nick, reason: data.reason});
   longestNickInChannel[data.server + data.channel] = longestNick(chat.users);
 });
