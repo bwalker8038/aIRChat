@@ -18,16 +18,6 @@ var longestNickInChannel = {};
 // Maps the name of a given server to the user's nick on that server.
 var usernicks = {};
 
-// Maps (server + nick) -> color class name
-var nickColors = {};
-const colors = ['red', 'green', 'yellow', 'blue', 'magenta', 'cyan'];
-var colorIndex = 0;
-
-function nextNickColor() {
-  var c = colors[colorIndex];
-  colorIndex = (colorIndex + 1) % colors.length;
-};
-
 // Message status icons for no message, low and high priority message statuses.
 const NO_MSG_ICON = '/images/icons/graydot.png';
 const LP_MSG_ICON = '/images/icons/greendot.png';
