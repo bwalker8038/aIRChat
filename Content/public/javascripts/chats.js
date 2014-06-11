@@ -5,11 +5,17 @@ var Chat = function (server, channel) {
   this.server = server;
   this.channel = channel;
   this.users = new Array();
-  this.userColors = new Array();
-  this.cIndex = 0;
 };
 
-const nickColors = ['red', 'green', 'yellow', 'blue', 'magenta', 'cyan'];
+const nickColors = [
+  'light-green',  'dark-green',
+  'light-blue',   'dark-blue',
+  'light-purple', 'dark-purple',
+  'light-yellow', 'dark-yellow',
+  'light-orange', 'dark-orange',
+  'light-red',    'dark-red'
+];
+
 
 Chat.prototype.sameChat = function (server, channel) {
   return this.server === server && this.channel.toLowerCase() === channel.toLowerCase();
@@ -19,22 +25,20 @@ Chat.prototype.removeUser = function (nick) {
   var index = this.users.indexOf(nick);
   if (index >= 0) {
     this.users.remove(index);
-    this.userColors.remove(index);
   }
 }
 
 Chat.prototype.addUser = function (nick) {
   this.users.push(nick);
-  this.userColors.push(nickColors[this.cIndex]);
-  this.cIndex = (this.cIndex + 1) % nickColors.length;
 }
 
 Chat.prototype.colorForNick = function (nick) {
-  var index = this.users.indexOf(nick);
-  if (index >= 0) {
-    return this.userColors[index];
+  var sum = 0;
+  for (var i = 0; i < nick.length; i++) {
+    sum += nick.charCodeAt(i);
   }
-  return 'self';
+  console.log('Sum of character codes in ' + nick + ' is ' + sum);
+  return nickColors[sum % nickColors.length];
 }
 
 function chatIndex(chatList, server, channel) {

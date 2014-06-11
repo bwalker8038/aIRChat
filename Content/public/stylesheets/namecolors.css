@@ -10,26 +10,50 @@
     color: black;
 }
 
-.nick-red {
-    color: rgb(204,102,102);
+.nick-light-green {
+  color: #2ecc71;
 }
 
-.nick-green {
-    color: rgb(181,189,104);
+.nick-light-blue {
+  color: #3498db;
 }
 
-.nick-yellow {
-    color: rgb(240,198,116);
+.nick-light-purple {
+  color: #9b59b6;
 }
 
-.nick-blue {
-    color: rgb(129,162,190);
+.nick-light-yellow {
+  color: #f1c40f;
 }
 
-.nick-magenta {
-    color: rgb(178,148,187);
+.nick-light-orange {
+  color: #e67e22;
 }
 
-.nick-cyan {
-    color: rgb(138,190,183);
+.nick-light-red {
+  color: #e74c3c;
+}
+
+.nick-dark-green {
+  color: #27ae60;
+}
+
+.nick-dark-blue {
+  color: #2980b9;
+}
+
+.nick-dark-purple {
+  color: #8e44ad;
+}
+
+.nick-dark-yellow {
+  color: #f39c12;
+}
+
+.nick-dark-orange {
+  color: #d35400;
+}
+
+.nick-dark-red {
+  color: #c0392b;
 }

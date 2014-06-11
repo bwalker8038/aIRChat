@@ -278,6 +278,7 @@ var addMessage = function (data) {
   var color = 'self';
   if (data.from !== usernicks[data.server] && data.from !== 'System') {
     color = chat.colorForNick(data.from);
+    console.log('Computed color ' + color + ' for ' + data.from);
   }
   if (typeof color === 'undefined') {
     color = 'self';
