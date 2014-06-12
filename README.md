@@ -3,7 +3,7 @@ aIRChat
 
 A beautiful browser-based IRC client built on Node.
 
-![What it looks like now](https://airchatter.net/images/airchatscrot.png)
+![What it looks like now](https://i.imgur.com/AlusCXi.png)
 
 Requirements
 ============
